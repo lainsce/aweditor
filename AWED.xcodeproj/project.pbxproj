@@ -1,0 +1,639 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		000000000000000000002001 /* AWConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001001 /* AWConstants.swift */; };
+		000000000000000000002002 /* Element.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001002 /* Element.swift */; };
+		000000000000000000002003 /* MapFileCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001003 /* MapFileCodec.swift */; };
+		000000000000000000002004 /* MapFragment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001004 /* MapFragment.swift */; };
+		000000000000000000002005 /* MapState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001005 /* MapState.swift */; };
+
+		000000000000000000002010 /* AWEDApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001010 /* AWEDApp.swift */; };
+		000000000000000000002011 /* AWEDCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001011 /* AWEDCommands.swift */; };
+		000000000000000000002012 /* BackgroundMusic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001012 /* BackgroundMusic.swift */; };
+		000000000000000000002013 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001013 /* ContentView.swift */; };
+		000000000000000000002014 /* CursorAtlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001014 /* CursorAtlas.swift */; };
+		000000000000000000002015 /* DialogViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001015 /* DialogViews.swift */; };
+		000000000000000000002016 /* EditorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001016 /* EditorModel.swift */; };
+		000000000000000000002017 /* EditorPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001017 /* EditorPreferences.swift */; };
+		000000000000000000002018 /* EditorToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001018 /* EditorToolbar.swift */; };
+		000000000000000000002019 /* EditorTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001019 /* EditorTypes.swift */; };
+		00000000000000000000201A /* FilePanelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101A /* FilePanelService.swift */; };
+		00000000000000000000201B /* MapCanvasInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101B /* MapCanvasInput.swift */; };
+		00000000000000000000201C /* MapCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101C /* MapCanvasView.swift */; };
+		00000000000000000000201D /* PaletteCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101D /* PaletteCatalog.swift */; };
+		00000000000000000000201E /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101E /* PaletteView.swift */; };
+		00000000000000000000201F /* SpriteAtlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101F /* SpriteAtlas.swift */; };
+		000000000000000000002020 /* StatusBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001020 /* StatusBarView.swift */; };
+
+		000000000000000000002030 /* MapCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001030 /* MapCoreTests.swift */; };
+
+		000000000000000000002040 /* AppIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001040 /* AppIcon.png */; };
+		000000000000000000002041 /* bgm.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001041 /* bgm.mp3 */; };
+		000000000000000000002050 /* building_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001050 /* building_0.png */; };
+		000000000000000000002051 /* building_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001051 /* building_1.png */; };
+		000000000000000000002052 /* building_2.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001052 /* building_2.png */; };
+		000000000000000000002053 /* building_3.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001053 /* building_3.png */; };
+		000000000000000000002054 /* building_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001054 /* building_4.png */; };
+		000000000000000000002055 /* building_5.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001055 /* building_5.png */; };
+		000000000000000000002056 /* extra_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001056 /* extra_0.png */; };
+		000000000000000000002057 /* extra_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001057 /* extra_1.png */; };
+		000000000000000000002058 /* extra_2.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001058 /* extra_2.png */; };
+		000000000000000000002059 /* extra_3.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001059 /* extra_3.png */; };
+		00000000000000000000205A /* extra_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105A /* extra_4.png */; };
+		00000000000000000000205B /* extra_5.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105B /* extra_5.png */; };
+		00000000000000000000205C /* misc_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105C /* misc_0.png */; };
+		00000000000000000000205D /* misc_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105D /* misc_4.png */; };
+		00000000000000000000205E /* misc_5.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105E /* misc_5.png */; };
+		00000000000000000000205F /* terrain_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105F /* terrain_0.png */; };
+		000000000000000000002060 /* terrain_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001060 /* terrain_1.png */; };
+		000000000000000000002061 /* terrain_2.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001061 /* terrain_2.png */; };
+		000000000000000000002062 /* terrain_3.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001062 /* terrain_3.png */; };
+		000000000000000000002063 /* terrain_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001063 /* terrain_4.png */; };
+		000000000000000000002064 /* terrain_5.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001064 /* terrain_5.png */; };
+		000000000000000000002065 /* unit_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001065 /* unit_0.png */; };
+		000000000000000000002066 /* unit_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001066 /* unit_1.png */; };
+		000000000000000000002067 /* unit_2.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001067 /* unit_2.png */; };
+		000000000000000000002068 /* unit_3.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001068 /* unit_3.png */; };
+		000000000000000000002069 /* unit_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001069 /* unit_4.png */; };
+		00000000000000000000206A /* unit_5.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000106A /* unit_5.png */; };
+
+		000000000000000000003001 /* AWEDCore in Frameworks */ = {isa = PBXBuildFile; fileRef = 000000000000000000001102 /* libAWEDCore.a */; };
+		000000000000000000003002 /* AWEDCore in Frameworks */ = {isa = PBXBuildFile; fileRef = 000000000000000000001102 /* libAWEDCore.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		000000000000000000007001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000010 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 000000000000000000000301;
+			remoteInfo = AWEDCore;
+		};
+		000000000000000000007002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000010 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 000000000000000000000301;
+			remoteInfo = AWEDCore;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		000000000000000000001001 /* AWConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWConstants.swift; sourceTree = "<group>"; };
+		000000000000000000001002 /* Element.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Element.swift; sourceTree = "<group>"; };
+		000000000000000000001003 /* MapFileCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFileCodec.swift; sourceTree = "<group>"; };
+		000000000000000000001004 /* MapFragment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFragment.swift; sourceTree = "<group>"; };
+		000000000000000000001005 /* MapState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapState.swift; sourceTree = "<group>"; };
+
+		000000000000000000001010 /* AWEDApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWEDApp.swift; sourceTree = "<group>"; };
+		000000000000000000001011 /* AWEDCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWEDCommands.swift; sourceTree = "<group>"; };
+		000000000000000000001012 /* BackgroundMusic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundMusic.swift; sourceTree = "<group>"; };
+		000000000000000000001013 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		000000000000000000001014 /* CursorAtlas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorAtlas.swift; sourceTree = "<group>"; };
+		000000000000000000001015 /* DialogViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialogViews.swift; sourceTree = "<group>"; };
+		000000000000000000001016 /* EditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorModel.swift; sourceTree = "<group>"; };
+		000000000000000000001017 /* EditorPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorPreferences.swift; sourceTree = "<group>"; };
+		000000000000000000001018 /* EditorToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorToolbar.swift; sourceTree = "<group>"; };
+		000000000000000000001019 /* EditorTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorTypes.swift; sourceTree = "<group>"; };
+		00000000000000000000101A /* FilePanelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePanelService.swift; sourceTree = "<group>"; };
+		00000000000000000000101B /* MapCanvasInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCanvasInput.swift; sourceTree = "<group>"; };
+		00000000000000000000101C /* MapCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCanvasView.swift; sourceTree = "<group>"; };
+		00000000000000000000101D /* PaletteCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteCatalog.swift; sourceTree = "<group>"; };
+		00000000000000000000101E /* PaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteView.swift; sourceTree = "<group>"; };
+		00000000000000000000101F /* SpriteAtlas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteAtlas.swift; sourceTree = "<group>"; };
+		000000000000000000001020 /* StatusBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarView.swift; sourceTree = "<group>"; };
+		000000000000000000001080 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+
+		000000000000000000001030 /* MapCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCoreTests.swift; sourceTree = "<group>"; };
+
+		000000000000000000001040 /* AppIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppIcon.png; sourceTree = "<group>"; };
+		000000000000000000001041 /* bgm.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm.mp3; sourceTree = "<group>"; };
+		000000000000000000001050 /* building_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_0.png; sourceTree = "<group>"; };
+		000000000000000000001051 /* building_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_1.png; sourceTree = "<group>"; };
+		000000000000000000001052 /* building_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_2.png; sourceTree = "<group>"; };
+		000000000000000000001053 /* building_3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_3.png; sourceTree = "<group>"; };
+		000000000000000000001054 /* building_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_4.png; sourceTree = "<group>"; };
+		000000000000000000001055 /* building_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_5.png; sourceTree = "<group>"; };
+		000000000000000000001056 /* extra_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = extra_0.png; sourceTree = "<group>"; };
+		000000000000000000001057 /* extra_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = extra_1.png; sourceTree = "<group>"; };
+		000000000000000000001058 /* extra_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = extra_2.png; sourceTree = "<group>"; };
+		000000000000000000001059 /* extra_3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = extra_3.png; sourceTree = "<group>"; };
+		00000000000000000000105A /* extra_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = extra_4.png; sourceTree = "<group>"; };
+		00000000000000000000105B /* extra_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = extra_5.png; sourceTree = "<group>"; };
+		00000000000000000000105C /* misc_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_0.png; sourceTree = "<group>"; };
+		00000000000000000000105D /* misc_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_4.png; sourceTree = "<group>"; };
+		00000000000000000000105E /* misc_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_5.png; sourceTree = "<group>"; };
+		00000000000000000000105F /* terrain_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_0.png; sourceTree = "<group>"; };
+		000000000000000000001060 /* terrain_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_1.png; sourceTree = "<group>"; };
+		000000000000000000001061 /* terrain_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_2.png; sourceTree = "<group>"; };
+		000000000000000000001062 /* terrain_3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_3.png; sourceTree = "<group>"; };
+		000000000000000000001063 /* terrain_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_4.png; sourceTree = "<group>"; };
+		000000000000000000001064 /* terrain_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_5.png; sourceTree = "<group>"; };
+		000000000000000000001065 /* unit_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_0.png; sourceTree = "<group>"; };
+		000000000000000000001066 /* unit_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_1.png; sourceTree = "<group>"; };
+		000000000000000000001067 /* unit_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_2.png; sourceTree = "<group>"; };
+		000000000000000000001068 /* unit_3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_3.png; sourceTree = "<group>"; };
+		000000000000000000001069 /* unit_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_4.png; sourceTree = "<group>"; };
+		00000000000000000000106A /* unit_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_5.png; sourceTree = "<group>"; };
+
+		000000000000000000001101 /* AWED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AWED.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000001102 /* libAWEDCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAWEDCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000001103 /* AWEDCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AWEDCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000001090 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		000000000000000000001091 /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		00000000000000000000504 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000003001 /* AWEDCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		00000000000000000000506 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000003002 /* AWEDCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		00000000000000000000507 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		000000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000004 /* AWED */,
+				000000000000000000000003 /* AWEDCore */,
+				000000000000000000000007 /* Tests */,
+				000000000000000000001090 /* README.md */,
+				000000000000000000001091 /* LICENSE.md */,
+				000000000000000000000002 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		000000000000000000000002 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001101 /* AWED.app */,
+				000000000000000000001102 /* libAWEDCore.a */,
+				000000000000000000001103 /* AWEDCoreTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		000000000000000000000003 /* AWEDCore */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001001 /* AWConstants.swift */,
+				000000000000000000001002 /* Element.swift */,
+				000000000000000000001003 /* MapFileCodec.swift */,
+				000000000000000000001004 /* MapFragment.swift */,
+				000000000000000000001005 /* MapState.swift */,
+			);
+			path = Sources/AWEDCore;
+			sourceTree = "<group>";
+		};
+		000000000000000000000004 /* AWED */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001010 /* AWEDApp.swift */,
+				000000000000000000001011 /* AWEDCommands.swift */,
+				000000000000000000001012 /* BackgroundMusic.swift */,
+				000000000000000000001013 /* ContentView.swift */,
+				000000000000000000001014 /* CursorAtlas.swift */,
+				000000000000000000001015 /* DialogViews.swift */,
+				000000000000000000001016 /* EditorModel.swift */,
+				000000000000000000001017 /* EditorPreferences.swift */,
+				000000000000000000001018 /* EditorToolbar.swift */,
+				000000000000000000001019 /* EditorTypes.swift */,
+				00000000000000000000101A /* FilePanelService.swift */,
+				00000000000000000000101B /* MapCanvasInput.swift */,
+				00000000000000000000101C /* MapCanvasView.swift */,
+				00000000000000000000101D /* PaletteCatalog.swift */,
+				00000000000000000000101E /* PaletteView.swift */,
+				00000000000000000000101F /* SpriteAtlas.swift */,
+				000000000000000000001020 /* StatusBarView.swift */,
+				000000000000000000001080 /* Info.plist */,
+				000000000000000000000005 /* Resources */,
+			);
+			path = Sources/AWED;
+			sourceTree = "<group>";
+		};
+		000000000000000000000005 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001040 /* AppIcon.png */,
+				000000000000000000001041 /* bgm.mp3 */,
+				000000000000000000000006 /* Spritesheets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		000000000000000000000006 /* Spritesheets */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001050 /* building_0.png */,
+				000000000000000000001051 /* building_1.png */,
+				000000000000000000001052 /* building_2.png */,
+				000000000000000000001053 /* building_3.png */,
+				000000000000000000001054 /* building_4.png */,
+				000000000000000000001055 /* building_5.png */,
+				000000000000000000001056 /* extra_0.png */,
+				000000000000000000001057 /* extra_1.png */,
+				000000000000000000001058 /* extra_2.png */,
+				000000000000000000001059 /* extra_3.png */,
+				00000000000000000000105A /* extra_4.png */,
+				00000000000000000000105B /* extra_5.png */,
+				00000000000000000000105C /* misc_0.png */,
+				00000000000000000000105D /* misc_4.png */,
+				00000000000000000000105E /* misc_5.png */,
+				00000000000000000000105F /* terrain_0.png */,
+				000000000000000000001060 /* terrain_1.png */,
+				000000000000000000001061 /* terrain_2.png */,
+				000000000000000000001062 /* terrain_3.png */,
+				000000000000000000001063 /* terrain_4.png */,
+				000000000000000000001064 /* terrain_5.png */,
+				000000000000000000001065 /* unit_0.png */,
+				000000000000000000001066 /* unit_1.png */,
+				000000000000000000001067 /* unit_2.png */,
+				000000000000000000001068 /* unit_3.png */,
+				000000000000000000001069 /* unit_4.png */,
+				00000000000000000000106A /* unit_5.png */,
+			);
+			path = Spritesheets;
+			sourceTree = "<group>";
+		};
+		000000000000000000000007 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001030 /* MapCoreTests.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		000000000000000000000301 /* AWEDCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000401 /* Build configuration list for PBXNativeTarget "AWEDCore" */;
+			buildPhases = (
+				000000000000000000000501 /* Sources */,
+				000000000000000000000507 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AWEDCore;
+			productName = AWEDCore;
+			productReference = 000000000000000000001102 /* libAWEDCore.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		000000000000000000000302 /* AWED */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000404 /* Build configuration list for PBXNativeTarget "AWED" */;
+			buildPhases = (
+				000000000000000000000502 /* Sources */,
+				000000000000000000000503 /* Resources */,
+				000000000000000000000504 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				000000000000000000000601 /* AWEDCore */,
+			);
+			name = AWED;
+			productName = AWED;
+			productReference = 000000000000000000001101 /* AWED.app */;
+			productType = "com.apple.product-type.application";
+		};
+		000000000000000000000303 /* AWEDCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000407 /* Build configuration list for PBXNativeTarget "AWEDCoreTests" */;
+			buildPhases = (
+				000000000000000000000505 /* Sources */,
+				000000000000000000000506 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				000000000000000000000602 /* AWEDCore */,
+			);
+			name = AWEDCoreTests;
+			productName = AWEDCoreTests;
+			productReference = 000000000000000000001103 /* AWEDCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000000000000000000000010 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					000000000000000000000301 = { CreatedOnToolsVersion = 27.0; };
+					000000000000000000000302 = { CreatedOnToolsVersion = 27.0; };
+					000000000000000000000303 = { CreatedOnToolsVersion = 27.0; TestTargetID = 000000000000000000000301; };
+				};
+			};
+			buildConfigurationList = 000000000000000000000201 /* Build configuration list for PBXProject "AWED" */;
+			compatibilityVersion = "Xcode 16.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 000000000000000000000001;
+			productRefGroup = 000000000000000000000002 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				000000000000000000000301 /* AWEDCore */,
+				000000000000000000000302 /* AWED */,
+				000000000000000000000303 /* AWEDCoreTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		000000000000000000000503 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000002040 /* AppIcon.png in Resources */,
+				000000000000000000002041 /* bgm.mp3 in Resources */,
+				000000000000000000002050 /* building_0.png in Resources */,
+				000000000000000000002051 /* building_1.png in Resources */,
+				000000000000000000002052 /* building_2.png in Resources */,
+				000000000000000000002053 /* building_3.png in Resources */,
+				000000000000000000002054 /* building_4.png in Resources */,
+				000000000000000000002055 /* building_5.png in Resources */,
+				000000000000000000002056 /* extra_0.png in Resources */,
+				000000000000000000002057 /* extra_1.png in Resources */,
+				000000000000000000002058 /* extra_2.png in Resources */,
+				000000000000000000002059 /* extra_3.png in Resources */,
+				00000000000000000000205A /* extra_4.png in Resources */,
+				00000000000000000000205B /* extra_5.png in Resources */,
+				00000000000000000000205C /* misc_0.png in Resources */,
+				00000000000000000000205D /* misc_4.png in Resources */,
+				00000000000000000000205E /* misc_5.png in Resources */,
+				00000000000000000000205F /* terrain_0.png in Resources */,
+				000000000000000000002060 /* terrain_1.png in Resources */,
+				000000000000000000002061 /* terrain_2.png in Resources */,
+				000000000000000000002062 /* terrain_3.png in Resources */,
+				000000000000000000002063 /* terrain_4.png in Resources */,
+				000000000000000000002064 /* terrain_5.png in Resources */,
+				000000000000000000002065 /* unit_0.png in Resources */,
+				000000000000000000002066 /* unit_1.png in Resources */,
+				000000000000000000002067 /* unit_2.png in Resources */,
+				000000000000000000002068 /* unit_3.png in Resources */,
+				000000000000000000002069 /* unit_4.png in Resources */,
+				00000000000000000000206A /* unit_5.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		000000000000000000000501 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000002001 /* AWConstants.swift in Sources */,
+				000000000000000000002002 /* Element.swift in Sources */,
+				000000000000000000002003 /* MapFileCodec.swift in Sources */,
+				000000000000000000002004 /* MapFragment.swift in Sources */,
+				000000000000000000002005 /* MapState.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000000000000000000000502 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000002010 /* AWEDApp.swift in Sources */,
+				000000000000000000002011 /* AWEDCommands.swift in Sources */,
+				000000000000000000002012 /* BackgroundMusic.swift in Sources */,
+				000000000000000000002013 /* ContentView.swift in Sources */,
+				000000000000000000002014 /* CursorAtlas.swift in Sources */,
+				000000000000000000002015 /* DialogViews.swift in Sources */,
+				000000000000000000002016 /* EditorModel.swift in Sources */,
+				000000000000000000002017 /* EditorPreferences.swift in Sources */,
+				000000000000000000002018 /* EditorToolbar.swift in Sources */,
+				000000000000000000002019 /* EditorTypes.swift in Sources */,
+				00000000000000000000201A /* FilePanelService.swift in Sources */,
+				00000000000000000000201B /* MapCanvasInput.swift in Sources */,
+				00000000000000000000201C /* MapCanvasView.swift in Sources */,
+				00000000000000000000201D /* PaletteCatalog.swift in Sources */,
+				00000000000000000000201E /* PaletteView.swift in Sources */,
+				00000000000000000000201F /* SpriteAtlas.swift in Sources */,
+				000000000000000000002020 /* StatusBarView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000000000000000000000505 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000002030 /* MapCoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		000000000000000000000601 /* AWEDCore */ = {isa = PBXTargetDependency; target = 000000000000000000000301 /* AWEDCore */; targetProxy = 000000000000000000007001 /* PBXContainerItemProxy */; };
+		000000000000000000000602 /* AWEDCore */ = {isa = PBXTargetDependency; target = 000000000000000000000301 /* AWEDCore */; targetProxy = 000000000000000000007002 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		000000000000000000000202 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		000000000000000000000203 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		000000000000000000000402 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEFINES_MODULE = YES;
+				ENABLE_TESTABILITY = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				PRODUCT_NAME = AWEDCore;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		000000000000000000000403 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEFINES_MODULE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				PRODUCT_NAME = AWEDCore;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		000000000000000000000405 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = Sources/AWED/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)/libAWEDCore.a",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.awsmapeditor.awed;
+				PRODUCT_NAME = AWED;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		000000000000000000000406 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = Sources/AWED/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)/libAWEDCore.a",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.awsmapeditor.awed;
+				PRODUCT_NAME = AWED;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		000000000000000000000408 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)/libAWEDCore.a",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.awsmapeditor.awed.tests;
+				PRODUCT_NAME = AWEDCoreTests;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		000000000000000000000409 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)/libAWEDCore.a",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.awsmapeditor.awed.tests;
+				PRODUCT_NAME = AWEDCoreTests;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		000000000000000000000201 /* Build configuration list for PBXProject "AWED" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000202 /* Debug */,
+				000000000000000000000203 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000000000000000000401 /* Build configuration list for PBXNativeTarget "AWEDCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000402 /* Debug */,
+				000000000000000000000403 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000000000000000000404 /* Build configuration list for PBXNativeTarget "AWED" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000405 /* Debug */,
+				000000000000000000000406 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000000000000000000407 /* Build configuration list for PBXNativeTarget "AWEDCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000408 /* Debug */,
+				000000000000000000000409 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 000000000000000000000010 /* Project object */;
+}

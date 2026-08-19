@@ -1,0 +1,25 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Xcode and Swift build products
+.build/
+.swiftpm/
+Build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+Thumbs.db
+
+# Finder metadata
+.DS_Store
