@@ -239,7 +239,7 @@ struct AboutView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(width: 72, height: 72)
+            .frame(width: 128, height: 128)
             Text("Advance Wars Series Map Editor").font(.title2).bold()
             Text("SwiftUI port · version 1.0")
                 .foregroundStyle(.secondary)

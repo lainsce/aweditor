@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 71;
+	objectVersion = 110;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -59,6 +59,7 @@
 		000000000000000000002068 /* unit_3.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001068 /* unit_3.png */; };
 		000000000000000000002069 /* unit_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001069 /* unit_4.png */; };
 		00000000000000000000206A /* unit_5.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000106A /* unit_5.png */; };
+		67803C6230360302005182A2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67803C6130360302005182A2 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -137,12 +138,14 @@
 		000000000000000000001101 /* AWED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AWED.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000001102 /* libAWEDCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAWEDCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000001103 /* AWEDCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AWEDCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		67803C6130360302005182A2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		000000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+				67803C6130360302005182A2 /* Assets.xcassets */,
 				000000000000000000000004 /* Sources/AWED */,
 				000000000000000000000003 /* Sources/AWEDCore */,
 				000000000000000000000007 /* Tests */,
@@ -263,8 +266,6 @@
 			);
 			buildRules = (
 			);
-			dependencies = (
-			);
 			name = AWEDCore;
 			productName = AWEDCore;
 			productReference = 000000000000000000001102 /* libAWEDCore.a */;
@@ -326,7 +327,6 @@
 				};
 			};
 			buildConfigurationList = 000000000000000000000201 /* Build configuration list for PBXProject "AWED" */;
-			compatibilityVersion = "Xcode 16.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -334,6 +334,7 @@
 				Base,
 			);
 			mainGroup = 000000000000000000000001;
+			preferredProjectObjectVersion = 110;
 			productRefGroup = 000000000000000000000002 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -348,7 +349,6 @@
 /* Begin PBXResourcesBuildPhase section */
 		000000000000000000000503 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				000000000000000000002040 /* AppIcon.icon in Resources */,
 				000000000000000000002041 /* bgm.mp3 in Resources */,
@@ -360,6 +360,7 @@
 				000000000000000000002055 /* building_5.png in Resources */,
 				000000000000000000002056 /* extra_0.png in Resources */,
 				000000000000000000002057 /* extra_1.png in Resources */,
+				67803C6230360302005182A2 /* Assets.xcassets in Resources */,
 				000000000000000000002058 /* extra_2.png in Resources */,
 				000000000000000000002059 /* extra_3.png in Resources */,
 				00000000000000000000205A /* extra_4.png in Resources */,
@@ -380,14 +381,12 @@
 				000000000000000000002069 /* unit_4.png in Resources */,
 				00000000000000000000206A /* unit_5.png in Resources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		000000000000000000000501 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				000000000000000000002001 /* AWConstants.swift in Sources */,
 				000000000000000000002002 /* Element.swift in Sources */,
@@ -395,11 +394,9 @@
 				000000000000000000002004 /* MapFragment.swift in Sources */,
 				000000000000000000002005 /* MapState.swift in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		000000000000000000000502 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				000000000000000000002010 /* AWEDApp.swift in Sources */,
 				000000000000000000002011 /* AWEDCommands.swift in Sources */,
@@ -419,15 +416,12 @@
 				00000000000000000000201F /* SpriteAtlas.swift in Sources */,
 				000000000000000000002020 /* StatusBarView.swift in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		000000000000000000000505 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				000000000000000000002030 /* MapCoreTests.swift in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
@@ -445,7 +439,7 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		000000000000000000000202 /* Debug */ = {
+		000000000000000000000202 /* Debug configuration for PBXProject "AWED" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
@@ -456,7 +450,7 @@
 			};
 			name = Debug;
 		};
-		000000000000000000000203 /* Release */ = {
+		000000000000000000000203 /* Release configuration for PBXProject "AWED" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
@@ -467,7 +461,7 @@
 			};
 			name = Release;
 		};
-		000000000000000000000402 /* Debug */ = {
+		000000000000000000000402 /* Debug configuration for PBXNativeTarget "AWEDCore" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
@@ -481,7 +475,7 @@
 			};
 			name = Debug;
 		};
-		000000000000000000000403 /* Release */ = {
+		000000000000000000000403 /* Release configuration for PBXNativeTarget "AWEDCore" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
@@ -494,16 +488,19 @@
 			};
 			name = Release;
 		};
-		000000000000000000000405 /* Debug */ = {
+		000000000000000000000405 /* Debug configuration for PBXNativeTarget "AWED" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
 				INFOPLIST_FILE = Sources/AWED/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AWED;
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"$(BUILT_PRODUCTS_DIR)/libAWEDCore.a",
@@ -516,16 +513,19 @@
 			};
 			name = Debug;
 		};
-		000000000000000000000406 /* Release */ = {
+		000000000000000000000406 /* Release configuration for PBXNativeTarget "AWED" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
 				INFOPLIST_FILE = Sources/AWED/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AWED;
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"$(BUILT_PRODUCTS_DIR)/libAWEDCore.a",
@@ -538,7 +538,7 @@
 			};
 			name = Release;
 		};
-		000000000000000000000408 /* Debug */ = {
+		000000000000000000000408 /* Debug configuration for PBXNativeTarget "AWEDCoreTests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGNING_ALLOWED = NO;
@@ -556,7 +556,7 @@
 			};
 			name = Debug;
 		};
-		000000000000000000000409 /* Release */ = {
+		000000000000000000000409 /* Release configuration for PBXNativeTarget "AWEDCoreTests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGNING_ALLOWED = NO;
@@ -580,37 +580,33 @@
 		000000000000000000000201 /* Build configuration list for PBXProject "AWED" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				000000000000000000000202 /* Debug */,
-				000000000000000000000203 /* Release */,
+				000000000000000000000202 /* Debug configuration for PBXProject "AWED" */,
+				000000000000000000000203 /* Release configuration for PBXProject "AWED" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		000000000000000000000401 /* Build configuration list for PBXNativeTarget "AWEDCore" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				000000000000000000000402 /* Debug */,
-				000000000000000000000403 /* Release */,
+				000000000000000000000402 /* Debug configuration for PBXNativeTarget "AWEDCore" */,
+				000000000000000000000403 /* Release configuration for PBXNativeTarget "AWEDCore" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		000000000000000000000404 /* Build configuration list for PBXNativeTarget "AWED" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				000000000000000000000405 /* Debug */,
-				000000000000000000000406 /* Release */,
+				000000000000000000000405 /* Debug configuration for PBXNativeTarget "AWED" */,
+				000000000000000000000406 /* Release configuration for PBXNativeTarget "AWED" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		000000000000000000000407 /* Build configuration list for PBXNativeTarget "AWEDCoreTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				000000000000000000000408 /* Debug */,
-				000000000000000000000409 /* Release */,
+				000000000000000000000408 /* Debug configuration for PBXNativeTarget "AWEDCoreTests" */,
+				000000000000000000000409 /* Release configuration for PBXNativeTarget "AWEDCoreTests" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */

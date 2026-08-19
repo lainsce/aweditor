@@ -46,12 +46,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var fallbackWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Explicit activation keeps the WindowGroup visible when launched
-        // from Finder, Xcode, or `open`.
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
-        // Give unusual launches a native fallback window so the editor is
-        // never left running headlessly.
         Task { @MainActor [weak self] in
             self?.ensureWindow()
         }
@@ -64,13 +60,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func ensureWindow() {
         guard !NSApp.windows.contains(where: { $0.isVisible }), let session = Self.session else { return }
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 1180, height: 760),
+            contentRect: NSRect(x: 0, y: 0, width: 1024, height: 600),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
         )
         window.title = "Advance Wars Map Editor"
-        window.minSize = NSSize(width: 960, height: 650)
+        window.minSize = NSSize(width: 800, height: 600)
         window.contentView = NSHostingView(rootView: ContentView(model: session.model, atlas: session.atlas, music: session.music))
         window.center()
         window.makeKeyAndOrderFront(nil)

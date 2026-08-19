@@ -16,7 +16,7 @@ struct PaletteView: View {
                 }
             }
             .pickerStyle(.tabs)
-            .padding(.vertical, 10)
+            .padding(.vertical, 12)
 
             if model.selectedTab == .unit {
                 ArmyColorTabs(selection: model.selectedArmy) { army in
@@ -27,14 +27,26 @@ struct PaletteView: View {
             Divider()
 
             ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 42, maximum: 54), spacing: 9)], spacing: 9) {
-                    ForEach(PaletteCatalog.items(for: model.selectedTab)) { item in
-                        PaletteTileButton(item: item, isSelected: model.isPaletteItemSelected(item), atlas: atlas, tileset: model.map.tileset) {
-                            model.select(item)
+                Group {
+                    if model.selectedTab == .terrain {
+                        VStack(spacing: 4) {
+                            paletteGrid(
+                                items: PaletteCatalog.items(for: .terrain).filter { !$0.element.isBuilding },
+                                columns: fixedColumns(count: 6, spacing: 4)
+                            )
+                            paletteGrid(
+                                items: PaletteCatalog.items(for: .terrain).filter { $0.element.isBuilding },
+                                columns: fixedColumns(count: 7, spacing: 4)
+                            )
                         }
+                    } else {
+                        paletteGrid(
+                            items: PaletteCatalog.items(for: model.selectedTab),
+                            columns: [GridItem(.adaptive(minimum: 32, maximum: 54), spacing: 8)]
+                        )
                     }
                 }
-                .padding(12)
+                .padding(8)
             }
             .scrollContentBackground(.hidden)
 
@@ -50,6 +62,30 @@ struct PaletteView: View {
         .ignoresSafeArea(.container)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Tile Palette")
+    }
+
+    @ViewBuilder
+    private func paletteGrid(items: [PaletteItem], columns: [GridItem]) -> some View {
+        LazyVGrid(columns: columns, spacing: 8) {
+            ForEach(items) { item in
+                ZStack(alignment: .bottom) {
+                    PaletteTileButton(
+                        item: item,
+                        element: model.paletteElement(for: item),
+                        isSelected: model.isPaletteItemSelected(item),
+                        atlas: atlas,
+                        tileset: model.map.tileset
+                    ) {
+                        model.select(item)
+                    }
+                }
+                .frame(maxHeight: .infinity, alignment: .bottom)
+            }
+        }
+    }
+
+    private func fixedColumns(count: Int, spacing: CGFloat) -> [GridItem] {
+        Array(repeating: GridItem(.flexible(minimum: 32, maximum: 54), spacing: spacing), count: count)
     }
 }
 
@@ -77,11 +113,11 @@ private struct ArmyColorTabs: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .background(isSelected ? Color.accentColor.opacity(0.18) : Color.primary.opacity(0.045))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .background(isSelected ? Color.accentColor.opacity(0.08) : Color.primary.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 4))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(isSelected ? Color.accentColor : Color.primary.opacity(0.12), lineWidth: isSelected ? 1.5 : 1)
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(isSelected ? Color.accentColor : Color.primary.opacity(0.12), lineWidth: isSelected ? 1 : 1)
                 }
                 .help(PaletteCatalog.armyName(army))
                 .accessibilityLabel(PaletteCatalog.armyName(army))
@@ -109,6 +145,7 @@ private struct ArmyColorTabs: View {
 
 struct PaletteTileButton: View {
     let item: PaletteItem
+    let element: Element
     let isSelected: Bool
     let atlas: SpriteAtlas
     let tileset: Tileset
@@ -117,22 +154,32 @@ struct PaletteTileButton: View {
     var body: some View {
         Button(action: action) {
             ZStack {
-                RoundedRectangle(cornerRadius: 7)
-                    .fill(isSelected ? Color.accentColor.opacity(0.22) : Color.primary.opacity(0.055))
-                if let image = atlas.image(for: item.element, tileset: tileset) {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(isSelected ? Color.accentColor.opacity(0.08) : Color.primary.opacity(0.05))
+                if let image = atlas.image(for: element, tileset: tileset) {
                     image
                         .resizable()
                         .interpolation(.none)
                         .scaledToFit()
-                        .padding(3)
+                        .padding(2)
+                        .frame(
+                            alignment: .init(
+                                horizontal: .center,
+                                vertical: .bottom
+                            )
+                        )
                 } else {
                     Image(systemName: "square.dashed")
                         .foregroundStyle(.secondary)
                 }
-                RoundedRectangle(cornerRadius: 7)
+                RoundedRectangle(cornerRadius: 4)
                     .stroke(isSelected ? Color.accentColor : Color.primary.opacity(0.12), lineWidth: isSelected ? 2 : 1)
             }
-            .frame(minWidth: 42, minHeight: 42)
+            .frame(
+                minWidth: 32,
+                minHeight: 32,
+                maxHeight: item.element.doubleHeight ? 64 : 32
+            )
         }
         .buttonStyle(.plain)
         .help(item.label)
@@ -149,33 +196,25 @@ struct SelectedElementFooter: View {
     var body: some View {
         HStack(spacing: 10) {
             ZStack {
-                RoundedRectangle(cornerRadius: 7)
-                    .fill(Color.primary.opacity(0.06))
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.primary.opacity(0.05))
                 if let image = atlas.image(for: element, tileset: tileset) {
                     image.resizable().interpolation(.none).scaledToFit().padding(3)
                 }
             }
-            .frame(width: 42, height: 42)
+            .frame(
+                minWidth: 32,
+                maxWidth: 32,
+                minHeight: 32,
+                maxHeight: element.doubleHeight ? 64 : 32
+            )
             VStack(alignment: .leading, spacing: 2) {
-                Text(elementName(element))
+                Text(PaletteCatalog.label(for: element))
                     .font(.headline)
-                Text("Tile \(element.value)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
             Spacer()
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Selected tile, \(elementName(element))")
-    }
-
-    private func elementName(_ element: Element) -> String {
-        if element == .unitEmpty { return "Empty Unit" }
-        if element == .unitDelete { return "Delete Unit" }
-        if element.isBuilding { return "Building" }
-        if element.isUnit { return "Unit" }
-        if element.isExtra { return "Extra" }
-        if element.isTerrain { return "Terrain" }
-        return "Tile"
+        .accessibilityLabel("Selected tile, \(PaletteCatalog.label(for: element))")
     }
 }

@@ -33,8 +33,6 @@ final class SpriteAtlas {
         guard sourceX >= 0, sourceYFromTop >= 0, sourceX + sourceWidth <= sheet.width, sourceYFromTop + sourceHeight <= sheet.height else { return nil }
         let sourceRect = CGRect(
             x: sourceX,
-            // CGImage cropping uses the image's top-left pixel origin. The
-            // legacy sprite tables are also indexed from the top-left.
             y: sourceYFromTop,
             width: sourceWidth,
             height: sourceHeight
@@ -47,9 +45,6 @@ final class SpriteAtlas {
         let parts = name.split(separator: "_")
         guard parts.count == 2 else { return nil }
         let resourceName = String(parts[0]) + "_" + String(parts[1])
-        // Xcode may retain the `Spritesheets` directory or flatten resource
-        // files into the application bundle. Keep both lookups so the atlas
-        // remains usable from a normal app bundle.
         let url = Bundle.main.url(forResource: resourceName, withExtension: "png", subdirectory: "Spritesheets")
             ?? Bundle.main.url(forResource: resourceName, withExtension: "png")
         guard let url, let image = NSImage(contentsOf: url) else { return nil }

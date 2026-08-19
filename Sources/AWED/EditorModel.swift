@@ -146,8 +146,13 @@ final class EditorModel {
 
     func select(_ item: PaletteItem) {
         selectedTab = item.tab
-        selectedElement = item.element
-        if item.element.isUnitNonEmpty { selectedArmy = item.element.army }
+        selectedElement = paletteElement(for: item)
+        if selectedElement.isUnitNonEmpty { selectedArmy = selectedElement.army }
+    }
+
+    func paletteElement(for item: PaletteItem) -> Element {
+        guard item.tab == .unit, item.element.isUnitNonEmpty else { return item.element }
+        return item.element.changedArmy(selectedArmy)
     }
 
     func selectArmy(_ army: Int) {
