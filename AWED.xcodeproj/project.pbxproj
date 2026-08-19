@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 71;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -12,7 +12,6 @@
 		000000000000000000002003 /* MapFileCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001003 /* MapFileCodec.swift */; };
 		000000000000000000002004 /* MapFragment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001004 /* MapFragment.swift */; };
 		000000000000000000002005 /* MapState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001005 /* MapState.swift */; };
-
 		000000000000000000002010 /* AWEDApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001010 /* AWEDApp.swift */; };
 		000000000000000000002011 /* AWEDCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001011 /* AWEDCommands.swift */; };
 		000000000000000000002012 /* BackgroundMusic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001012 /* BackgroundMusic.swift */; };
@@ -30,10 +29,8 @@
 		00000000000000000000201E /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101E /* PaletteView.swift */; };
 		00000000000000000000201F /* SpriteAtlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101F /* SpriteAtlas.swift */; };
 		000000000000000000002020 /* StatusBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001020 /* StatusBarView.swift */; };
-
 		000000000000000000002030 /* MapCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001030 /* MapCoreTests.swift */; };
-
-		000000000000000000002040 /* AppIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001040 /* AppIcon.png */; };
+		000000000000000000002040 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001040 /* AppIcon.icon */; };
 		000000000000000000002041 /* bgm.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001041 /* bgm.mp3 */; };
 		000000000000000000002050 /* building_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001050 /* building_0.png */; };
 		000000000000000000002051 /* building_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001051 /* building_1.png */; };
@@ -62,9 +59,6 @@
 		000000000000000000002068 /* unit_3.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001068 /* unit_3.png */; };
 		000000000000000000002069 /* unit_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001069 /* unit_4.png */; };
 		00000000000000000000206A /* unit_5.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000106A /* unit_5.png */; };
-
-		000000000000000000003001 /* AWEDCore in Frameworks */ = {isa = PBXBuildFile; fileRef = 000000000000000000001102 /* libAWEDCore.a */; };
-		000000000000000000003002 /* AWEDCore in Frameworks */ = {isa = PBXBuildFile; fileRef = 000000000000000000001102 /* libAWEDCore.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -90,7 +84,6 @@
 		000000000000000000001003 /* MapFileCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFileCodec.swift; sourceTree = "<group>"; };
 		000000000000000000001004 /* MapFragment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFragment.swift; sourceTree = "<group>"; };
 		000000000000000000001005 /* MapState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapState.swift; sourceTree = "<group>"; };
-
 		000000000000000000001010 /* AWEDApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWEDApp.swift; sourceTree = "<group>"; };
 		000000000000000000001011 /* AWEDCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWEDCommands.swift; sourceTree = "<group>"; };
 		000000000000000000001012 /* BackgroundMusic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundMusic.swift; sourceTree = "<group>"; };
@@ -108,11 +101,8 @@
 		00000000000000000000101E /* PaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteView.swift; sourceTree = "<group>"; };
 		00000000000000000000101F /* SpriteAtlas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteAtlas.swift; sourceTree = "<group>"; };
 		000000000000000000001020 /* StatusBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarView.swift; sourceTree = "<group>"; };
-		000000000000000000001080 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-
 		000000000000000000001030 /* MapCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCoreTests.swift; sourceTree = "<group>"; };
-
-		000000000000000000001040 /* AppIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppIcon.png; sourceTree = "<group>"; };
+		000000000000000000001040 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		000000000000000000001041 /* bgm.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm.mp3; sourceTree = "<group>"; };
 		000000000000000000001050 /* building_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_0.png; sourceTree = "<group>"; };
 		000000000000000000001051 /* building_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_1.png; sourceTree = "<group>"; };
@@ -141,46 +131,20 @@
 		000000000000000000001068 /* unit_3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_3.png; sourceTree = "<group>"; };
 		000000000000000000001069 /* unit_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_4.png; sourceTree = "<group>"; };
 		00000000000000000000106A /* unit_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_5.png; sourceTree = "<group>"; };
-
+		000000000000000000001080 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		000000000000000000001090 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		000000000000000000001091 /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		000000000000000000001101 /* AWED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AWED.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000001102 /* libAWEDCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAWEDCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000001103 /* AWEDCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AWEDCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		000000000000000000001090 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		000000000000000000001091 /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFrameworksBuildPhase section */
-		00000000000000000000504 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				000000000000000000003001 /* AWEDCore in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		00000000000000000000506 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				000000000000000000003002 /* AWEDCore in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		00000000000000000000507 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		000000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
-				000000000000000000000004 /* AWED */,
-				000000000000000000000003 /* AWEDCore */,
+				000000000000000000000004 /* Sources/AWED */,
+				000000000000000000000003 /* Sources/AWEDCore */,
 				000000000000000000000007 /* Tests */,
 				000000000000000000001090 /* README.md */,
 				000000000000000000001091 /* LICENSE.md */,
@@ -198,7 +162,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		000000000000000000000003 /* AWEDCore */ = {
+		000000000000000000000003 /* Sources/AWEDCore */ = {
 			isa = PBXGroup;
 			children = (
 				000000000000000000001001 /* AWConstants.swift */,
@@ -210,7 +174,7 @@
 			path = Sources/AWEDCore;
 			sourceTree = "<group>";
 		};
-		000000000000000000000004 /* AWED */ = {
+		000000000000000000000004 /* Sources/AWED */ = {
 			isa = PBXGroup;
 			children = (
 				000000000000000000001010 /* AWEDApp.swift */,
@@ -239,7 +203,7 @@
 		000000000000000000000005 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				000000000000000000001040 /* AppIcon.png */,
+				000000000000000000001040 /* AppIcon.icon */,
 				000000000000000000001041 /* bgm.mp3 */,
 				000000000000000000000006 /* Spritesheets */,
 			);
@@ -296,7 +260,6 @@
 			buildConfigurationList = 000000000000000000000401 /* Build configuration list for PBXNativeTarget "AWEDCore" */;
 			buildPhases = (
 				000000000000000000000501 /* Sources */,
-				000000000000000000000507 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -313,12 +276,11 @@
 			buildPhases = (
 				000000000000000000000502 /* Sources */,
 				000000000000000000000503 /* Resources */,
-				000000000000000000000504 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				000000000000000000000601 /* AWEDCore */,
+				000000000000000000000601 /* PBXTargetDependency */,
 			);
 			name = AWED;
 			productName = AWED;
@@ -330,12 +292,11 @@
 			buildConfigurationList = 000000000000000000000407 /* Build configuration list for PBXNativeTarget "AWEDCoreTests" */;
 			buildPhases = (
 				000000000000000000000505 /* Sources */,
-				000000000000000000000506 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				000000000000000000000602 /* AWEDCore */,
+				000000000000000000000602 /* PBXTargetDependency */,
 			);
 			name = AWEDCoreTests;
 			productName = AWEDCoreTests;
@@ -352,9 +313,16 @@
 				LastSwiftUpdateCheck = 2700;
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
-					000000000000000000000301 = { CreatedOnToolsVersion = 27.0; };
-					000000000000000000000302 = { CreatedOnToolsVersion = 27.0; };
-					000000000000000000000303 = { CreatedOnToolsVersion = 27.0; TestTargetID = 000000000000000000000301; };
+					000000000000000000000301 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					000000000000000000000302 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					000000000000000000000303 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 000000000000000000000301;
+					};
 				};
 			};
 			buildConfigurationList = 000000000000000000000201 /* Build configuration list for PBXProject "AWED" */;
@@ -382,7 +350,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				000000000000000000002040 /* AppIcon.png in Resources */,
+				000000000000000000002040 /* AppIcon.icon in Resources */,
 				000000000000000000002041 /* bgm.mp3 in Resources */,
 				000000000000000000002050 /* building_0.png in Resources */,
 				000000000000000000002051 /* building_1.png in Resources */,
@@ -464,8 +432,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		000000000000000000000601 /* AWEDCore */ = {isa = PBXTargetDependency; target = 000000000000000000000301 /* AWEDCore */; targetProxy = 000000000000000000007001 /* PBXContainerItemProxy */; };
-		000000000000000000000602 /* AWEDCore */ = {isa = PBXTargetDependency; target = 000000000000000000000301 /* AWEDCore */; targetProxy = 000000000000000000007002 /* PBXContainerItemProxy */; };
+		000000000000000000000601 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 000000000000000000000301 /* AWEDCore */;
+			targetProxy = 000000000000000000007001 /* PBXContainerItemProxy */;
+		};
+		000000000000000000000602 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 000000000000000000000301 /* AWEDCore */;
+			targetProxy = 000000000000000000007002 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -521,6 +497,8 @@
 		000000000000000000000405 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
 				CURRENT_PROJECT_VERSION = 1;
@@ -541,6 +519,8 @@
 		000000000000000000000406 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
 				CURRENT_PROJECT_VERSION = 1;

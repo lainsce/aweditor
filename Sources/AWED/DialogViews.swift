@@ -228,8 +228,7 @@ struct AboutView: View {
     var body: some View {
         VStack(spacing: 14) {
             Group {
-                if let url = Bundle.main.url(forResource: "AppIcon", withExtension: "png"),
-                   let image = NSImage(contentsOf: url) {
+                if let image = NSApplication.shared.applicationIconImage {
                     Image(nsImage: image)
                         .resizable()
                         .interpolation(.none)
