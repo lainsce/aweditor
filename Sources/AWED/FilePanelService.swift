@@ -74,13 +74,22 @@ enum ScreenshotSize: CaseIterable {
 enum ScreenshotRenderer {
     static func render(map: MapState, atlas: SpriteAtlas, scale: Int = 1) -> NSImage {
         let tile = 16 * max(1, scale)
+        let canvasHeight = CGFloat(map.height * tile)
         let image = NSImage(size: NSSize(width: map.width * tile, height: map.height * tile))
-        image.lockFocusFlipped(true)
+        // AppKit's image drawing APIs expect CGImage content in a bottom-left
+        // coordinate system. Keep the exported pixels upright by drawing into
+        // an unflipped context and converting each map cell from its top-left
+        // map coordinate to the corresponding bottom-left rectangle.
+        image.lockFocus()
         NSColor.clear.setFill()
         NSBezierPath(rect: NSRect(x: 0, y: 0, width: map.width * tile, height: map.height * tile)).fill()
         for x in 0..<map.width {
             for y in 0..<map.height {
-                let rect = NSRect(x: x * tile, y: y * tile, width: tile, height: tile)
+                let topRect = NSRect(x: x * tile, y: y * tile, width: tile, height: tile)
+                let rect = NSRect(x: topRect.minX,
+                                  y: canvasHeight - topRect.maxY,
+                                  width: topRect.width,
+                                  height: topRect.height)
                 draw(map.backgroundDrawElement(atX: x, y: y), in: rect, map: map, atlas: atlas)
                 drawSeaCoast(atX: x, y: y, in: rect, map: map, atlas: atlas)
                 draw(map.foregroundElement(atX: x, y: y), in: rect, map: map, atlas: atlas)
@@ -130,7 +139,7 @@ enum ScreenshotRenderer {
         }
         guard target != original else { return image }
         let resized = NSImage(size: target)
-        resized.lockFocusFlipped(true)
+        resized.lockFocus()
         image.draw(in: NSRect(origin: .zero, size: target), from: NSRect(origin: .zero, size: original), operation: .copy, fraction: 1)
         resized.unlockFocus()
         return resized
@@ -219,7 +228,7 @@ enum ScreenshotRenderer {
 
     private static func draw(_ element: Element, in rect: NSRect, map: MapState, atlas: SpriteAtlas) {
         guard let cgImage = atlas.cgImage(for: element, tileset: map.tileset) else { return }
-        let target = element.doubleHeight ? NSRect(x: rect.minX, y: rect.minY - rect.height, width: rect.width, height: rect.height * 2) : rect
+        let target = element.doubleHeight ? NSRect(x: rect.minX, y: rect.minY, width: rect.width, height: rect.height * 2) : rect
         NSImage(cgImage: cgImage, size: NSSize(width: target.width, height: target.height)).draw(in: target, from: .zero, operation: .sourceOver, fraction: 1)
     }
 
