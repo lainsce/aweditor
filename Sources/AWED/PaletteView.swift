@@ -7,9 +7,6 @@ struct PaletteView: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
-            Divider()
-                .padding(.top, 50)
-
             Picker("", selection: $model.selectedTab) {
                 ForEach(PaletteTab.allCases) { tab in
                     Text(tab.displayName).tag(tab)
@@ -17,14 +14,13 @@ struct PaletteView: View {
             }
             .pickerStyle(.tabs)
             .padding(.vertical, 12)
+            .padding(.top, 52)
 
             if model.selectedTab == .unit {
                 ArmyColorTabs(selection: model.selectedArmy) { army in
                     model.selectArmy(army)
                 }
             }
-
-            Divider()
 
             ScrollView {
                 Group {
@@ -50,15 +46,10 @@ struct PaletteView: View {
             }
             .scrollContentBackground(.hidden)
 
-            Divider()
-
             SelectedElementFooter(element: model.selectedElement, atlas: atlas, tileset: model.map.tileset)
                 .padding(12)
-
-            Divider()
         }
         .frame(minWidth: 285, idealWidth: 310, maxWidth: 360)
-        .background(.regularMaterial)
         .ignoresSafeArea(.container)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Tile Palette")

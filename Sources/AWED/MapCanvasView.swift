@@ -1,6 +1,224 @@
 import SwiftUI
 import AWEDCore
 
+enum MapCanvasMetrics {
+    static let tileSize: CGFloat = 28
+    static let woodPadding: CGFloat = 10
+    static let parchmentPadding: CGFloat = 12
+}
+
+struct MapCanvasBoard: View {
+    let model: EditorModel
+    let atlas: SpriteAtlas
+
+    var body: some View {
+        MapCanvasView(model: model, atlas: atlas, tileSize: Double(MapCanvasMetrics.tileSize))
+            .padding(MapCanvasMetrics.woodPadding)
+            .background {
+                MapWoodSurface()
+            }
+            .overlay {
+                Rectangle()
+                    .stroke(Color(red: 0.25, green: 0.13, blue: 0.055).opacity(0.82), lineWidth: 2)
+                Rectangle()
+                    .stroke(Color(red: 0.98, green: 0.80, blue: 0.42).opacity(0.48), lineWidth: 1)
+                    .padding(4)
+                Rectangle()
+                    .stroke(Color(red: 0.28, green: 0.14, blue: 0.06).opacity(0.68), lineWidth: 1)
+                    .padding(7)
+            }
+            .shadow(color: Color.black.opacity(0.22), radius: 10, y: 5)
+    }
+}
+
+struct MapParchmentSurface: View {
+    let tileSize: CGFloat
+    let mapSize: CGSize
+
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    var body: some View {
+        GeometryReader { proxy in
+            Canvas { context, size in
+                let bounds = CGRect(origin: .zero, size: size)
+                context.fill(
+                    Path(bounds),
+                    with: .linearGradient(
+                        Gradient(colors: [
+                            Color(red: 0.97, green: 0.92, blue: 0.79),
+                            Color(red: 0.91, green: 0.84, blue: 0.67),
+                            Color(red: 0.88, green: 0.79, blue: 0.59)
+                        ]),
+                        startPoint: CGPoint(x: 0, y: 0),
+                        endPoint: CGPoint(x: size.width, y: size.height)
+                    )
+                )
+
+                drawPaperGrid(context: &context, size: size)
+            }
+            .overlay {
+                LinearGradient(
+                    colors: [
+                        Color.white.opacity(reduceTransparency ? 0.16 : 0.27),
+                        .clear,
+                        Color.black.opacity(reduceTransparency ? 0.07 : 0.13)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
+            .accessibilityHidden(true)
+            .frame(width: proxy.size.width, height: proxy.size.height)
+        }
+    }
+
+    private func drawPaperGrid(context: inout GraphicsContext, size: CGSize) {
+        let gridColor = Color(red: 0.37, green: 0.26, blue: 0.12)
+        let regularOpacity = reduceTransparency ? 0.10 : 0.06
+        let majorOpacity = reduceTransparency ? 0.15 : 0.09
+        let mapOrigin = CGPoint(
+            x: (size.width - mapSize.width) / 2,
+            y: (size.height - mapSize.height) / 2
+        )
+
+        drawGridLines(
+            context: &context,
+            size: size,
+            origin: mapOrigin.x,
+            length: size.height,
+            isMajor: { index in index.isMultiple(of: 4) },
+            makePath: { position in
+                var path = Path()
+                path.move(to: CGPoint(x: position, y: 0))
+                path.addLine(to: CGPoint(x: position, y: size.height))
+                return path
+            },
+            color: gridColor,
+            regularOpacity: regularOpacity,
+            majorOpacity: majorOpacity
+        )
+
+        drawGridLines(
+            context: &context,
+            size: size,
+            origin: mapOrigin.y,
+            length: size.width,
+            isMajor: { index in index.isMultiple(of: 4) },
+            makePath: { position in
+                var path = Path()
+                path.move(to: CGPoint(x: 0, y: position))
+                path.addLine(to: CGPoint(x: size.width, y: position))
+                return path
+            },
+            color: gridColor,
+            regularOpacity: regularOpacity,
+            majorOpacity: majorOpacity
+        )
+    }
+
+    private func drawGridLines(
+        context: inout GraphicsContext,
+        size: CGSize,
+        origin: CGFloat,
+        length: CGFloat,
+        isMajor: (Int) -> Bool,
+        makePath: (CGFloat) -> Path,
+        color: Color,
+        regularOpacity: Double,
+        majorOpacity: Double
+    ) {
+        var position = origin
+        var index = 0
+        while position <= length {
+            if position >= 0 {
+                let major = isMajor(index)
+                context.stroke(
+                    makePath(position),
+                    with: .color(color.opacity(major ? majorOpacity : regularOpacity)),
+                    style: StrokeStyle(lineWidth: major ? 0.9 : 0.6)
+                )
+            }
+            position += tileSize
+            index += 1
+        }
+
+        position = origin - tileSize
+        index = 1
+        while position >= 0 {
+            let major = isMajor(index)
+            context.stroke(
+                makePath(position),
+                with: .color(color.opacity(major ? majorOpacity : regularOpacity)),
+                style: StrokeStyle(lineWidth: major ? 0.9 : 0.6)
+            )
+            position -= tileSize
+            index += 1
+        }
+    }
+}
+
+private struct MapWoodSurface: View {
+    var body: some View {
+        Rectangle()
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.48, green: 0.23, blue: 0.08),
+                        Color(red: 0.69, green: 0.39, blue: 0.14),
+                        Color(red: 0.55, green: 0.27, blue: 0.09)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .overlay {
+                MapWoodGrain()
+            }
+    }
+}
+
+private struct MapWoodGrain: View {
+    var body: some View {
+        Canvas { context, size in
+            let dark = Color(red: 0.27, green: 0.11, blue: 0.035)
+            let light = Color(red: 0.95, green: 0.66, blue: 0.30)
+
+            for y in stride(from: CGFloat(7), through: size.height, by: CGFloat(18)) {
+                var path = Path()
+                path.move(to: CGPoint(x: 0, y: y))
+                path.addCurve(
+                    to: CGPoint(x: size.width, y: y + 1.5),
+                    control1: CGPoint(x: size.width * 0.30, y: y - 3),
+                    control2: CGPoint(x: size.width * 0.68, y: y + 4)
+                )
+                context.stroke(path, with: .color(dark.opacity(0.15)), style: StrokeStyle(lineWidth: 0.8))
+            }
+
+            for x in stride(from: CGFloat(10), through: size.width, by: CGFloat(28)) {
+                var path = Path()
+                path.move(to: CGPoint(x: x, y: 0))
+                path.addCurve(
+                    to: CGPoint(x: x + 2, y: size.height),
+                    control1: CGPoint(x: x - 4, y: size.height * 0.30),
+                    control2: CGPoint(x: x + 5, y: size.height * 0.72)
+                )
+                context.stroke(path, with: .color(light.opacity(0.13)), style: StrokeStyle(lineWidth: 0.7))
+            }
+
+            let knotCenters = [
+                CGPoint(x: size.width * 0.16, y: size.height * 0.32),
+                CGPoint(x: size.width * 0.82, y: size.height * 0.68)
+            ]
+            for center in knotCenters {
+                let knot = CGRect(x: center.x - 8, y: center.y - 3, width: 16, height: 6)
+                context.stroke(Path(ellipseIn: knot), with: .color(dark.opacity(0.16)), style: StrokeStyle(lineWidth: 1))
+                context.stroke(Path(ellipseIn: knot.insetBy(dx: 3, dy: 1)), with: .color(light.opacity(0.16)), style: StrokeStyle(lineWidth: 0.8))
+            }
+        }
+        .allowsHitTesting(false)
+    }
+}
+
 struct MapCanvasView: View {
     let model: EditorModel
     let atlas: SpriteAtlas

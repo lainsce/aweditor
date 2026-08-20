@@ -1,6 +1,11 @@
 import SwiftUI
 import AppKit
 
+enum AWEDWindowID {
+    static let about = "about"
+    static let privacyPolicy = "privacy-policy"
+}
+
 @main
 struct AWEDApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
@@ -13,7 +18,7 @@ struct AWEDApp: App {
     }
 
     var body: some Scene {
-        Window("Advance Wars Series Map Editor", id: "main") {
+        Window("AW Map Editor", id: "main") {
             ContentView(model: session.model, atlas: session.atlas, music: session.music)
         }
         .commands {
@@ -22,7 +27,18 @@ struct AWEDApp: App {
         .windowResizability(.contentSize)
         .defaultSize(width: 1024, height: 600)
         .windowStyle(.hiddenTitleBar)
-        .windowToolbarStyle(.unified)
+        .windowToolbarStyle(.unified(showsTitle: false))
+
+        Window("About AW Map Editor", id: AWEDWindowID.about) {
+            AboutView()
+        }
+        .defaultSize(width: 420, height: 440)
+        .windowResizability(.contentSize)
+
+        Window("Privacy Policy", id: AWEDWindowID.privacyPolicy) {
+            PrivacyPolicyView()
+        }
+        .defaultSize(width: 620, height: 520)
     }
 }
 
@@ -45,6 +61,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     static var session: AWEDSession?
     private var fallbackWindow: NSWindow?
 
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        true
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
@@ -65,7 +85,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             backing: .buffered,
             defer: false
         )
-        window.title = "Advance Wars Map Editor"
+        window.title = "AW Map Editor"
         window.minSize = NSSize(width: 800, height: 600)
         window.contentView = NSHostingView(rootView: ContentView(model: session.model, atlas: session.atlas, music: session.music))
         window.center()

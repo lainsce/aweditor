@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "000000000000000000000302"
-               BuildableName = "AWED.app"
-               BlueprintName = "AWED"
-               ReferencedContainer = "container:AWED.xcodeproj">
+               BuildableName = "AW Map Editor.app"
+               BlueprintName = "AW Map Editor"
+               ReferencedContainer = "container:AW Map Editor.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -31,7 +31,7 @@
                BlueprintIdentifier = "000000000000000000000303"
                BuildableName = "AWEDCoreTests.xctest"
                BlueprintName = "AWEDCoreTests"
-               ReferencedContainer = "container:AWED.xcodeproj">
+               ReferencedContainer = "container:AW Map Editor.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -49,7 +49,7 @@
                BlueprintIdentifier = "000000000000000000000303"
                BuildableName = "AWEDCoreTests.xctest"
                BlueprintName = "AWEDCoreTests"
-               ReferencedContainer = "container:AWED.xcodeproj">
+               ReferencedContainer = "container:AW Map Editor.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -69,9 +69,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "000000000000000000000302"
-            BuildableName = "AWED.app"
-            BlueprintName = "AWED"
-            ReferencedContainer = "container:AWED.xcodeproj">
+            BuildableName = "AW Map Editor.app"
+            BlueprintName = "AW Map Editor"
+            ReferencedContainer = "container:AW Map Editor.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -84,9 +84,9 @@
       <BuildableReference
          BuildableIdentifier = "primary"
          BlueprintIdentifier = "000000000000000000000302"
-         BuildableName = "AWED.app"
-         BlueprintName = "AWED"
-         ReferencedContainer = "container:AWED.xcodeproj">
+         BuildableName = "AW Map Editor.app"
+         BlueprintName = "AW Map Editor"
+         ReferencedContainer = "container:AW Map Editor.xcodeproj">
       </BuildableReference>
    </ProfileAction>
    <AnalyzeAction buildConfiguration = "Debug" />

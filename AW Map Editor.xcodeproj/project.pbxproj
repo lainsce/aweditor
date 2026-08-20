@@ -21,6 +21,23 @@
 		000000000000000000002016 /* EditorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001016 /* EditorModel.swift */; };
 		000000000000000000002017 /* EditorPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001017 /* EditorPreferences.swift */; };
 		000000000000000000002018 /* EditorToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001018 /* EditorToolbar.swift */; };
+		000000000000000000002021 /* GLWNToolbarButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001021 /* GLWNToolbarButtonStyle.swift */; };
+		000000000000000000002022 /* GLWNToolbarSearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001022 /* GLWNToolbarSearchField.swift */; };
+		000000000000000000002023 /* GLWNToolbarControlGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001023 /* GLWNToolbarControlGroup.swift */; };
+		000000000000000000002024 /* GLWNSidebarSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001024 /* GLWNSidebarSurface.swift */; };
+		000000000000000000002027 /* GLWNInContentButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001027 /* GLWNInContentButtonStyle.swift */; };
+		000000000000000000002028 /* GLWNFormRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001028 /* GLWNFormRow.swift */; };
+		000000000000000000002029 /* GLWNTextFieldStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001029 /* GLWNTextFieldStyle.swift */; };
+		00000000000000000000202A /* GLWNInsetFieldChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000102A /* GLWNInsetFieldChrome.swift */; };
+		00000000000000000000202B /* GLWNAquaToggleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000102B /* GLWNAquaToggleStyle.swift */; };
+		00000000000000000000202C /* GLWNSegmentedPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000102C /* GLWNSegmentedPicker.swift */; };
+		00000000000000000000202D /* GLWNPullDownMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000102D /* GLWNPullDownMenu.swift */; };
+		00000000000000000000202E /* GLWNToolbarMaterialPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000102E /* GLWNToolbarMaterialPalette.swift */; };
+		00000000000000000000202F /* GLWNToolbarButtonSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000102F /* GLWNToolbarButtonSurface.swift */; };
+		000000000000000000002070 /* GLWNToolbarMenuLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001070 /* GLWNToolbarMenuLabel.swift */; };
+		000000000000000000002071 /* GLWNToolbarSurfaceModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001071 /* GLWNToolbarSurfaceModifier.swift */; };
+		000000000000000000002072 /* GLWNSidebarMaterialBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001072 /* GLWNSidebarMaterialBackground.swift */; };
+		000000000000000000002025 /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001025 /* PrivacyPolicyView.swift */; };
 		000000000000000000002019 /* EditorTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001019 /* EditorTypes.swift */; };
 		00000000000000000000201A /* FilePanelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101A /* FilePanelService.swift */; };
 		00000000000000000000201B /* MapCanvasInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101B /* MapCanvasInput.swift */; };
@@ -94,6 +111,23 @@
 		000000000000000000001016 /* EditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorModel.swift; sourceTree = "<group>"; };
 		000000000000000000001017 /* EditorPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorPreferences.swift; sourceTree = "<group>"; };
 		000000000000000000001018 /* EditorToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorToolbar.swift; sourceTree = "<group>"; };
+		000000000000000000001021 /* GLWNToolbarButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarButtonStyle.swift; sourceTree = "<group>"; };
+		000000000000000000001022 /* GLWNToolbarSearchField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarSearchField.swift; sourceTree = "<group>"; };
+		000000000000000000001023 /* GLWNToolbarControlGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarControlGroup.swift; sourceTree = "<group>"; };
+		000000000000000000001024 /* GLWNSidebarSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNSidebarSurface.swift; sourceTree = "<group>"; };
+		000000000000000000001027 /* GLWNInContentButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNInContentButtonStyle.swift; sourceTree = "<group>"; };
+		000000000000000000001028 /* GLWNFormRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNFormRow.swift; sourceTree = "<group>"; };
+		000000000000000000001029 /* GLWNTextFieldStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNTextFieldStyle.swift; sourceTree = "<group>"; };
+		00000000000000000000102A /* GLWNInsetFieldChrome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNInsetFieldChrome.swift; sourceTree = "<group>"; };
+		00000000000000000000102B /* GLWNAquaToggleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNAquaToggleStyle.swift; sourceTree = "<group>"; };
+		00000000000000000000102C /* GLWNSegmentedPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNSegmentedPicker.swift; sourceTree = "<group>"; };
+		00000000000000000000102D /* GLWNPullDownMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNPullDownMenu.swift; sourceTree = "<group>"; };
+		00000000000000000000102E /* GLWNToolbarMaterialPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarMaterialPalette.swift; sourceTree = "<group>"; };
+		00000000000000000000102F /* GLWNToolbarButtonSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarButtonSurface.swift; sourceTree = "<group>"; };
+		000000000000000000001070 /* GLWNToolbarMenuLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarMenuLabel.swift; sourceTree = "<group>"; };
+		000000000000000000001071 /* GLWNToolbarSurfaceModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarSurfaceModifier.swift; sourceTree = "<group>"; };
+		000000000000000000001072 /* GLWNSidebarMaterialBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNSidebarMaterialBackground.swift; sourceTree = "<group>"; };
+		000000000000000000001025 /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyView.swift; sourceTree = "<group>"; };
 		000000000000000000001019 /* EditorTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorTypes.swift; sourceTree = "<group>"; };
 		00000000000000000000101A /* FilePanelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePanelService.swift; sourceTree = "<group>"; };
 		00000000000000000000101B /* MapCanvasInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCanvasInput.swift; sourceTree = "<group>"; };
@@ -135,7 +169,7 @@
 		000000000000000000001080 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		000000000000000000001090 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		000000000000000000001091 /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
-		000000000000000000001101 /* AWED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AWED.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000001101 /* AW Map Editor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AW Map Editor.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000001102 /* libAWEDCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAWEDCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000001103 /* AWEDCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AWEDCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		67803C6130360302005182A2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -158,7 +192,7 @@
 		000000000000000000000002 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				000000000000000000001101 /* AWED.app */,
+				000000000000000000001101 /* AW Map Editor.app */,
 				000000000000000000001102 /* libAWEDCore.a */,
 				000000000000000000001103 /* AWEDCoreTests.xctest */,
 			);
@@ -189,6 +223,8 @@
 				000000000000000000001016 /* EditorModel.swift */,
 				000000000000000000001017 /* EditorPreferences.swift */,
 				000000000000000000001018 /* EditorToolbar.swift */,
+				000000000000000000000008 /* Glasswing */,
+				000000000000000000001025 /* PrivacyPolicyView.swift */,
 				000000000000000000001019 /* EditorTypes.swift */,
 				00000000000000000000101A /* FilePanelService.swift */,
 				00000000000000000000101B /* MapCanvasInput.swift */,
@@ -255,6 +291,29 @@
 			path = Tests;
 			sourceTree = "<group>";
 		};
+		000000000000000000000008 /* Glasswing */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001027 /* GLWNInContentButtonStyle.swift */,
+				000000000000000000001028 /* GLWNFormRow.swift */,
+				000000000000000000001029 /* GLWNTextFieldStyle.swift */,
+				00000000000000000000102A /* GLWNInsetFieldChrome.swift */,
+				00000000000000000000102B /* GLWNAquaToggleStyle.swift */,
+				00000000000000000000102C /* GLWNSegmentedPicker.swift */,
+				00000000000000000000102D /* GLWNPullDownMenu.swift */,
+				000000000000000000001021 /* GLWNToolbarButtonStyle.swift */,
+				00000000000000000000102E /* GLWNToolbarMaterialPalette.swift */,
+				00000000000000000000102F /* GLWNToolbarButtonSurface.swift */,
+				000000000000000000001070 /* GLWNToolbarMenuLabel.swift */,
+				000000000000000000001071 /* GLWNToolbarSurfaceModifier.swift */,
+				000000000000000000001022 /* GLWNToolbarSearchField.swift */,
+				000000000000000000001023 /* GLWNToolbarControlGroup.swift */,
+				000000000000000000001024 /* GLWNSidebarSurface.swift */,
+				000000000000000000001072 /* GLWNSidebarMaterialBackground.swift */,
+			);
+			path = Glasswing;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -271,9 +330,9 @@
 			productReference = 000000000000000000001102 /* libAWEDCore.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		000000000000000000000302 /* AWED */ = {
+		000000000000000000000302 /* AW Map Editor */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 000000000000000000000404 /* Build configuration list for PBXNativeTarget "AWED" */;
+			buildConfigurationList = 000000000000000000000404 /* Build configuration list for PBXNativeTarget "AW Map Editor" */;
 			buildPhases = (
 				000000000000000000000502 /* Sources */,
 				000000000000000000000503 /* Resources */,
@@ -283,9 +342,9 @@
 			dependencies = (
 				000000000000000000000601 /* PBXTargetDependency */,
 			);
-			name = AWED;
-			productName = AWED;
-			productReference = 000000000000000000001101 /* AWED.app */;
+			name = "AW Map Editor";
+			productName = "AW Map Editor";
+			productReference = 000000000000000000001101 /* AW Map Editor.app */;
 			productType = "com.apple.product-type.application";
 		};
 		000000000000000000000303 /* AWEDCoreTests */ = {
@@ -326,7 +385,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 000000000000000000000201 /* Build configuration list for PBXProject "AWED" */;
+			buildConfigurationList = 000000000000000000000201 /* Build configuration list for PBXProject "AW Map Editor" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -334,13 +393,14 @@
 				Base,
 			);
 			mainGroup = 000000000000000000000001;
+			name = "AW Map Editor";
 			preferredProjectObjectVersion = 110;
 			productRefGroup = 000000000000000000000002 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				000000000000000000000301 /* AWEDCore */,
-				000000000000000000000302 /* AWED */,
+				000000000000000000000302 /* AW Map Editor */,
 				000000000000000000000303 /* AWEDCoreTests */,
 			);
 		};
@@ -407,6 +467,23 @@
 				000000000000000000002016 /* EditorModel.swift in Sources */,
 				000000000000000000002017 /* EditorPreferences.swift in Sources */,
 				000000000000000000002018 /* EditorToolbar.swift in Sources */,
+				000000000000000000002021 /* GLWNToolbarButtonStyle.swift in Sources */,
+				000000000000000000002022 /* GLWNToolbarSearchField.swift in Sources */,
+				000000000000000000002023 /* GLWNToolbarControlGroup.swift in Sources */,
+				000000000000000000002024 /* GLWNSidebarSurface.swift in Sources */,
+				000000000000000000002027 /* GLWNInContentButtonStyle.swift in Sources */,
+				000000000000000000002028 /* GLWNFormRow.swift in Sources */,
+				000000000000000000002029 /* GLWNTextFieldStyle.swift in Sources */,
+				00000000000000000000202A /* GLWNInsetFieldChrome.swift in Sources */,
+				00000000000000000000202B /* GLWNAquaToggleStyle.swift in Sources */,
+				00000000000000000000202C /* GLWNSegmentedPicker.swift in Sources */,
+				00000000000000000000202D /* GLWNPullDownMenu.swift in Sources */,
+				00000000000000000000202E /* GLWNToolbarMaterialPalette.swift in Sources */,
+				00000000000000000000202F /* GLWNToolbarButtonSurface.swift in Sources */,
+				000000000000000000002070 /* GLWNToolbarMenuLabel.swift in Sources */,
+				000000000000000000002071 /* GLWNToolbarSurfaceModifier.swift in Sources */,
+				000000000000000000002072 /* GLWNSidebarMaterialBackground.swift in Sources */,
+				000000000000000000002025 /* PrivacyPolicyView.swift in Sources */,
 				000000000000000000002019 /* EditorTypes.swift in Sources */,
 				00000000000000000000201A /* FilePanelService.swift in Sources */,
 				00000000000000000000201B /* MapCanvasInput.swift in Sources */,
@@ -439,7 +516,7 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		000000000000000000000202 /* Debug configuration for PBXProject "AWED" */ = {
+		000000000000000000000202 /* Debug configuration for PBXProject "AW Map Editor" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
@@ -450,7 +527,7 @@
 			};
 			name = Debug;
 		};
-		000000000000000000000203 /* Release configuration for PBXProject "AWED" */ = {
+		000000000000000000000203 /* Release configuration for PBXProject "AW Map Editor" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
@@ -488,7 +565,7 @@
 			};
 			name = Release;
 		};
-		000000000000000000000405 /* Debug configuration for PBXNativeTarget "AWED" */ = {
+		000000000000000000000405 /* Debug configuration for PBXNativeTarget "AW Map Editor" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -498,7 +575,7 @@
 				CODE_SIGNING_REQUIRED = NO;
 				DEVELOPMENT_ASSET_PATHS = "";
 				INFOPLIST_FILE = Sources/AWED/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = AWED;
+				INFOPLIST_KEY_CFBundleDisplayName = "AW Map Editor";
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				MARKETING_VERSION = 1;
 				OTHER_LDFLAGS = (
@@ -506,14 +583,14 @@
 					"$(BUILT_PRODUCTS_DIR)/libAWEDCore.a",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.awsmapeditor.awed;
-				PRODUCT_NAME = AWED;
+				PRODUCT_NAME = "AW Map Editor";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
-		000000000000000000000406 /* Release configuration for PBXNativeTarget "AWED" */ = {
+		000000000000000000000406 /* Release configuration for PBXNativeTarget "AW Map Editor" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -523,7 +600,7 @@
 				CODE_SIGNING_REQUIRED = NO;
 				DEVELOPMENT_ASSET_PATHS = "";
 				INFOPLIST_FILE = Sources/AWED/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = AWED;
+				INFOPLIST_KEY_CFBundleDisplayName = "AW Map Editor";
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				MARKETING_VERSION = 1;
 				OTHER_LDFLAGS = (
@@ -531,7 +608,7 @@
 					"$(BUILT_PRODUCTS_DIR)/libAWEDCore.a",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.awsmapeditor.awed;
-				PRODUCT_NAME = AWED;
+				PRODUCT_NAME = "AW Map Editor";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
@@ -577,11 +654,11 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		000000000000000000000201 /* Build configuration list for PBXProject "AWED" */ = {
+		000000000000000000000201 /* Build configuration list for PBXProject "AW Map Editor" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				000000000000000000000202 /* Debug configuration for PBXProject "AWED" */,
-				000000000000000000000203 /* Release configuration for PBXProject "AWED" */,
+				000000000000000000000202 /* Debug configuration for PBXProject "AW Map Editor" */,
+				000000000000000000000203 /* Release configuration for PBXProject "AW Map Editor" */,
 			);
 			defaultConfigurationName = Release;
 		};
@@ -593,11 +670,11 @@
 			);
 			defaultConfigurationName = Release;
 		};
-		000000000000000000000404 /* Build configuration list for PBXNativeTarget "AWED" */ = {
+		000000000000000000000404 /* Build configuration list for PBXNativeTarget "AW Map Editor" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				000000000000000000000405 /* Debug configuration for PBXNativeTarget "AWED" */,
-				000000000000000000000406 /* Release configuration for PBXNativeTarget "AWED" */,
+				000000000000000000000405 /* Debug configuration for PBXNativeTarget "AW Map Editor" */,
+				000000000000000000000406 /* Release configuration for PBXNativeTarget "AW Map Editor" */,
 			);
 			defaultConfigurationName = Release;
 		};

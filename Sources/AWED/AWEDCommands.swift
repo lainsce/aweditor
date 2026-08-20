@@ -3,6 +3,7 @@ import AWEDCore
 
 struct AWEDCommands: Commands {
     let model: EditorModel
+    @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
@@ -86,8 +87,16 @@ struct AWEDCommands: Commands {
             Button("Status…") { model.dialog = .status }
         }
 
+        CommandGroup(replacing: .appInfo) {
+            Button("About AW Map Editor", systemImage: "info.circle") {
+                openWindow(id: AWEDWindowID.about)
+            }
+        }
+
         CommandGroup(after: .help) {
-            Button("About Advance Wars Map Editor") { model.dialog = .about }
+            Button("Privacy Policy", systemImage: "hand.raised") {
+                openWindow(id: AWEDWindowID.privacyPolicy)
+            }
         }
     }
 }

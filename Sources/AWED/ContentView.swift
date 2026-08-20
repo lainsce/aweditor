@@ -26,10 +26,13 @@ struct ContentView: View {
                     PaletteView(model: model, atlas: atlas)
                     StatusBarView(name: model.map.name, author: model.map.author, coordinates: model.statusMessage, isDirty: model.map.isDirty)
                 }
+                .background(GLWNSidebarSurface())
+                .ignoresSafeArea(.all)
             }
         }
         .frame(minWidth: 800, minHeight: 600)
         .background(Color(nsColor: .windowBackgroundColor))
+        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
         .navigationTitle(model.documentTitle)
         .toolbar {
             EditorToolbar(
@@ -56,7 +59,7 @@ struct ContentView: View {
         } message: {
             Text(pendingWarningMessage)
         }
-        .alert("AWED", isPresented: $model.isShowingError) {
+        .alert("AW Map Editor", isPresented: $model.isShowingError) {
             Button("OK") { model.isShowingError = false }
         } message: {
             Text(model.errorMessage ?? "An unknown error occurred.")
@@ -130,11 +133,36 @@ struct MapWorkspaceView: View {
     let atlas: SpriteAtlas
 
     var body: some View {
-        ScrollView([.horizontal, .vertical]) {
-            MapCanvasView(model: model, atlas: atlas)
-                .padding(22)
+        GeometryReader { proxy in
+            let mapTileSize = MapCanvasMetrics.tileSize
+            let mapPixelSize = CGSize(
+                width: CGFloat(model.map.width) * mapTileSize,
+                height: CGFloat(model.map.height) * mapTileSize
+            )
+            let boardSize = CGSize(
+                width: mapPixelSize.width + (MapCanvasMetrics.woodPadding * 2),
+                height: mapPixelSize.height + (MapCanvasMetrics.woodPadding * 2)
+            )
+            let contentSize = CGSize(
+                width: max(proxy.size.width, boardSize.width + (MapCanvasMetrics.parchmentPadding * 2)),
+                height: max(proxy.size.height, boardSize.height + (MapCanvasMetrics.parchmentPadding * 2))
+            )
+
+            ScrollView([.horizontal, .vertical]) {
+                ZStack {
+                    MapParchmentSurface(tileSize: mapTileSize, mapSize: mapPixelSize)
+
+                    MapCanvasBoard(model: model, atlas: atlas)
+                        .padding(MapCanvasMetrics.parchmentPadding)
+                }
+                .frame(width: contentSize.width, height: contentSize.height)
+            }
+            .background {
+                MapParchmentSurface(tileSize: mapTileSize, mapSize: mapPixelSize)
+                    .ignoresSafeArea(.container, edges: .top)
+                    .allowsHitTesting(false)
+            }
         }
-        .background(Color(nsColor: .controlBackgroundColor).opacity(0.55))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

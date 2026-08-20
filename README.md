@@ -1,6 +1,6 @@
-# AWED — SwiftUI port
+# AW Map Editor — SwiftUI port
 
-AWED is a native macOS SwiftUI port of the original wxWidgets Advance Wars
+AW Map Editor is a native macOS SwiftUI port of the original wxWidgets Advance Wars
 Series Map Editor. This port is new work; the original editor was written by
 Joao Pedro S. Francese (Roma_emu). The original `wxAWDSMapEd/` source and the
 format/readme documents remain as compatibility references.
@@ -11,19 +11,19 @@ of those assets or music. See [LICENSE.md](LICENSE.md) for the source-license
 and trademark notice.
 
 The app targets macOS 27.0 and newer and is delivered as a native Xcode
-project (`AWED.xcodeproj`). It requires Xcode 27 or newer.
+project (`AW Map Editor.xcodeproj`). It requires Xcode 27 or newer.
 
 Build the app from the command line:
 
 ```sh
-xcodebuild -project AWED.xcodeproj -scheme AWED -configuration Debug \
+xcodebuild -project "AW Map Editor.xcodeproj" -scheme "AW Map Editor" -configuration Debug \
   CODE_SIGNING_ALLOWED=NO build
 ```
 
 Run the core tests:
 
 ```sh
-xcodebuild -project AWED.xcodeproj -scheme AWED -configuration Debug \
+xcodebuild -project "AW Map Editor.xcodeproj" -scheme "AW Map Editor" -configuration Debug \
   CODE_SIGNING_ALLOWED=NO test
 ```
 
@@ -31,7 +31,7 @@ Build a runnable app bundle with the helper script:
 
 ```sh
 ./Scripts/package-app.sh
-open Build/DerivedData/Build/Products/Debug/AWED.app
+open "Build/DerivedData/Build/Products/Debug/AW Map Editor.app"
 ```
 
 The port reads and writes `.awm`, `.aw2`, `.awd`, and variable-size `.aws`

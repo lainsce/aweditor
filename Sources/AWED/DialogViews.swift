@@ -39,24 +39,35 @@ struct MapInformationView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Map Information").font(.title2).bold()
             Form {
-                TextField("Map Name", text: $draftName)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: draftName) { _, newValue in draftName = String(newValue.prefix(AWConstants.nameMaximumLength)) }
-                TextField("Author", text: $draftAuthor)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: draftAuthor) { _, newValue in draftAuthor = String(newValue.prefix(AWConstants.authorMaximumLength)) }
-                TextField("Description", text: $draftDescription, axis: .vertical)
-                    .lineLimit(5...12)
-                    .textFieldStyle(.roundedBorder)
+                GLWNFormRow("Map Name") {
+                    TextField("", text: $draftName)
+                        .textFieldStyle(GLWNTextFieldStyle())
+                        .accessibilityLabel("Map Name")
+                        .onChange(of: draftName) { _, newValue in draftName = String(newValue.prefix(AWConstants.nameMaximumLength)) }
+                }
+                GLWNFormRow("Author") {
+                    TextField("", text: $draftAuthor)
+                        .textFieldStyle(GLWNTextFieldStyle())
+                        .accessibilityLabel("Author")
+                        .onChange(of: draftAuthor) { _, newValue in draftAuthor = String(newValue.prefix(AWConstants.authorMaximumLength)) }
+                }
+                GLWNFormRow("Description") {
+                    TextField("", text: $draftDescription, axis: .vertical)
+                        .lineLimit(5...12)
+                        .textFieldStyle(GLWNTextFieldStyle())
+                        .accessibilityLabel("Description")
+                }
             }
             .formStyle(.grouped)
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) { model.dialog = nil }
+                    .buttonStyle(GLWNInContentButtonStyle(tone: .neutral))
                 Button("Save") {
                     model.updateInformation(name: draftName, author: draftAuthor, description: draftDescription)
                     model.dialog = nil
                 }
+                .buttonStyle(GLWNInContentButtonStyle(tone: .accent))
                 .keyboardShortcut(.defaultAction)
             }
         }
@@ -80,15 +91,24 @@ struct MapSettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Map Settings").font(.title2).bold()
             Form {
-                Stepper(value: $width, in: AWConstants.mapMinimumWidth...AWConstants.mapMaximumWidth) {
-                    LabeledContent("Width") { Text("\(width)").monospacedDigit() }
+                GLWNFormRow("Width") {
+                    Stepper(value: $width, in: AWConstants.mapMinimumWidth...AWConstants.mapMaximumWidth) {
+                        Text("\(width)").monospacedDigit()
+                    }
                 }
-                Stepper(value: $height, in: AWConstants.mapMinimumHeight...AWConstants.mapMaximumHeight) {
-                    LabeledContent("Height") { Text("\(height)").monospacedDigit() }
+                GLWNFormRow("Height") {
+                    Stepper(value: $height, in: AWConstants.mapMinimumHeight...AWConstants.mapMaximumHeight) {
+                        Text("\(height)").monospacedDigit()
+                    }
                 }
-                Picker("Tileset", selection: $tileset) {
-                    ForEach(Tileset.allCases, id: \.self) { tile in
-                        Text(tile.displayName).tag(tile)
+                GLWNFormRow("Tileset") {
+                    GLWNPullDownMenu(
+                        "Tileset",
+                        selection: $tileset,
+                        options: Tileset.allCases,
+                        showsTitle: false
+                    ) { tile in
+                        Text(tile.displayName)
                     }
                 }
             }
@@ -101,10 +121,12 @@ struct MapSettingsView: View {
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) { model.dialog = nil }
+                    .buttonStyle(GLWNInContentButtonStyle(tone: .neutral))
                 Button("Apply") {
                     model.updateSettings(width: width, height: height, tileset: tileset)
                     model.dialog = nil
                 }
+                .buttonStyle(GLWNInContentButtonStyle(tone: .accent))
                 .keyboardShortcut(.defaultAction)
             }
         }
@@ -127,8 +149,13 @@ struct PreferencesView: View {
             Text("Editor Preferences").font(.title2).bold()
             Form {
                 Section("Background Music") {
-                    Toggle("Enable background music", isOn: $preferences.volumeEnabled)
-                    LabeledContent("Volume") {
+                    GLWNFormRow("Enable BGM") {
+                        Toggle("", isOn: $preferences.volumeEnabled)
+                            .labelsHidden()
+                            .toggleStyle(GLWNAquaToggleStyle())
+                            .accessibilityLabel("Enable background music")
+                    }
+                    GLWNFormRow("Volume") {
                         HStack {
                             Slider(value: Binding(get: { Double(preferences.volume) }, set: { preferences.volume = Int($0.rounded()) }), in: 0...100, step: 1)
                             Text("\(preferences.volume)%").monospacedDigit().frame(width: 42, alignment: .trailing)
@@ -137,30 +164,60 @@ struct PreferencesView: View {
                     }
                 }
                 Section("New Maps") {
-                    Stepper(value: $preferences.defaultWidth, in: AWConstants.mapMinimumWidth...AWConstants.mapMaximumWidth) {
-                        LabeledContent("Default width") { Text("\(preferences.defaultWidth)").monospacedDigit() }
+                    GLWNFormRow("Default width") {
+                        Stepper(value: $preferences.defaultWidth, in: AWConstants.mapMinimumWidth...AWConstants.mapMaximumWidth) {
+                            Text("\(preferences.defaultWidth)").monospacedDigit()
+                        }
                     }
-                    Stepper(value: $preferences.defaultHeight, in: AWConstants.mapMinimumHeight...AWConstants.mapMaximumHeight) {
-                        LabeledContent("Default height") { Text("\(preferences.defaultHeight)").monospacedDigit() }
+                    GLWNFormRow("Default height") {
+                        Stepper(value: $preferences.defaultHeight, in: AWConstants.mapMinimumHeight...AWConstants.mapMaximumHeight) {
+                            Text("\(preferences.defaultHeight)").monospacedDigit()
+                        }
                     }
-                    Picker("Default terrain", selection: $preferences.defaultTerrain) {
-                        Text("Plains").tag(Element.terrainPlain)
-                        Text("Woods").tag(Element.terrainWood)
-                        Text("Mountains").tag(Element.terrainMountain)
-                        Text("Roads").tag(Element.terrainRoad)
-                        Text("Sea").tag(Element.terrainSea)
+                    GLWNFormRow("Default terrain") {
+                        GLWNPullDownMenu(
+                            "Default terrain",
+                            selection: $preferences.defaultTerrain,
+                            options: terrainOptions,
+                            showsTitle: false
+                        ) { terrain in
+                            Text(terrainTitle(terrain))
+                        }
                     }
-                    Picker("Default tileset", selection: $preferences.defaultTileset) {
-                        ForEach(Tileset.allCases, id: \.self) { tile in Text(tile.displayName).tag(tile) }
+                    GLWNFormRow("Default tileset") {
+                        GLWNPullDownMenu(
+                            "Default tileset",
+                            selection: $preferences.defaultTileset,
+                            options: Tileset.allCases,
+                            showsTitle: false
+                        ) { tile in
+                            Text(tile.displayName)
+                        }
                     }
-                    Picker("Undo/redo limit", selection: $preferences.undoLimit) {
-                        ForEach([10, 20, 30, 40, 50, 100], id: \.self) { value in Text("\(value)").tag(value) }
+                    GLWNFormRow("Undo/redo limit") {
+                        GLWNPullDownMenu(
+                            "Undo/redo limit",
+                            selection: $preferences.undoLimit,
+                            options: [10, 20, 30, 40, 50, 100],
+                            showsTitle: false
+                        ) { value in
+                            Text("\(value)")
+                        }
                     }
-                    TextField("Default author", text: $preferences.defaultAuthor)
-                        .onChange(of: preferences.defaultAuthor) { _, newValue in preferences.defaultAuthor = String(newValue.prefix(AWConstants.authorMaximumLength)) }
+                    GLWNFormRow("Default author") {
+                        TextField("", text: $preferences.defaultAuthor)
+                            .textFieldStyle(GLWNTextFieldStyle())
+                            .accessibilityLabel("Default author")
+                            .onChange(of: preferences.defaultAuthor) { _, newValue in preferences.defaultAuthor = String(newValue.prefix(AWConstants.authorMaximumLength)) }
+                    }
                 }
                 Section("Interaction") {
-                    Toggle("Draw AW-style cursors", isOn: $preferences.drawCursor)
+                    GLWNFormRow("Draw AW-style cursors") {
+                        Toggle("", isOn: $preferences.drawCursor)
+                            .labelsHidden()
+                            .toggleStyle(GLWNAquaToggleStyle())
+                            .accessibilityLabel("Draw AW-style cursors")
+                    }
                 }
             }
             .formStyle(.grouped)
@@ -168,14 +225,29 @@ struct PreferencesView: View {
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) { model.dialog = nil }
+                    .buttonStyle(GLWNInContentButtonStyle(tone: .neutral))
                 Button("Save") {
                     model.updatePreferences(preferences)
                     music.apply(enabled: preferences.volumeEnabled, volume: preferences.volume)
                     model.dialog = nil
                 }
+                .buttonStyle(GLWNInContentButtonStyle(tone: .accent))
                 .keyboardShortcut(.defaultAction)
             }
         }
+    }
+
+    private var terrainOptions: [Element] {
+        [.terrainPlain, .terrainWood, .terrainMountain, .terrainRoad, .terrainSea]
+    }
+
+    private func terrainTitle(_ terrain: Element) -> String {
+        if terrain == .terrainPlain { return "Plains" }
+        if terrain == .terrainWood { return "Woods" }
+        if terrain == .terrainMountain { return "Mountains" }
+        if terrain == .terrainRoad { return "Roads" }
+        if terrain == .terrainSea { return "Sea" }
+        return "Terrain"
     }
 }
 
@@ -216,6 +288,7 @@ struct MapStatusView: View {
             HStack {
                 Spacer()
                 Button("Close") { model.dialog = nil }
+                    .buttonStyle(GLWNInContentButtonStyle(tone: .neutral))
                     .keyboardShortcut(.cancelAction)
             }
         }
@@ -240,15 +313,20 @@ struct AboutView: View {
                 }
             }
             .frame(width: 128, height: 128)
-            Text("Advance Wars Series Map Editor").font(.title2).bold()
-            Text("SwiftUI port · version 1.0")
+            Text("AW Map Editor").font(.title2).bold()
+            Text("SwiftUI Port · 1.0")
                 .foregroundStyle(.secondary)
-            Text("Create, edit, and share custom maps for the Advance Wars series. Original map format compatibility is preserved.")
+            Text("Create and share maps for the Advance Wars series.")
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 390)
+            Text("Original map format compatibility is preserved.")
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 390)
             Link("Original Editor", destination: URL(string: "https://github.com/joaofrancese/awsmaped")!)
             Button("Close") { dismiss() }
+                .buttonStyle(GLWNInContentButtonStyle(tone: .neutral))
                 .keyboardShortcut(.cancelAction)
         }
+        .padding(24)
     }
 }
