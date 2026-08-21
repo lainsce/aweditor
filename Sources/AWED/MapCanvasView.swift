@@ -3,31 +3,279 @@ import AWEDCore
 
 enum MapCanvasMetrics {
     static let tileSize: CGFloat = 28
+    /// Tall building/extra sprites use one tile of artwork above their anchor
+    /// cell. Keep that bleed available above row zero without changing the
+    /// map's tile origin or its wood-frame dimensions.
+    static let tallSpriteOverflow: CGFloat = tileSize
     static let woodPadding: CGFloat = 10
+    static let bottomWallHeight: CGFloat = 20
     static let parchmentPadding: CGFloat = 12
 }
 
 struct MapCanvasBoard: View {
     let model: EditorModel
     let atlas: SpriteAtlas
+    /// Playtest renders the board as a read-only backdrop. Its interaction
+    /// layer owns pointer conversion there, so the editor's local event
+    /// monitor must not compete for the same mouse events.
+    let interactionEnabled: Bool
+
+    init(model: EditorModel, atlas: SpriteAtlas, interactionEnabled: Bool = true) {
+        self.model = model
+        self.atlas = atlas
+        self.interactionEnabled = interactionEnabled
+    }
 
     var body: some View {
-        MapCanvasView(model: model, atlas: atlas, tileSize: Double(MapCanvasMetrics.tileSize))
-            .padding(MapCanvasMetrics.woodPadding)
+        let mapWidth = CGFloat(model.map.width) * MapCanvasMetrics.tileSize
+        let mapHeight = CGFloat(model.map.height) * MapCanvasMetrics.tileSize
+        let boardWidth = mapWidth + (MapCanvasMetrics.woodPadding * 2)
+        let boardHeight = mapHeight + (MapCanvasMetrics.woodPadding * 2)
+
+        VStack(spacing: 0) {
+            ZStack(alignment: .topLeading) {
+                MapCanvasView(
+                    model: model,
+                    atlas: atlas,
+                    tileSize: Double(MapCanvasMetrics.tileSize),
+                    topOverflow: 0,
+                    interactionEnabled: interactionEnabled
+                )
+                .offset(
+                    x: MapCanvasMetrics.woodPadding,
+                    y: MapCanvasMetrics.woodPadding
+                )
+            }
+            .frame(
+                width: boardWidth,
+                height: boardHeight,
+                alignment: .topLeading
+            )
             .background {
                 MapWoodSurface()
             }
             .overlay {
-                Rectangle()
-                    .stroke(Color(red: 0.25, green: 0.13, blue: 0.055).opacity(0.82), lineWidth: 2)
-                Rectangle()
-                    .stroke(Color(red: 0.98, green: 0.80, blue: 0.42).opacity(0.48), lineWidth: 1)
-                    .padding(4)
-                Rectangle()
-                    .stroke(Color(red: 0.28, green: 0.14, blue: 0.06).opacity(0.68), lineWidth: 1)
-                    .padding(7)
+                MapWoodBorderOverlay()
             }
-            .shadow(color: Color.black.opacity(0.22), radius: 10, y: 5)
+            .overlay {
+                MapWoodDepthOverlay()
+            }
+            // Keep this in an overlay so its extra drawing height does not
+            // change the board's measured height or push the lower wall away.
+            .overlay(alignment: .topLeading) {
+                MapCanvasTallSpriteOverflow(
+                    model: model,
+                    atlas: atlas,
+                    tileSize: MapCanvasMetrics.tileSize
+                )
+                .offset(
+                    x: MapCanvasMetrics.woodPadding,
+                    y: MapCanvasMetrics.woodPadding - MapCanvasMetrics.tallSpriteOverflow
+                )
+                .zIndex(2)
+            }
+
+            MapWoodLowerWall()
+                .frame(width: boardWidth, height: MapCanvasMetrics.bottomWallHeight)
+        }
+        .frame(width: boardWidth)
+        .shadow(color: Color.black.opacity(0.22), radius: 10, y: 5)
+    }
+}
+
+private struct MapCanvasTallSpriteOverflow: View {
+    let model: EditorModel
+    let atlas: SpriteAtlas
+    let tileSize: CGFloat
+
+    var body: some View {
+        Canvas { context, _ in
+            let map = model.map
+            for x in 0..<map.width {
+                let rect = CGRect(x: CGFloat(x) * tileSize, y: 0, width: tileSize, height: tileSize)
+                drawSprite(map.backgroundDrawElement(atX: x, y: 0), at: rect, context: &context)
+                drawSprite(map.foregroundElement(atX: x, y: 0), at: rect, context: &context)
+            }
+        }
+        .frame(
+            width: CGFloat(model.map.width) * tileSize,
+            height: tileSize * 2,
+            alignment: .topLeading
+        )
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func drawSprite(_ element: Element, at rect: CGRect, context: inout GraphicsContext) {
+        guard element.doubleHeight,
+              element.isBuilding || element.isExtra,
+              let image = atlas.image(for: element, tileset: model.map.tileset) else { return }
+        context.draw(
+            context.resolve(image),
+            in: CGRect(x: rect.minX, y: 0, width: rect.width, height: rect.height * 2)
+        )
+    }
+}
+
+private struct MapWoodBorderOverlay: View {
+    var body: some View {
+        MapWoodSurface()
+            .mask {
+                MapWoodBorderShape()
+                    .fill(.white, style: FillStyle(eoFill: true))
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}
+
+private struct MapWoodBorderShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.addRect(rect)
+        path.addRect(
+            rect.insetBy(
+                dx: MapCanvasMetrics.woodPadding,
+                dy: MapCanvasMetrics.woodPadding
+            )
+        )
+        return path
+    }
+}
+
+private struct MapWoodDepthOverlay: View {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    var body: some View {
+        let highlightOpacity = reduceTransparency ? 0.30 : 0.56
+        let shadowOpacity = reduceTransparency ? 0.36 : 0.66
+
+        ZStack {
+            Rectangle()
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 1.0, green: 0.78, blue: 0.38).opacity(highlightOpacity),
+                            Color(red: 0.48, green: 0.22, blue: 0.07).opacity(0.78),
+                            Color(red: 0.12, green: 0.045, blue: 0.012).opacity(shadowOpacity)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 3
+                )
+
+            Rectangle()
+                .strokeBorder(Color.black.opacity(shadowOpacity), lineWidth: 2)
+                .padding(MapCanvasMetrics.woodPadding - 2)
+                .shadow(color: Color.black.opacity(reduceTransparency ? 0.16 : 0.34), radius: 4, y: 2)
+
+            Rectangle()
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(highlightOpacity),
+                            .clear,
+                            Color.black.opacity(shadowOpacity)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 2
+                )
+                .padding(MapCanvasMetrics.woodPadding - 5)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+private struct MapWoodLowerWall: View {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    var body: some View {
+        Canvas { context, size in
+            let bevelHeight = min(CGFloat(6), size.height * 0.35)
+            let sideSlope = min(CGFloat(12), size.width * 0.08)
+            let lowerInset = min(CGFloat(20), sideSlope * 1.6)
+            let base = Color(red: 0.43, green: 0.18, blue: 0.055)
+            let deep = Color(red: 0.16, green: 0.055, blue: 0.016)
+            let highlight = Color(red: 0.98, green: 0.67, blue: 0.26)
+            let opacity = reduceTransparency ? 0.72 : 1
+
+            var frontFace = Path()
+            frontFace.move(to: CGPoint(x: sideSlope, y: bevelHeight))
+            frontFace.addLine(to: CGPoint(x: size.width - sideSlope, y: bevelHeight))
+            frontFace.addLine(to: CGPoint(x: size.width - lowerInset, y: size.height))
+            frontFace.addLine(to: CGPoint(x: lowerInset, y: size.height))
+            frontFace.closeSubpath()
+            context.fill(
+                frontFace,
+                with: .linearGradient(
+                    Gradient(colors: [
+                        base.opacity(opacity),
+                        deep.opacity(opacity)
+                    ]),
+                    startPoint: CGPoint(x: 0, y: bevelHeight),
+                    endPoint: CGPoint(x: 0, y: size.height)
+                )
+            )
+
+            var angledTop = Path()
+            angledTop.move(to: CGPoint(x: 0, y: 0))
+            angledTop.addLine(to: CGPoint(x: size.width, y: 0))
+            angledTop.addLine(to: CGPoint(x: size.width - sideSlope, y: bevelHeight))
+            angledTop.addLine(to: CGPoint(x: sideSlope, y: bevelHeight))
+            angledTop.closeSubpath()
+            context.fill(
+                angledTop,
+                with: .linearGradient(
+                    Gradient(colors: [
+                        highlight.opacity(reduceTransparency ? 0.44 : 0.80),
+                        base.opacity(opacity)
+                    ]),
+                    startPoint: .zero,
+                    endPoint: CGPoint(x: 0, y: bevelHeight)
+                )
+            )
+
+            var topEdge = Path()
+            topEdge.move(to: CGPoint(x: 0, y: 0.5))
+            topEdge.addLine(to: CGPoint(x: size.width, y: 0.5))
+            context.stroke(
+                topEdge,
+                with: .color(highlight.opacity(reduceTransparency ? 0.34 : 0.62)),
+                style: StrokeStyle(lineWidth: 1)
+            )
+
+            var frontEdge = Path()
+            frontEdge.move(to: CGPoint(x: sideSlope, y: bevelHeight))
+            frontEdge.addLine(to: CGPoint(x: size.width - sideSlope, y: bevelHeight))
+            context.stroke(
+                frontEdge,
+                with: .color(deep.opacity(reduceTransparency ? 0.48 : 0.78)),
+                style: StrokeStyle(lineWidth: 1.4)
+            )
+
+            for y in stride(from: bevelHeight + 5, through: size.height - 2, by: CGFloat(8)) {
+                let progress = (y - bevelHeight) / max(size.height - bevelHeight, 1)
+                let inset = sideSlope + ((lowerInset - sideSlope) * progress)
+                var grain = Path()
+                grain.move(to: CGPoint(x: inset + 3, y: y))
+                grain.addCurve(
+                    to: CGPoint(x: size.width - inset - 3, y: y + 0.8),
+                    control1: CGPoint(x: size.width * 0.32, y: y - 1.5),
+                    control2: CGPoint(x: size.width * 0.67, y: y + 2)
+                )
+                context.stroke(
+                    grain,
+                    with: .color(deep.opacity(reduceTransparency ? 0.10 : 0.18)),
+                    style: StrokeStyle(lineWidth: 0.7)
+                )
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
@@ -63,8 +311,8 @@ struct MapParchmentSurface: View {
                         .clear,
                         Color.black.opacity(reduceTransparency ? 0.07 : 0.13)
                     ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+                    startPoint: .top,
+                    endPoint: .bottom
                 )
             }
             .accessibilityHidden(true)
@@ -167,8 +415,8 @@ private struct MapWoodSurface: View {
                         Color(red: 0.69, green: 0.39, blue: 0.14),
                         Color(red: 0.55, green: 0.27, blue: 0.09)
                     ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+                    startPoint: .top,
+                    endPoint: .bottom
                 )
             )
             .overlay {
@@ -223,29 +471,57 @@ struct MapCanvasView: View {
     let model: EditorModel
     let atlas: SpriteAtlas
     let tileSize: Double
+    let topOverflow: CGFloat
+    let interactionEnabled: Bool
 
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var isDragging = false
 
-    init(model: EditorModel, atlas: SpriteAtlas, tileSize: Double = 28) {
+    init(
+        model: EditorModel,
+        atlas: SpriteAtlas,
+        tileSize: Double = 28,
+        topOverflow: CGFloat = MapCanvasMetrics.tallSpriteOverflow,
+        interactionEnabled: Bool = true
+    ) {
         self.model = model
         self.atlas = atlas
         self.tileSize = tileSize
+        self.topOverflow = topOverflow
+        self.interactionEnabled = interactionEnabled
     }
 
     var body: some View {
         Canvas { context, _ in
+            context.translateBy(x: 0, y: topOverflow)
             drawMap(context: &context)
         }
-        .frame(width: CGFloat(model.map.width) * tileSize, height: CGFloat(model.map.height) * tileSize)
-        .background(MapCanvasInput(model: model, tileSize: tileSize).allowsHitTesting(false))
+        .frame(
+            width: CGFloat(model.map.width) * tileSize,
+            height: (CGFloat(model.map.height) * tileSize) + topOverflow
+        )
+        .background(
+            Group {
+                if interactionEnabled {
+                    MapCanvasInput(
+                        model: model,
+                        tileSize: tileSize,
+                        topInset: Double(topOverflow)
+                    )
+                    .allowsHitTesting(false)
+                }
+            }
+        )
         .contentShape(Rectangle())
         .gesture(pointerGesture)
         .onContinuousHover(coordinateSpace: .local) { phase in
+            guard interactionEnabled else { return }
             switch phase {
             case .active(let location):
                 let point = cell(for: location)
-                model.updatePointer(point)
-                updateNativeCursor(at: point)
+                let validPoint = isValid(point) ? point : nil
+                model.updatePointer(validPoint)
+                updateNativeCursor(at: validPoint)
             case .ended:
                 model.updatePointer(nil)
                 AWCursorController.shared.reset()
@@ -288,21 +564,41 @@ struct MapCanvasView: View {
     }
 
     private func cell(for location: CGPoint) -> GridPoint {
-        GridPoint(x: Int(location.x / tileSize), y: Int(location.y / tileSize))
+        GridPoint(
+            x: Int(floor(location.x / tileSize)),
+            y: Int(floor((location.y - topOverflow) / tileSize))
+        )
+    }
+
+    private func isValid(_ point: GridPoint) -> Bool {
+        point.x >= 0 && point.x < model.map.width && point.y >= 0 && point.y < model.map.height
     }
 
     private func drawMap(context: inout GraphicsContext) {
         let map = model.map
         let tile = CGFloat(tileSize)
-        context.fill(Path(CGRect(x: 0, y: 0, width: CGFloat(map.width) * tile, height: CGFloat(map.height) * tile)), with: .color(Color(red: 0.12, green: 0.16, blue: 0.18)))
+        let mapBounds = CGRect(x: 0, y: 0, width: CGFloat(map.width) * tile, height: CGFloat(map.height) * tile)
+        context.clip(to: Path(mapBounds))
+        context.fill(Path(mapBounds), with: .color(Color(red: 0.12, green: 0.16, blue: 0.18)))
 
         for x in 0..<map.width {
             for y in 0..<map.height {
                 let rect = CGRect(x: CGFloat(x) * tile, y: CGFloat(y) * tile, width: tile, height: tile)
                 context.fill(Path(rect), with: .color(Color.white.opacity((x + y).isMultiple(of: 2) ? 0.025 : 0.01)))
-                drawSprite(map.backgroundDrawElement(atX: x, y: y), at: rect, context: &context)
+                let terrain = map.backgroundElement(atX: x, y: y)
+                let background = map.backgroundDrawElement(atX: x, y: y)
+                // Row-zero double-height artwork is supplied by the separate
+                // overflow layer so it can project above the wood rim without
+                // bringing the tile background with it.
+                if !(y == 0 && background.doubleHeight && (background.isBuilding || background.isExtra)) {
+                    drawSprite(background, at: rect, context: &context)
+                }
                 drawSeaCoast(atX: x, y: y, rect: rect, map: map, context: &context)
-                drawSprite(map.foregroundElement(atX: x, y: y), at: rect, context: &context)
+                drawSeaUpperDepth(at: rect, x: x, y: y, terrain: terrain, map: map, context: &context)
+                let foreground = map.foregroundElement(atX: x, y: y)
+                if !(y == 0 && foreground.doubleHeight && (foreground.isBuilding || foreground.isExtra)) {
+                    drawSprite(foreground, at: rect, context: &context)
+                }
             }
         }
 
@@ -328,6 +624,52 @@ struct MapCanvasView: View {
         }
 
         drawCursorFrame(map: map, tile: tile, context: &context)
+    }
+
+    private func drawSeaUpperDepth(
+        at rect: CGRect,
+        x: Int,
+        y: Int,
+        terrain: Element,
+        map: MapState,
+        context: inout GraphicsContext
+    ) {
+        // Use the underlying tile, not its derived draw sprite, so every
+        // non-sea cell opts out independently even when it borders the sea.
+        guard rect.minY == 0,
+              terrain.simplified == .terrainSea,
+              !hasTallSpriteCover(atX: x, y: y, map: map) else { return }
+
+        let depthHeight = min(rect.height * 0.38, 10)
+        let shadow = Color(red: 0.02, green: 0.10, blue: 0.16)
+        let leadingOpacity = reduceTransparency ? 0.045 : 0.085
+        let trailingOpacity = reduceTransparency ? 0.012 : 0.028
+        let depthRect = CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: depthHeight)
+
+        context.fill(
+            Path(depthRect),
+            with: .linearGradient(
+                Gradient(colors: [
+                    shadow.opacity(leadingOpacity),
+                    shadow.opacity(trailingOpacity),
+                    .clear
+                ]),
+                startPoint: CGPoint(x: rect.midX, y: rect.minY),
+                endPoint: CGPoint(x: rect.midX, y: depthRect.maxY)
+            )
+        )
+    }
+
+    private func hasTallSpriteCover(atX x: Int, y: Int, map: MapState) -> Bool {
+        // A double-height building/extra anchored on row zero occupies this
+        // cell, while one anchored on row one occupies its upper half. The
+        // sea shadow must stay behind both cases, including transparent areas
+        // in the sprite artwork.
+        for anchorY in y...min(y + 1, map.height - 1) {
+            let background = map.backgroundElement(atX: x, y: anchorY)
+            if background.doubleHeight && (background.isBuilding || background.isExtra) { return true }
+        }
+        return false
     }
 
     private func drawSprite(_ element: Element, at rect: CGRect, context: inout GraphicsContext) {

@@ -6,25 +6,29 @@ import SwiftUI
 struct MapCanvasInput: NSViewRepresentable {
     let model: EditorModel
     let tileSize: Double
+    let topInset: Double
 
     func makeNSView(context: Context) -> MonitorView {
-        MonitorView(model: model, tileSize: tileSize)
+        MonitorView(model: model, tileSize: tileSize, topInset: topInset)
     }
 
     func updateNSView(_ nsView: MonitorView, context: Context) {
         nsView.model = model
         nsView.tileSize = tileSize
+        nsView.topInset = topInset
     }
 
     @MainActor
     final class MonitorView: NSView {
         var model: EditorModel
         var tileSize: Double
+        var topInset: Double
         private var eventMonitor: Any?
 
-        init(model: EditorModel, tileSize: Double) {
+        init(model: EditorModel, tileSize: Double, topInset: Double) {
             self.model = model
             self.tileSize = tileSize
+            self.topInset = topInset
             super.init(frame: .zero)
             wantsLayer = false
         }
@@ -75,8 +79,8 @@ struct MapCanvasInput: NSViewRepresentable {
         }
 
         private func cell(at location: CGPoint) -> GridPoint? {
-            let x = Int(location.x / tileSize)
-            let y = Int(location.y / tileSize)
+            let x = Int(floor(location.x / tileSize))
+            let y = Int(floor((location.y - topInset) / tileSize))
             guard x >= 0, x < model.map.width, y >= 0, y < model.map.height else { return nil }
             return GridPoint(x: x, y: y)
         }

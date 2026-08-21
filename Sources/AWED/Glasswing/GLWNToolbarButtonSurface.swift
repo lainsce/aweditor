@@ -4,6 +4,14 @@ struct GLWNToolbarButtonSurface<Label: View>: View {
     let label: Label
     let isPressed: Bool
     let diameter: CGFloat
+    let labelWidth: CGFloat
+
+    init(label: Label, isPressed: Bool, diameter: CGFloat, labelWidth: CGFloat = 20) {
+        self.label = label
+        self.isPressed = isPressed
+        self.diameter = diameter
+        self.labelWidth = labelWidth
+    }
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
@@ -120,7 +128,7 @@ struct GLWNToolbarButtonSurface<Label: View>: View {
         label
             .font(.system(size: 20, weight: .regular))
             .foregroundStyle(palette.iconColor.opacity(isPressed ? 0.82 : 1))
-            .frame(width: 20, height: 30)
+            .frame(width: labelWidth, height: 30)
             .frame(width: diameter, height: diameter)
             .contentShape(.circle)
             .background {
@@ -145,21 +153,23 @@ struct GLWNToolbarButtonSurface<Label: View>: View {
                             )
                     }
                     .overlay {
-                        Circle()
-                            .fill(
-                                RadialGradient(
-                                    colors: [
-                                        .white.opacity(highlightTopOpacity),
-                                        .white.opacity(highlightBottomOpacity),
-                                        .clear,
-                                    ],
-                                    center: .bottom,
-                                    startRadius: 0,
-                                    endRadius: diameter
+                        GeometryReader { proxy in
+                            Circle()
+                                .fill(
+                                    RadialGradient(
+                                        colors: [
+                                            .white.opacity(highlightTopOpacity),
+                                            .white.opacity(highlightBottomOpacity),
+                                            .clear,
+                                        ],
+                                        center: .bottom,
+                                        startRadius: 0,
+                                        endRadius: max(diameter, proxy.size.width * 0.5)
+                                    )
                                 )
-                            )
-                            .scaleEffect(x: 1, y: 0.72, anchor: .bottom)
-                            .opacity(reduceTransparency ? 0 : 1)
+                                .scaleEffect(x: 1, y: 0.72, anchor: .bottom)
+                                .opacity(reduceTransparency ? 0 : 1)
+                        }
                     }
                     .overlay {
                         Circle()
@@ -231,4 +241,3 @@ struct GLWNToolbarButtonSurface<Label: View>: View {
             )
     }
 }
-

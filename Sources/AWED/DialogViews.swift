@@ -92,14 +92,18 @@ struct MapSettingsView: View {
             Text("Map Settings").font(.title2).bold()
             Form {
                 GLWNFormRow("Width") {
-                    Stepper(value: $width, in: AWConstants.mapMinimumWidth...AWConstants.mapMaximumWidth) {
-                        Text("\(width)").monospacedDigit()
-                    }
+                    GLWNTextFieldStepper(
+                        value: $width,
+                        in: AWConstants.mapMinimumWidth...AWConstants.mapMaximumWidth,
+                        step: 1
+                    )
                 }
                 GLWNFormRow("Height") {
-                    Stepper(value: $height, in: AWConstants.mapMinimumHeight...AWConstants.mapMaximumHeight) {
-                        Text("\(height)").monospacedDigit()
-                    }
+                    GLWNTextFieldStepper(
+                        value: $height,
+                        in: AWConstants.mapMinimumHeight...AWConstants.mapMaximumHeight,
+                        step: 1
+                    )
                 }
                 GLWNFormRow("Tileset") {
                     GLWNPullDownMenu(
@@ -157,7 +161,15 @@ struct PreferencesView: View {
                     }
                     GLWNFormRow("Volume") {
                         HStack {
-                            Slider(value: Binding(get: { Double(preferences.volume) }, set: { preferences.volume = Int($0.rounded()) }), in: 0...100, step: 1)
+                            GLWNSliderField(
+                                value: Binding(
+                                    get: { Double(preferences.volume) },
+                                    set: { preferences.volume = Int($0.rounded()) }
+                                ),
+                                in: 0...100,
+                                step: 1
+                            )
+                            .accessibilityLabel("Volume")
                             Text("\(preferences.volume)%").monospacedDigit().frame(width: 42, alignment: .trailing)
                         }
                         .disabled(!preferences.volumeEnabled)
@@ -165,14 +177,18 @@ struct PreferencesView: View {
                 }
                 Section("New Maps") {
                     GLWNFormRow("Default width") {
-                        Stepper(value: $preferences.defaultWidth, in: AWConstants.mapMinimumWidth...AWConstants.mapMaximumWidth) {
-                            Text("\(preferences.defaultWidth)").monospacedDigit()
-                        }
+                        GLWNTextFieldStepper(
+                            value: $preferences.defaultWidth,
+                            in: AWConstants.mapMinimumWidth...AWConstants.mapMaximumWidth,
+                            step: 1
+                        )
                     }
                     GLWNFormRow("Default height") {
-                        Stepper(value: $preferences.defaultHeight, in: AWConstants.mapMinimumHeight...AWConstants.mapMaximumHeight) {
-                            Text("\(preferences.defaultHeight)").monospacedDigit()
-                        }
+                        GLWNTextFieldStepper(
+                            value: $preferences.defaultHeight,
+                            in: AWConstants.mapMinimumHeight...AWConstants.mapMaximumHeight,
+                            step: 1
+                        )
                     }
                     GLWNFormRow("Default terrain") {
                         GLWNPullDownMenu(

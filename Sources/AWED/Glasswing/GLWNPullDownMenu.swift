@@ -37,9 +37,10 @@ struct GLWNPullDownMenu<Selection: Hashable, ItemLabel: View>: View {
             }
             .frame(minHeight: 36, alignment: .leading)
         }
+        .menuStyle(.button)
         .buttonStyle(GLWNInContentButtonStyle(tone: .neutral, accentColor: accentColor, horizontalPadding: 10, minHeight: 36))
+        .menuIndicator(.hidden)
         .fixedSize(horizontal: true, vertical: false)
         .accessibilityLabel(title)
     }
 }
-

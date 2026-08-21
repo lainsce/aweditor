@@ -51,6 +51,17 @@ final class EditorModel {
         self.statusMessage = "X: –, Y: –"
     }
 
+    /// Creates a model around an existing map snapshot for read-only surfaces
+    /// such as playtest. The editor's undo and document state remain empty so
+    /// actions in that surface cannot mutate the source document accidentally.
+    init(map: MapState, preferences: EditorPreferences = .load()) {
+        let validatedPreferences = preferences.validated()
+        self.preferences = validatedPreferences
+        self.map = map
+        self.selectedElement = map.backgroundElement(atX: 0, y: 0).simplified
+        self.statusMessage = "X: –, Y: –"
+    }
+
     var canUndo: Bool { !undoStack.isEmpty }
     var canRedo: Bool { !redoStack.isEmpty }
     var hasSelection: Bool { selection != nil && selectionFragment != nil }

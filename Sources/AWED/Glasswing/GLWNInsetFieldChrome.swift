@@ -33,3 +33,89 @@ struct GLWNInsetFieldChrome: ViewModifier {
     }
 }
 
+/// A value slider with the same inset material, rim, and hit-target geometry
+/// as Glasswing text fields. The native slider remains responsible for its
+/// keyboard and pointer semantics while this wrapper owns its visible chrome.
+struct GLWNSliderField: View {
+    @Binding var value: Double
+
+    let bounds: ClosedRange<Double>
+    let step: Double
+    let tint: Color
+    let onEditingChanged: (Bool) -> Void
+
+    init(
+        value: Binding<Double>,
+        in bounds: ClosedRange<Double>,
+        step: Double,
+        tint: Color = Color("AccentColor"),
+        onEditingChanged: @escaping (Bool) -> Void = { _ in }
+    ) {
+        self._value = value
+        self.bounds = bounds
+        self.step = step
+        self.tint = tint
+        self.onEditingChanged = onEditingChanged
+    }
+
+    var body: some View {
+        Slider(
+            value: $value,
+            in: bounds,
+            step: step,
+            onEditingChanged: onEditingChanged
+        )
+        .tint(tint)
+        .controlSize(.small)
+        .padding(.horizontal, 10)
+        .frame(minHeight: 36)
+        .modifier(GLWNInsetFieldChrome())
+    }
+}
+
+/// A compact Glasswing progress track for in-content status values.
+struct GLWNProgressBar: View {
+    let value: Double
+    let total: Double
+    let tint: Color
+
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    private var fraction: CGFloat {
+        guard total > 0 else { return 0 }
+        return CGFloat(min(max(value / total, 0), 1))
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .leading) {
+                Capsule(style: .continuous)
+                    .fill(.thinMaterial)
+                    .overlay {
+                        Capsule(style: .continuous)
+                            .fill(Color.primary.opacity(reduceTransparency ? 0.12 : 0.05))
+                    }
+                Capsule(style: .continuous)
+                    .fill(tint)
+                    .frame(width: proxy.size.width * fraction)
+                    .overlay {
+                        Capsule(style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [.white.opacity(0.30), .clear],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                    }
+            }
+            .frame(height: 8)
+            .overlay {
+                Capsule(style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.16), lineWidth: 1)
+            }
+        }
+        .frame(height: 8)
+        .accessibilityHidden(true)
+    }
+}

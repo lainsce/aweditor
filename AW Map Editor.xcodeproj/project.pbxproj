@@ -37,6 +37,11 @@
 		000000000000000000002070 /* GLWNToolbarMenuLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001070 /* GLWNToolbarMenuLabel.swift */; };
 		000000000000000000002071 /* GLWNToolbarSurfaceModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001071 /* GLWNToolbarSurfaceModifier.swift */; };
 		000000000000000000002072 /* GLWNSidebarMaterialBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001072 /* GLWNSidebarMaterialBackground.swift */; };
+		000000000000000000002073 /* PlaytestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001073 /* PlaytestView.swift */; };
+		000000000000000000002074 /* PlaytestDualStrikeRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001074 /* PlaytestDualStrikeRules.swift */; };
+		000000000000000000002075 /* PlaytestRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001075 /* PlaytestRules.swift */; };
+		000000000000000000002076 /* PlaytestAdvanceWars2Rules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001076 /* PlaytestAdvanceWars2Rules.swift */; };
+		000000000000000000002077 /* PlaytestAdvanceWarsRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001077 /* PlaytestAdvanceWarsRules.swift */; };
 		000000000000000000002025 /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001025 /* PrivacyPolicyView.swift */; };
 		000000000000000000002019 /* EditorTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001019 /* EditorTypes.swift */; };
 		00000000000000000000201A /* FilePanelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101A /* FilePanelService.swift */; };
@@ -127,6 +132,11 @@
 		000000000000000000001070 /* GLWNToolbarMenuLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarMenuLabel.swift; sourceTree = "<group>"; };
 		000000000000000000001071 /* GLWNToolbarSurfaceModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarSurfaceModifier.swift; sourceTree = "<group>"; };
 		000000000000000000001072 /* GLWNSidebarMaterialBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNSidebarMaterialBackground.swift; sourceTree = "<group>"; };
+		000000000000000000001073 /* PlaytestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestView.swift; sourceTree = "<group>"; };
+		000000000000000000001074 /* PlaytestDualStrikeRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestDualStrikeRules.swift; sourceTree = "<group>"; };
+		000000000000000000001075 /* PlaytestRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestRules.swift; sourceTree = "<group>"; };
+		000000000000000000001076 /* PlaytestAdvanceWars2Rules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestAdvanceWars2Rules.swift; sourceTree = "<group>"; };
+		000000000000000000001077 /* PlaytestAdvanceWarsRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestAdvanceWarsRules.swift; sourceTree = "<group>"; };
 		000000000000000000001025 /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyView.swift; sourceTree = "<group>"; };
 		000000000000000000001019 /* EditorTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorTypes.swift; sourceTree = "<group>"; };
 		00000000000000000000101A /* FilePanelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePanelService.swift; sourceTree = "<group>"; };
@@ -225,6 +235,11 @@
 				000000000000000000001018 /* EditorToolbar.swift */,
 				000000000000000000000008 /* Glasswing */,
 				000000000000000000001025 /* PrivacyPolicyView.swift */,
+				000000000000000000001073 /* PlaytestView.swift */,
+				000000000000000000001074 /* PlaytestDualStrikeRules.swift */,
+				000000000000000000001075 /* PlaytestRules.swift */,
+				000000000000000000001076 /* PlaytestAdvanceWars2Rules.swift */,
+				000000000000000000001077 /* PlaytestAdvanceWarsRules.swift */,
 				000000000000000000001019 /* EditorTypes.swift */,
 				00000000000000000000101A /* FilePanelService.swift */,
 				00000000000000000000101B /* MapCanvasInput.swift */,
@@ -492,6 +507,11 @@
 				00000000000000000000201E /* PaletteView.swift in Sources */,
 				00000000000000000000201F /* SpriteAtlas.swift in Sources */,
 				000000000000000000002020 /* StatusBarView.swift in Sources */,
+				000000000000000000002073 /* PlaytestView.swift in Sources */,
+				000000000000000000002074 /* PlaytestDualStrikeRules.swift in Sources */,
+				000000000000000000002075 /* PlaytestRules.swift in Sources */,
+				000000000000000000002076 /* PlaytestAdvanceWars2Rules.swift in Sources */,
+				000000000000000000002077 /* PlaytestAdvanceWarsRules.swift in Sources */,
 			);
 		};
 		000000000000000000000505 /* Sources */ = {

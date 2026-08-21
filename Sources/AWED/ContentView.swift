@@ -9,6 +9,7 @@ struct ContentView: View {
     @State private var pendingWarningURL: URL? = nil
     @State private var pendingWarningMessage = ""
     @State private var isShowingWarning = false
+    @State private var playtestLaunch: PlaytestLaunch?
 
     init(model: EditorModel, atlas: SpriteAtlas = SpriteAtlas(), music: BackgroundMusicController) {
         self.model = model
@@ -19,7 +20,9 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                MapWorkspaceView(model: model, atlas: atlas)
+                MapWorkspaceView(model: model, atlas: atlas) {
+                    playtestLaunch = PlaytestLaunch(map: model.map)
+                }
                 Divider()
                     .ignoresSafeArea(.container)
                 VStack(spacing: 0) {
@@ -46,6 +49,9 @@ struct ContentView: View {
         }
         .sheet(item: $model.dialog) { dialog in
             DialogContainer(dialog: dialog, model: model, music: music)
+        }
+        .sheet(item: $playtestLaunch) { launch in
+            PlaytestView(map: launch.map, atlas: atlas)
         }
         .alert("Map compatibility", isPresented: $isShowingWarning) {
             Button("Cancel", role: .cancel) {
@@ -131,6 +137,7 @@ struct ContentView: View {
 struct MapWorkspaceView: View {
     let model: EditorModel
     let atlas: SpriteAtlas
+    let playtestAction: () -> Void
 
     var body: some View {
         GeometryReader { proxy in
@@ -141,21 +148,34 @@ struct MapWorkspaceView: View {
             )
             let boardSize = CGSize(
                 width: mapPixelSize.width + (MapCanvasMetrics.woodPadding * 2),
-                height: mapPixelSize.height + (MapCanvasMetrics.woodPadding * 2)
+                height: mapPixelSize.height
+                    + (MapCanvasMetrics.woodPadding * 2)
+                    + MapCanvasMetrics.bottomWallHeight
             )
             let contentSize = CGSize(
                 width: max(proxy.size.width, boardSize.width + (MapCanvasMetrics.parchmentPadding * 2)),
                 height: max(proxy.size.height, boardSize.height + (MapCanvasMetrics.parchmentPadding * 2))
             )
 
-            ScrollView([.horizontal, .vertical]) {
-                ZStack {
-                    MapParchmentSurface(tileSize: mapTileSize, mapSize: mapPixelSize)
+            ZStack(alignment: .bottomTrailing) {
+                ScrollView([.horizontal, .vertical]) {
+                    ZStack {
+                        MapParchmentSurface(tileSize: mapTileSize, mapSize: mapPixelSize)
 
-                    MapCanvasBoard(model: model, atlas: atlas)
-                        .padding(MapCanvasMetrics.parchmentPadding)
+                        MapCanvasBoard(model: model, atlas: atlas)
+                            .padding(MapCanvasMetrics.parchmentPadding)
+                    }
+                    .frame(width: contentSize.width, height: contentSize.height)
                 }
-                .frame(width: contentSize.width, height: contentSize.height)
+
+                Button("Playtest", systemImage: "play.fill", action: playtestAction)
+                    .labelStyle(.iconOnly)
+                    .font(.title3.weight(.semibold))
+                    .buttonStyle(GLWNInContentButtonStyle(tone: .accent, cornerRadius: 999, horizontalPadding: 14, minHeight: 38))
+                    .frame(minWidth: 38, minHeight: 38)
+                    .help("Playtest map")
+                    .accessibilityLabel("Playtest map")
+                    .padding(18)
             }
             .background {
                 MapParchmentSurface(tileSize: mapTileSize, mapSize: mapPixelSize)

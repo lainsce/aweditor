@@ -7,13 +7,14 @@ struct PaletteView: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
-            Picker("", selection: $model.selectedTab) {
-                ForEach(PaletteTab.allCases) { tab in
-                    Text(tab.displayName).tag(tab)
-                }
+            GLWNSegmentedPicker(
+                selection: $model.selectedTab,
+                options: PaletteTab.allCases
+            ) { tab in
+                Text(tab.displayName)
             }
-            .pickerStyle(.tabs)
             .padding(.vertical, 12)
+            .padding(.horizontal, 12)
             .padding(.top, 52)
 
             if model.selectedTab == .unit {

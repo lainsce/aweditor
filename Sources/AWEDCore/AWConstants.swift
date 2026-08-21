@@ -74,6 +74,39 @@ public enum Tileset: Int, CaseIterable, Codable, Sendable {
         case .aw2: "AW2"
         }
     }
+
+    /// The game rules used when launching an in-editor playtest for this
+    /// tileset. The four DS art sets share the Dual Strike rules, while the
+    /// two GBA art sets retain their original game's rules.
+    public var playtestRuleset: PlaytestRuleset {
+        switch self {
+        case .normal, .snow, .desert, .wasteland: .dualStrike
+        case .aw1: .advanceWars
+        case .aw2: .advanceWars2
+        }
+    }
+}
+
+public enum PlaytestRuleset: String, CaseIterable, Codable, Sendable {
+    case dualStrike
+    case advanceWars
+    case advanceWars2
+
+    public var displayName: String {
+        switch self {
+        case .dualStrike: "Advance Wars: Dual Strike"
+        case .advanceWars: "Advance Wars"
+        case .advanceWars2: "Advance Wars 2"
+        }
+    }
+
+    public var shortName: String {
+        switch self {
+        case .dualStrike: "Dual Strike"
+        case .advanceWars: "AW1"
+        case .advanceWars2: "AW2"
+        }
+    }
 }
 
 public enum MapFormat: String, CaseIterable, Codable, Sendable {

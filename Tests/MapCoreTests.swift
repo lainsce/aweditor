@@ -18,6 +18,16 @@ func elementTables() {
     #expect(Element.buildingCity.changedArmy(AWConstants.armyBlueMoon).drawY == 2)
 }
 
+@Test("tilesets select their matching playtest rules")
+func playtestRulesetMapping() {
+    #expect(Tileset.normal.playtestRuleset == .dualStrike)
+    #expect(Tileset.snow.playtestRuleset == .dualStrike)
+    #expect(Tileset.desert.playtestRuleset == .dualStrike)
+    #expect(Tileset.wasteland.playtestRuleset == .dualStrike)
+    #expect(Tileset.aw1.playtestRuleset == .advanceWars)
+    #expect(Tileset.aw2.playtestRuleset == .advanceWars2)
+}
+
 @Test("map defaults, placement rules, and drawing variants")
 func mapEditingRules() {
     var map = MapState(width: 4, height: 3, defaultTerrain: .terrainSea)
@@ -38,6 +48,29 @@ func mapEditingRules() {
     #expect(clipped.width == 2)
     #expect(clipped.height == 2)
     #expect(clipped.backgroundElement(atX: 0, y: 0) == .terrainPlain)
+}
+
+@Test("bridge, shoal, and port placement keeps land and naval units separate")
+func movementSurfacePlacement() {
+    var map = MapState(width: 4, height: 1, defaultTerrain: .terrainPlain)
+    _ = map.setBackground(.terrainShoal, atX: 0, y: 0, check: false)
+    _ = map.setBackground(.terrainBridgeH, atX: 1, y: 0, check: false)
+    _ = map.setBackground(.buildingPort, atX: 2, y: 0, check: false)
+    _ = map.setBackground(.terrainSea, atX: 3, y: 0, check: false)
+
+    #expect(map.allowPlacement(.unitInfantry, atX: 0, y: 0))
+    #expect(map.allowPlacement(.unitTank, atX: 0, y: 0))
+    #expect(map.allowPlacement(.unitInfantry, atX: 1, y: 0))
+    #expect(!map.allowPlacement(.unitLander, atX: 1, y: 0))
+    #expect(map.allowPlacement(.unitLander, atX: 2, y: 0))
+    #expect(!map.allowPlacement(.unitTank, atX: 3, y: 0))
+
+    var river = MapState(width: 3, height: 1, defaultTerrain: .terrainPlain)
+    _ = river.setBackground(.terrainRiver, atX: 1, y: 0, check: false)
+    #expect(river.allowPlacement(.unitInfantry, atX: 1, y: 0))
+    #expect(river.allowPlacement(.unitMech, atX: 1, y: 0))
+    #expect(!river.allowPlacement(.unitTank, atX: 1, y: 0))
+    #expect(!river.allowPlacement(.unitOozium, atX: 1, y: 0))
 }
 
 @Test("enclosed sea cells use the legacy draw variant")

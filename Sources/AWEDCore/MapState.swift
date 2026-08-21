@@ -161,11 +161,11 @@ public struct MapState: Codable, Equatable, Sendable {
             if underlying == .terrainBlank { return true }
             let base = underlying.simplified
             switch element.simplified.value {
-            case Element.unitInfantry.value, Element.unitMech.value, Element.unitOozium.value:
+            case Element.unitInfantry.value, Element.unitMech.value:
                 return base.isBuilding || [.terrainPlain, .terrainPlainD, .terrainWood, .terrainMountain, .terrainRoad, .terrainBridgeH, .terrainRiver, .terrainShoal].contains(base)
             case Element.unitTank.value, Element.unitMDTank.value, Element.unitNeoTank.value, Element.unitMegaTank.value,
                  Element.unitRecon.value, Element.unitAntiAir.value, Element.unitMissile.value, Element.unitArtillery.value,
-                 Element.unitRocket.value, Element.unitAPC.value:
+                 Element.unitRocket.value, Element.unitAPC.value, Element.unitOozium.value:
                 return base.isBuilding || [.terrainPlain, .terrainPlainD, .terrainWood, .terrainRoad, .terrainBridgeH, .terrainShoal].contains(base)
             case Element.unitPipeRunner.value:
                 return [.terrainPipe, .terrainSeam, .buildingBase].contains(base)

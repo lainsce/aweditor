@@ -11,7 +11,7 @@ struct EditorToolbar: ToolbarContent {
 
     var body: some ToolbarContent {
         ToolbarItem(placement: .navigation) {
-            Menu {
+            GLWNToolbarMenuButton(title: "Map", systemImage: "map") {
                 Menu("Fill") {
                     Button("Sea") { model.fill(.terrainSea) }
                     Button("Plains") { model.fill(.terrainPlain) }
@@ -23,10 +23,7 @@ struct EditorToolbar: ToolbarContent {
                 Button("Information…", systemImage: "info.circle") { model.dialog = .information }
                 Button("Settings…", systemImage: "slider.horizontal.3") { model.dialog = .settings }
                 Button("Status…", systemImage: "chart.bar") { model.dialog = .status }
-            } label: {
-                GLWNToolbarMenuLabel(title: "Map", systemImage: "map")
             }
-            .accessibilityLabel("Map")
         }
         .sharedBackgroundVisibility(.hidden)
 
@@ -65,35 +62,32 @@ struct EditorToolbar: ToolbarContent {
         ToolbarSpacer()
 
         ToolbarItem(placement: .primaryAction) {
-            GLWNToolbarControlGroup {
-                Picker("Tool", selection: Binding(
+            GLWNSegmentedPicker(
+                selection: Binding(
                     get: { model.selectedTool },
                     set: { model.setTool($0) }
-                )) {
-                    ForEach(EditorTool.allCases) { tool in
-                        Label(tool.title, systemImage: tool.systemImage)
-                            .frame(minWidth: 38, minHeight: 38, maxHeight: 38)
-                            .tag(tool)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .help("Drawing tool")
+                ),
+                options: EditorTool.allCases
+            ) { tool in
+                Label(tool.title, systemImage: tool.systemImage)
+                    .labelStyle(.iconOnly)
+                    .frame(minWidth: 38, minHeight: 32, maxHeight: 32)
+                    .accessibilityLabel(tool.title)
             }
+            .frame(minWidth: CGFloat(EditorTool.allCases.count * 38), maxHeight: 38)
+            .help("Drawing tool")
         }
         .sharedBackgroundVisibility(.hidden)
 
         ToolbarSpacer(.fixed)
 
         ToolbarItemGroup(placement: .primaryAction) {
-            Menu {
+            GLWNToolbarMenuButton(title: "More", systemImage: "ellipsis.circle") {
                 Button("Save As…", systemImage: "square.and.arrow.down.on.square", action: saveAsAction)
                 Button("Save Screenshot…", systemImage: "photo", action: screenshotAction)
                 Divider()
                 Button("Preferences…", systemImage: "gearshape", action: { model.dialog = .preferences })
-            } label: {
-                GLWNToolbarMenuLabel(title: "Menu", systemImage: "ellipsis.circle")
             }
-            .accessibilityLabel("More")
         }
         .sharedBackgroundVisibility(.hidden)
     }

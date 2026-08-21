@@ -138,21 +138,23 @@ struct GLWNToolbarSurfaceModifier: ViewModifier {
                             )
                     }
                     .overlay {
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .fill(
-                                RadialGradient(
-                                    colors: [
-                                        .white.opacity(highlightTopOpacity),
-                                        .white.opacity(highlightBottomOpacity),
-                                        .clear,
-                                    ],
-                                    center: .bottom,
-                                    startRadius: 0,
-                                    endRadius: 38
+                        GeometryReader { proxy in
+                            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                                .fill(
+                                    RadialGradient(
+                                        colors: [
+                                            .white.opacity(highlightTopOpacity),
+                                            .white.opacity(highlightBottomOpacity),
+                                            .clear,
+                                        ],
+                                        center: .bottom,
+                                        startRadius: 0,
+                                        endRadius: max(38, proxy.size.width * 0.5)
+                                    )
                                 )
-                            )
-                            .scaleEffect(x: 1, y: 0.72, anchor: .bottom)
-                            .opacity(reduceTransparency ? 0 : 1)
+                                .scaleEffect(x: 1, y: 0.72, anchor: .bottom)
+                                .opacity(reduceTransparency ? 0 : 1)
+                        }
                     }
                     .overlay {
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
@@ -216,4 +218,3 @@ struct GLWNToolbarSurfaceModifier: ViewModifier {
             )
     }
 }
-
