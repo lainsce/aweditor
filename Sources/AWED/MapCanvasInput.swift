@@ -79,8 +79,10 @@ struct MapCanvasInput: NSViewRepresentable {
         }
 
         private func cell(at location: CGPoint) -> GridPoint? {
-            let x = Int(floor(location.x / tileSize))
             let y = Int(floor((location.y - topInset) / tileSize))
+            let staggered = MapCanvasMetrics.isStaggeredGB(map: model.map, palette: model.renderPalette)
+            let rowOffset = staggered && y % 2 != 0 ? tileSize / 2 : 0
+            let x = Int(floor((location.x - rowOffset) / tileSize))
             guard x >= 0, x < model.map.width, y >= 0, y < model.map.height else { return nil }
             return GridPoint(x: x, y: y)
         }

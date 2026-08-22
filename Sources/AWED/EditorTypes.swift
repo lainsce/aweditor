@@ -42,7 +42,7 @@ enum EditorTool: String, CaseIterable, Identifiable, Sendable {
 
     var systemImage: String {
         switch self {
-        case .pencil: "pencil"
+        case .pencil: "pencil.and.scribble"
         case .line: "line.diagonal"
         case .rectangle: "rectangle"
         case .filledRectangle: "rectangle.fill"

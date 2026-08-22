@@ -20,6 +20,8 @@ enum PlaytestWeather: String, CaseIterable, Identifiable, Sendable {
     case clear
     case rain
     case snow
+    case sandstorm
+    case random
 
     var id: String { rawValue }
 
@@ -28,6 +30,8 @@ enum PlaytestWeather: String, CaseIterable, Identifiable, Sendable {
         case .clear: "Clear"
         case .rain: "Rain"
         case .snow: "Snow"
+        case .sandstorm: "Sandstorm"
+        case .random: "Random"
         }
     }
 }
@@ -98,6 +102,105 @@ struct PlaytestProductionOption: Identifiable {
 /// and tables live in the dedicated Dual Strike, AW1, and AW2 rule files so
 /// each game can evolve without making this dispatch layer harder to maintain.
 enum PlaytestRulebook {
+    static func formatFunds(_ amount: Int) -> String {
+        "\(amount.formatted()) G"
+    }
+
+    static func weatherOptions(for ruleset: PlaytestRuleset) -> [PlaytestWeather] {
+        switch ruleset {
+        case .dualStrike:
+            return PlaytestDualStrikeRules.weatherOptions
+        case .advanceWars:
+            return PlaytestAdvanceWarsRules.weatherOptions
+        case .advanceWars2:
+            return PlaytestAdvanceWars2Rules.weatherOptions
+        }
+    }
+
+    static func concreteWeatherOptions(for ruleset: PlaytestRuleset) -> [PlaytestWeather] {
+        weatherOptions(for: ruleset).filter { $0 != .random }
+    }
+
+    static func randomWeather(for ruleset: PlaytestRuleset) -> PlaytestWeather {
+        concreteWeatherOptions(for: ruleset).randomElement() ?? .clear
+    }
+
+    /// The map-art choice is also the starting weather for playtest. This
+    /// keeps an AW1 snow map, AW2 rain map, or DS desert map visually and
+    /// mechanically aligned as soon as the playtest opens. Wasteland is a
+    /// Dual Strike art-only palette, so it starts in clear weather.
+    static func initialWeather(for variant: MapVisualVariant, ruleset: PlaytestRuleset) -> PlaytestWeather {
+        let requested: PlaytestWeather
+        switch variant {
+        case .famicomWars, .gbWars, .dualStrikeNormal, .dualStrikeWasteland, .aw1Clear, .aw2Clear:
+            requested = .clear
+        case .dualStrikeSnow, .aw1Snow, .aw2Snow:
+            requested = .snow
+        case .dualStrikeDesert:
+            requested = .sandstorm
+        case .aw2Rain:
+            requested = .rain
+        }
+
+        return weatherOptions(for: ruleset).contains(requested) ? requested : .clear
+    }
+
+    /// Returns the persisted/base art tileset used by the playtest map
+    /// snapshot. Weather-specific GBA art is selected separately through
+    /// `visualPalette` so it never leaks into map serialization.
+    static func visualTileset(for ruleset: PlaytestRuleset, weather: PlaytestWeather) -> Tileset {
+        switch ruleset {
+        case .dualStrike:
+            switch weather {
+            case .snow:
+                return .snow
+            case .sandstorm:
+                return .desert
+            case .clear, .rain, .random:
+                return .normal
+            }
+        case .advanceWars:
+            return .aw1
+        case .advanceWars2:
+            return .aw2
+        }
+    }
+
+    /// Render-only palette for weather art. The AW1 and AW2 terrain geometry
+    /// is shared by the GBA cartridges, while their building/unit sheets stay
+    /// game-specific through the base tileset.
+    static func visualPalette(for ruleset: PlaytestRuleset, weather: PlaytestWeather) -> SpritePalette {
+        switch ruleset {
+        case .dualStrike:
+            return .tileset(visualTileset(for: ruleset, weather: weather))
+        case .advanceWars:
+            switch weather {
+            case .snow: return .gbaSnow(base: .aw1)
+            case .clear, .rain, .sandstorm, .random: return .tileset(.aw1)
+            }
+        case .advanceWars2:
+            switch weather {
+            case .rain: return .gbaRain(base: .aw2)
+            case .snow: return .gbaSnow(base: .aw2)
+            case .clear, .sandstorm, .random: return .tileset(.aw2)
+            }
+        }
+    }
+
+    static func fogOfWarIsActive(
+        ruleset: PlaytestRuleset,
+        manualFogEnabled: Bool,
+        weather: PlaytestWeather
+    ) -> Bool {
+        if ruleset == .dualStrike {
+            return PlaytestDualStrikeRules.fogOfWarIsActive(
+                manualFogEnabled: manualFogEnabled,
+                weather: weather
+            )
+        }
+        return manualFogEnabled
+    }
+
     static func resourceLabel(for element: Element) -> String {
         switch element.simplified {
         case .unitInfantry, .unitMech:
@@ -116,7 +219,7 @@ enum PlaytestRulebook {
         case .unitAPC: return 1
         case .unitLander: return 2
         case .unitTCopter: return 1
-        case .unitCruiser: return 2
+        case .unitCruiser, .unitBlackBoat, .unitCarrier: return 2
         default: return 0
         }
     }
@@ -131,10 +234,7 @@ enum PlaytestRulebook {
 
         guard transportCapacity(for: transport) > 0,
               let cargoStats = stats(for: cargo, ruleset: ruleset),
-              cargo.army == transport.army,
-              cargo.simplified != .unitAPC,
-              cargo.simplified != .unitLander,
-              cargo.simplified != .unitTCopter else { return false }
+              cargo.army == transport.army else { return false }
 
         switch transport.simplified {
         case .unitAPC:
@@ -146,6 +246,12 @@ enum PlaytestRulebook {
             return cargoStats.domain == .land
         case .unitTCopter:
             return cargo.simplified == .unitInfantry || cargo.simplified == .unitMech
+        case .unitCruiser:
+            return cargo.simplified == .unitBCopter || cargo.simplified == .unitTCopter
+        case .unitBlackBoat:
+            return cargo.simplified == .unitInfantry || cargo.simplified == .unitMech
+        case .unitCarrier:
+            return cargoStats.domain == .air
         default:
             return false
         }
@@ -167,21 +273,57 @@ enum PlaytestRulebook {
         return nil
     }
 
-    static func productionOptions(for building: Element, ruleset: PlaytestRuleset) -> [PlaytestProductionOption] {
+    static func productionOptions(
+        for building: Element,
+        ruleset: PlaytestRuleset,
+        tileset: Tileset? = nil
+    ) -> [PlaytestProductionOption] {
         let elements: [Element]
-        switch building.simplified {
-        case .buildingBase:
-            elements = landUnits(for: ruleset)
-        case .buildingAirport:
-            elements = airUnits(for: ruleset)
-        case .buildingPort:
-            elements = seaUnits(for: ruleset)
-        default:
-            return []
+        let famicomRoster = tileset == .famicomWars && ruleset == .advanceWars
+        let gbWarsRoster = tileset == .gbWars && ruleset == .advanceWars
+        if famicomRoster {
+            switch building.simplified {
+            case .buildingBase:
+                elements = PlaytestAdvanceWarsRules.famicomWarsLandUnits
+            case .buildingAirport:
+                elements = PlaytestAdvanceWarsRules.famicomWarsAirUnits
+            case .buildingPort:
+                elements = PlaytestAdvanceWarsRules.famicomWarsSeaUnits
+            default:
+                return []
+            }
+        } else if gbWarsRoster {
+            switch building.simplified {
+            case .buildingBase:
+                elements = PlaytestAdvanceWarsRules.gbWarsLandUnits
+            case .buildingAirport:
+                elements = PlaytestAdvanceWarsRules.gbWarsAirUnits
+            case .buildingPort:
+                elements = PlaytestAdvanceWarsRules.gbWarsSeaUnits
+            default:
+                return []
+            }
+        } else {
+            switch building.simplified {
+            case .buildingBase:
+                elements = landUnits(for: ruleset)
+            case .buildingAirport:
+                elements = airUnits(for: ruleset)
+            case .buildingPort:
+                elements = seaUnits(for: ruleset)
+            default:
+                return []
+            }
         }
         return elements.compactMap { element in
             guard let stats = stats(for: element, ruleset: ruleset) else { return nil }
-            return PlaytestProductionOption(element: element, label: PaletteCatalog.label(for: element), cost: stats.cost)
+            let label: String
+            if famicomRoster {
+                label = PlaytestAdvanceWarsRules.famicomWarsProductionLabel(for: element)
+            } else {
+                label = PaletteCatalog.label(for: element, tileset: gbWarsRoster ? .gbWars : nil)
+            }
+            return PlaytestProductionOption(element: element, label: label, cost: stats.cost)
         }
     }
 
@@ -221,7 +363,7 @@ enum PlaytestRulebook {
             return targetDomain != .air
         case .unitAntiAir:
             return targetDomain == .air || targetDomain == .land
-        case .unitTCopter, .unitLander, .unitCarrier:
+        case .unitTCopter, .unitLander:
             return false
         case .unitBCopter, .unitBomber:
             return targetDomain != .air
@@ -229,8 +371,12 @@ enum PlaytestRulebook {
             return true
         case .unitBlackBomb:
             return targetDomain != .air
-        case .unitBlackBoat, .unitBattleship:
+        case .unitBlackBoat:
+            return false
+        case .unitBattleship:
             return targetDomain != .air
+        case .unitCarrier:
+            return targetDomain == .air
         case .unitCruiser:
             return targetDomain == .air || targetDomain == .sea
         case .unitSub:
@@ -257,6 +403,9 @@ enum PlaytestRulebook {
     /// foot, tires, treads, Piperunners, and naval ships on Woods, Mountains,
     /// Rivers, and Reefs.
     static func movementCost(for unit: Element, stats: PlaytestUnitStats, terrain: Element, ruleset: PlaytestRuleset = .dualStrike, weather: PlaytestWeather = .clear) -> Int? {
+        if ruleset == .dualStrike {
+            return PlaytestDualStrikeRules.movementCost(for: unit, terrain: terrain)
+        }
         if ruleset == .advanceWars2 {
             return PlaytestAdvanceWars2Rules.movementCost(for: unit, terrain: terrain, weather: weather)
         }
@@ -326,6 +475,25 @@ enum PlaytestRulebook {
         }
     }
 
+    /// Snow in Dual Strike leaves movement points unchanged but doubles the
+    /// fuel/rations charged for every movement point. The GBA rules keep the
+    /// normal one-fuel-per-point cost in every weather condition.
+    static func movementFuelCost(
+        for unit: Element,
+        movement: Int,
+        ruleset: PlaytestRuleset,
+        weather: PlaytestWeather
+    ) -> Int {
+        if ruleset == .dualStrike {
+            return PlaytestDualStrikeRules.movementFuelCost(
+                for: unit,
+                movement: movement,
+                weather: weather
+            )
+        }
+        return movement
+    }
+
     static func damage(
         attacker: Element,
         defender: Element,
@@ -382,10 +550,17 @@ enum PlaytestRulebook {
             multiplier = defenderStats.domain == .land ? 78 : 55
         case .unitBlackBoat:
             multiplier = defenderStats.domain == .land ? 70 : 50
+        case .unitCarrier:
+            multiplier = defenderStats.domain == .air ? 100 : 0
         default:
             multiplier = defenderStats.domain == .land ? 78 : 42
         }
-        return max(1, min(100, attackerStats.attackPower * multiplier / 100))
+        // Dual Strike stores health as a percentage internally. A unit at
+        // 10 HP (100) deals full damage, while 9 HP (90) deals 90%, and so
+        // on down to 1 HP (10).
+        let healthScale = Double(max(1, min(100, attackerHealth))) / 100
+        let rawDamage = Double(attackerStats.attackPower * multiplier) / 100 * healthScale
+        return max(1, min(100, Int(rawDamage.rounded(.down))))
     }
 
     static func terrainStars(for terrain: Element, ruleset: PlaytestRuleset) -> Int {
@@ -418,7 +593,7 @@ enum PlaytestRulebook {
 
     static func isCapturableBuilding(_ building: Element, ruleset: PlaytestRuleset) -> Bool {
         guard building.isBuilding else { return false }
-        if ruleset == .advanceWars2, building.simplified == .buildingSilo {
+        if (ruleset == .advanceWars2 || ruleset == .dualStrike), building.simplified == .buildingSilo {
             return false
         }
         if ruleset == .advanceWars,

@@ -4,6 +4,8 @@ import AWEDCore
 /// playtest session does not quietly apply DS-only units or weather behavior to
 /// an AW2 map.
 enum PlaytestAdvanceWars2Rules {
+    static let weatherOptions: [PlaytestWeather] = [.random, .clear, .rain, .snow]
+
     static let landUnits: [Element] = [
         .unitInfantry, .unitMech, .unitRecon, .unitTank, .unitMDTank,
         .unitNeoTank, .unitAPC, .unitArtillery, .unitRocket, .unitAntiAir,

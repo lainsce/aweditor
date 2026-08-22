@@ -78,13 +78,11 @@ struct MapSettingsView: View {
     let model: EditorModel
     @State private var width: Int
     @State private var height: Int
-    @State private var tileset: Tileset
 
     init(model: EditorModel) {
         self.model = model
         _width = State(initialValue: model.map.width)
         _height = State(initialValue: model.map.height)
-        _tileset = State(initialValue: model.map.tileset)
     }
 
     var body: some View {
@@ -105,14 +103,13 @@ struct MapSettingsView: View {
                         step: 1
                     )
                 }
-                GLWNFormRow("Tileset") {
-                    GLWNPullDownMenu(
-                        "Tileset",
-                        selection: $tileset,
-                        options: Tileset.allCases,
-                        showsTitle: false
-                    ) { tile in
-                        Text(tile.displayName)
+                GLWNFormRow("Map art") {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(model.visualVariant.displayName)
+                            .font(.body)
+                        Text("Choose variants directly in the Map Art tab.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -127,7 +124,7 @@ struct MapSettingsView: View {
                 Button("Cancel", role: .cancel) { model.dialog = nil }
                     .buttonStyle(GLWNInContentButtonStyle(tone: .neutral))
                 Button("Apply") {
-                    model.updateSettings(width: width, height: height, tileset: tileset)
+                    model.updateSettings(width: width, height: height, tileset: model.visualVariant.baseTileset)
                     model.dialog = nil
                 }
                 .buttonStyle(GLWNInContentButtonStyle(tone: .accent))
@@ -204,7 +201,7 @@ struct PreferencesView: View {
                         GLWNPullDownMenu(
                             "Default tileset",
                             selection: $preferences.defaultTileset,
-                            options: Tileset.allCases,
+                            options: Tileset.launchOrdered,
                             showsTitle: false
                         ) { tile in
                             Text(tile.displayName)
@@ -244,7 +241,11 @@ struct PreferencesView: View {
                     .buttonStyle(GLWNInContentButtonStyle(tone: .neutral))
                 Button("Save") {
                     model.updatePreferences(preferences)
-                    music.apply(enabled: preferences.volumeEnabled, volume: preferences.volume)
+                    music.apply(
+                        tileset: model.map.tileset,
+                        enabled: preferences.volumeEnabled,
+                        volume: preferences.volume
+                    )
                     model.dialog = nil
                 }
                 .buttonStyle(GLWNInContentButtonStyle(tone: .accent))
@@ -281,9 +282,9 @@ struct MapStatusView: View {
                     ForEach(columns, id: \.self) { Text($0).bold().frame(maxWidth: .infinity, alignment: .center) }
                     Text("Units").bold().frame(maxWidth: .infinity, alignment: .center)
                 }
-                ForEach(0...AWConstants.armyNeutral, id: \.self) { army in
+                ForEach(PaletteCatalog.visibleArmies(for: model.map.tileset) + [AWConstants.armyNeutral], id: \.self) { army in
                     GridRow {
-                        Text(PaletteCatalog.armyName(army))
+                        Text(PaletteCatalog.armyName(army, tileset: model.map.tileset))
                         ForEach(0..<columns.count, id: \.self) { column in
                             Text("\(counts.values[column][army])").monospacedDigit().frame(maxWidth: .infinity, alignment: .center)
                         }

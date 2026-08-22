@@ -10,6 +10,44 @@ enum MapCanvasMetrics {
     static let woodPadding: CGFloat = 10
     static let bottomWallHeight: CGFloat = 20
     static let parchmentPadding: CGFloat = 12
+
+    /// Game Boy Wars lays out its logical cells as horizontally staggered
+    /// four-sided spaces. Keep this decision in one geometry helper so the
+    /// editor, hit testing, playtest, and screenshot renderer cannot drift
+    /// apart when a GB Wars palette is selected.
+    static func isStaggeredGB(map: MapState, palette: SpritePalette? = nil) -> Bool {
+        if map.tileset == .gbWars { return true }
+        if case .gbWars? = palette { return true }
+        return false
+    }
+
+    static func mapPixelSize(width: Int, height: Int, tileSize: CGFloat, staggered: Bool) -> CGSize {
+        CGSize(
+            width: CGFloat(width) * tileSize + (staggered && height > 1 ? tileSize / 2 : 0),
+            height: CGFloat(height) * tileSize
+        )
+    }
+
+    static func tileOrigin(x: Int, y: Int, tileSize: CGFloat, staggered: Bool) -> CGPoint {
+        CGPoint(
+            x: CGFloat(x) * tileSize + (staggered && y % 2 != 0 ? tileSize / 2 : 0),
+            y: CGFloat(y) * tileSize
+        )
+    }
+
+    static func tileRect(x: Int, y: Int, tileSize: CGFloat, staggered: Bool, inset: CGFloat = 0) -> CGRect {
+        CGRect(
+            origin: tileOrigin(x: x, y: y, tileSize: tileSize, staggered: staggered),
+            size: CGSize(width: tileSize, height: tileSize)
+        ).insetBy(dx: inset, dy: inset)
+    }
+
+    static func tilePath(in rect: CGRect, staggered _: Bool) -> Path {
+        // The stagger belongs to the row origin, not to the tile shape.
+        // GB Wars uses ordinary four-sided cells with an alternating
+        // half-cell horizontal offset between rows.
+        Path(rect)
+    }
 }
 
 struct MapCanvasBoard: View {
@@ -27,9 +65,15 @@ struct MapCanvasBoard: View {
     }
 
     var body: some View {
-        let mapWidth = CGFloat(model.map.width) * MapCanvasMetrics.tileSize
         let mapHeight = CGFloat(model.map.height) * MapCanvasMetrics.tileSize
-        let boardWidth = mapWidth + (MapCanvasMetrics.woodPadding * 2)
+        let staggered = MapCanvasMetrics.isStaggeredGB(map: model.map, palette: model.renderPalette)
+        let mapSize = MapCanvasMetrics.mapPixelSize(
+            width: model.map.width,
+            height: model.map.height,
+            tileSize: MapCanvasMetrics.tileSize,
+            staggered: staggered
+        )
+        let boardWidth = mapSize.width + (MapCanvasMetrics.woodPadding * 2)
         let boardHeight = mapHeight + (MapCanvasMetrics.woodPadding * 2)
 
         VStack(spacing: 0) {
@@ -46,8 +90,8 @@ struct MapCanvasBoard: View {
                     y: MapCanvasMetrics.woodPadding
                 )
             }
-            .frame(
-                width: boardWidth,
+                .frame(
+                    width: boardWidth,
                 height: boardHeight,
                 alignment: .topLeading
             )
@@ -89,16 +133,24 @@ private struct MapCanvasTallSpriteOverflow: View {
     let tileSize: CGFloat
 
     var body: some View {
+        let staggered = MapCanvasMetrics.isStaggeredGB(map: model.map, palette: model.renderPalette)
+        let mapSize = MapCanvasMetrics.mapPixelSize(
+            width: model.map.width,
+            height: model.map.height,
+            tileSize: tileSize,
+            staggered: staggered
+        )
         Canvas { context, _ in
             let map = model.map
             for x in 0..<map.width {
-                let rect = CGRect(x: CGFloat(x) * tileSize, y: 0, width: tileSize, height: tileSize)
+                let origin = MapCanvasMetrics.tileOrigin(x: x, y: 0, tileSize: tileSize, staggered: staggered)
+                let rect = CGRect(origin: origin, size: CGSize(width: tileSize, height: tileSize))
                 drawSprite(map.backgroundDrawElement(atX: x, y: 0), at: rect, context: &context)
                 drawSprite(map.foregroundElement(atX: x, y: 0), at: rect, context: &context)
             }
         }
         .frame(
-            width: CGFloat(model.map.width) * tileSize,
+            width: mapSize.width,
             height: tileSize * 2,
             alignment: .topLeading
         )
@@ -107,9 +159,9 @@ private struct MapCanvasTallSpriteOverflow: View {
     }
 
     private func drawSprite(_ element: Element, at rect: CGRect, context: inout GraphicsContext) {
-        guard element.doubleHeight,
-              element.isBuilding || element.isExtra,
-              let image = atlas.image(for: element, tileset: model.map.tileset) else { return }
+        guard model.renderPalette.doubleHeight(for: element),
+              element.isBuilding || element.isExtra || element.simplified == .terrainMountain,
+              let image = atlas.image(for: element, palette: model.renderPalette) else { return }
         context.draw(
             context.resolve(image),
             in: CGRect(x: rect.minX, y: 0, width: rect.width, height: rect.height * 2)
@@ -492,12 +544,19 @@ struct MapCanvasView: View {
     }
 
     var body: some View {
+        let staggered = MapCanvasMetrics.isStaggeredGB(map: model.map, palette: model.renderPalette)
+        let mapSize = MapCanvasMetrics.mapPixelSize(
+            width: model.map.width,
+            height: model.map.height,
+            tileSize: CGFloat(tileSize),
+            staggered: staggered
+        )
         Canvas { context, _ in
             context.translateBy(x: 0, y: topOverflow)
-            drawMap(context: &context)
+            drawMap(context: &context, staggered: staggered, mapSize: mapSize)
         }
         .frame(
-            width: CGFloat(model.map.width) * tileSize,
+            width: mapSize.width,
             height: (CGFloat(model.map.height) * tileSize) + topOverflow
         )
         .background(
@@ -564,39 +623,40 @@ struct MapCanvasView: View {
     }
 
     private func cell(for location: CGPoint) -> GridPoint {
-        GridPoint(
-            x: Int(floor(location.x / tileSize)),
-            y: Int(floor((location.y - topOverflow) / tileSize))
-        )
+        let y = Int(floor((location.y - topOverflow) / tileSize))
+        let staggered = MapCanvasMetrics.isStaggeredGB(map: model.map, palette: model.renderPalette)
+        let rowOffset = staggered && y % 2 != 0 ? tileSize / 2 : 0
+        return GridPoint(x: Int(floor((location.x - rowOffset) / tileSize)), y: y)
     }
 
     private func isValid(_ point: GridPoint) -> Bool {
         point.x >= 0 && point.x < model.map.width && point.y >= 0 && point.y < model.map.height
     }
 
-    private func drawMap(context: inout GraphicsContext) {
+    private func drawMap(context: inout GraphicsContext, staggered: Bool, mapSize: CGSize) {
         let map = model.map
         let tile = CGFloat(tileSize)
-        let mapBounds = CGRect(x: 0, y: 0, width: CGFloat(map.width) * tile, height: CGFloat(map.height) * tile)
+        let mapBounds = CGRect(origin: .zero, size: mapSize)
         context.clip(to: Path(mapBounds))
         context.fill(Path(mapBounds), with: .color(Color(red: 0.12, green: 0.16, blue: 0.18)))
 
         for x in 0..<map.width {
             for y in 0..<map.height {
-                let rect = CGRect(x: CGFloat(x) * tile, y: CGFloat(y) * tile, width: tile, height: tile)
-                context.fill(Path(rect), with: .color(Color.white.opacity((x + y).isMultiple(of: 2) ? 0.025 : 0.01)))
+                let rect = MapCanvasMetrics.tileRect(x: x, y: y, tileSize: tile, staggered: staggered)
+                context.fill(MapCanvasMetrics.tilePath(in: rect, staggered: staggered), with: .color(Color.white.opacity((x + y).isMultiple(of: 2) ? 0.025 : 0.01)))
                 let terrain = map.backgroundElement(atX: x, y: y)
                 let background = map.backgroundDrawElement(atX: x, y: y)
                 // Row-zero double-height artwork is supplied by the separate
                 // overflow layer so it can project above the wood rim without
                 // bringing the tile background with it.
-                if !(y == 0 && background.doubleHeight && (background.isBuilding || background.isExtra)) {
+                if !(y == 0 && model.renderPalette.doubleHeight(for: background) &&
+                    (background.isBuilding || background.isExtra || background.simplified == .terrainMountain)) {
                     drawSprite(background, at: rect, context: &context)
                 }
                 drawSeaCoast(atX: x, y: y, rect: rect, map: map, context: &context)
                 drawSeaUpperDepth(at: rect, x: x, y: y, terrain: terrain, map: map, context: &context)
                 let foreground = map.foregroundElement(atX: x, y: y)
-                if !(y == 0 && foreground.doubleHeight && (foreground.isBuilding || foreground.isExtra)) {
+                if !(y == 0 && model.renderPalette.doubleHeight(for: foreground) && (foreground.isBuilding || foreground.isExtra)) {
                     drawSprite(foreground, at: rect, context: &context)
                 }
             }
@@ -605,25 +665,48 @@ struct MapCanvasView: View {
         if let fragment = model.selectionFragment, let selection = model.selection {
             for x in 0..<fragment.width {
                 for y in 0..<fragment.height {
-                    let rect = CGRect(x: CGFloat(selection.x + x) * tile, y: CGFloat(selection.y + y) * tile, width: tile, height: tile)
+                    let rect = MapCanvasMetrics.tileRect(
+                        x: selection.x + x,
+                        y: selection.y + y,
+                        tileSize: tile,
+                        staggered: staggered
+                    )
                     let background = fragment.backgroundDrawElement(atX: x, y: y)
                     if background != .terrainBlank { drawSprite(background, at: rect, context: &context) }
                     drawSprite(fragment.foregroundElement(atX: x, y: y), at: rect, context: &context)
                 }
             }
-            let border = CGRect(x: CGFloat(selection.x) * tile + 0.5, y: CGFloat(selection.y) * tile + 0.5, width: CGFloat(selection.width) * tile - 1, height: CGFloat(selection.height) * tile - 1)
+            let borderOrigin = MapCanvasMetrics.tileOrigin(
+                x: selection.x,
+                y: selection.y,
+                tileSize: tile,
+                staggered: staggered
+            )
+            let border = CGRect(
+                x: borderOrigin.x + 0.5,
+                y: borderOrigin.y + 0.5,
+                width: CGFloat(selection.width) * tile - 1,
+                height: CGFloat(selection.height) * tile - 1
+            )
             context.stroke(Path(border), with: .color(.black), style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
         }
 
         if !model.previewCells.isEmpty {
             for point in model.previewCells {
-                let rect = CGRect(x: CGFloat(point.x) * tile + 1, y: CGFloat(point.y) * tile + 1, width: tile - 2, height: tile - 2)
-                context.fill(Path(rect), with: .color(Color.accentColor.opacity(0.18)))
-                context.stroke(Path(rect), with: .color(Color.accentColor), style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
+                let rect = MapCanvasMetrics.tileRect(
+                    x: point.x,
+                    y: point.y,
+                    tileSize: tile,
+                    staggered: staggered,
+                    inset: 1
+                )
+                let path = MapCanvasMetrics.tilePath(in: rect, staggered: staggered)
+                context.fill(path, with: .color(Color.accentColor.opacity(0.18)))
+                context.stroke(path, with: .color(Color.accentColor), style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
             }
         }
 
-        drawCursorFrame(map: map, tile: tile, context: &context)
+        drawCursorFrame(map: map, tile: tile, staggered: staggered, context: &context)
     }
 
     private func drawSeaUpperDepth(
@@ -638,6 +721,7 @@ struct MapCanvasView: View {
         // non-sea cell opts out independently even when it borders the sea.
         guard rect.minY == 0,
               terrain.simplified == .terrainSea,
+              map.tileset != .gbWars,
               !hasTallSpriteCover(atX: x, y: y, map: map) else { return }
 
         let depthHeight = min(rect.height * 0.38, 10)
@@ -667,21 +751,29 @@ struct MapCanvasView: View {
         // in the sprite artwork.
         for anchorY in y...min(y + 1, map.height - 1) {
             let background = map.backgroundElement(atX: x, y: anchorY)
-            if background.doubleHeight && (background.isBuilding || background.isExtra) { return true }
+            if model.renderPalette.doubleHeight(for: background) && (background.isBuilding || background.isExtra) { return true }
         }
         return false
     }
 
     private func drawSprite(_ element: Element, at rect: CGRect, context: inout GraphicsContext) {
-        guard let image = atlas.image(for: element, tileset: model.map.tileset) else { return }
-        let drawRect = element.doubleHeight ? CGRect(x: rect.minX, y: rect.minY - rect.height, width: rect.width, height: rect.height * 2) : rect
-        context.draw(context.resolve(image), in: drawRect)
+        guard let image = atlas.image(for: element, palette: model.renderPalette) else { return }
+        let isDoubleHeight = model.renderPalette.doubleHeight(for: element)
+        let drawRect = isDoubleHeight ? CGRect(x: rect.minX, y: rect.minY - rect.height, width: rect.width, height: rect.height * 2) : rect
+        if MapCanvasMetrics.isStaggeredGB(map: model.map, palette: model.renderPalette), !isDoubleHeight {
+            var clippedContext = context
+            clippedContext.clip(to: MapCanvasMetrics.tilePath(in: rect, staggered: true))
+            clippedContext.draw(clippedContext.resolve(image), in: drawRect)
+        } else {
+            context.draw(context.resolve(image), in: drawRect)
+        }
     }
 
     private func drawSeaCoast(atX x: Int, y: Int, rect: CGRect, map: MapState, context: inout GraphicsContext) {
         // Enclosed sea cells are already represented by a dedicated draw
         // variant (terrain columns 7). Compose overlays only for base sea.
-        guard map.backgroundDrawElement(atX: x, y: y) == .terrainSea else { return }
+        guard map.tileset != .gbWars,
+              map.backgroundDrawElement(atX: x, y: y) == .terrainSea else { return }
         let up = map.backgroundElement(atX: x, y: y - 1)
         let down = map.backgroundElement(atX: x, y: y + 1)
         let left = map.backgroundElement(atX: x - 1, y: y)
@@ -707,7 +799,12 @@ struct MapCanvasView: View {
         for (element, shouldDraw) in overlays where shouldDraw { drawSprite(element, at: rect, context: &context) }
     }
 
-    private func drawCursorFrame(map: MapState, tile: CGFloat, context: inout GraphicsContext) {
+    private func drawCursorFrame(
+        map: MapState,
+        tile: CGFloat,
+        staggered: Bool,
+        context: inout GraphicsContext
+    ) {
         guard model.preferences.drawCursor,
               let pointer = model.pointerCell,
               pointer.x >= 0, pointer.x < map.width,
@@ -728,9 +825,15 @@ struct MapCanvasView: View {
         let frameScale = tile / 16
         let origin = footprint > 1 ? 1 : 0
         let singleFrameInset = footprint > 1 ? 0 : frameScale
+        let tileOrigin = MapCanvasMetrics.tileOrigin(
+            x: pointer.x - origin,
+            y: pointer.y - origin,
+            tileSize: tile,
+            staggered: staggered
+        )
         let rect = CGRect(
-            x: CGFloat(pointer.x - origin) * tile - singleFrameInset,
-            y: CGFloat(pointer.y - origin) * tile - singleFrameInset,
+            x: tileOrigin.x - singleFrameInset,
+            y: tileOrigin.y - singleFrameInset,
             width: sourcePixels * frameScale,
             height: sourcePixels * frameScale
         )

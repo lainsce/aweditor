@@ -13,19 +13,147 @@ struct PaletteItem: Identifiable, Hashable {
         self.label = label
         self.tab = tab
     }
+
+    private init(id: String, element: Element, label: String, tab: PaletteTab) {
+        self.id = id
+        self.element = element
+        self.label = label
+        self.tab = tab
+    }
+
+    func withLabel(_ label: String) -> PaletteItem {
+        PaletteItem(id: id, element: element, label: label, tab: tab)
+    }
 }
 
 enum PaletteCatalog {
-    static func items(for tab: PaletteTab) -> [PaletteItem] {
-        switch tab {
-        case .terrain: terrainItems
-        case .unit: unitItems
-        case .extra: extraItems
+    static func tabs(for tileset: Tileset) -> [PaletteTab] {
+        PaletteTab.allCases.filter { tab in
+            if tileset == .famicomWars || tileset == .gbWars {
+                return tab != .extra
+            }
+            return true
         }
     }
 
-    static func label(for element: Element) -> String {
+    static func visibleArmies(for tileset: Tileset) -> [Int] {
+        if tileset == .famicomWars {
+            return [
+                AWConstants.armyOrangeStar,
+                AWConstants.armyBlueMoon,
+                AWConstants.armyGreenEarth,
+                AWConstants.armyYellowComet
+            ]
+        }
+        if tileset == .gbWars {
+            return [AWConstants.armyOrangeStar, AWConstants.armyBlueMoon]
+        }
+        return Array(0..<AWConstants.playableArmies)
+    }
+
+    /// Factions that can participate in the local playtest for a tileset.
+    /// AW1 and Famicom Wars do not have a Black Hole player; GB Wars is the
+    /// two-player Red Star/White Moon variant.
+    static func playtestArmies(for tileset: Tileset) -> [Int] {
+        switch tileset {
+        case .aw1:
+            return Array(0..<4)
+        case .famicomWars, .gbWars:
+            return visibleArmies(for: tileset)
+        default:
+            return Array(0..<AWConstants.playableArmies)
+        }
+    }
+
+    static func items(for tab: PaletteTab, tileset: Tileset? = nil) -> [PaletteItem] {
+        let items: [PaletteItem]
+        switch tab {
+        case .terrain: items = terrainItems
+        case .unit: items = unitItems
+        case .extra: items = extraItems
+        case .mapArt: items = []
+        }
+
+        if tileset == .gbWars {
+            if tab == .unit {
+                let deleteItem = items.first(where: { $0.element == .unitDelete })
+                let rosterItems = gbWarsUnitRoster.compactMap { rosterElement in
+                    items.first(where: { $0.element.simplified == rosterElement })
+                }
+                return ([deleteItem].compactMap { $0 } + rosterItems).map { item in
+                    guard let label = gbWarsUnitLabel(for: item.element) else { return item }
+                    return item.withLabel(label)
+                }
+            }
+            return items
+                .filter { item in
+                    if item.tab == .terrain {
+                        if item.element.isBuilding {
+                            let hiddenBuildings: Set<Element> = [
+                                .buildingSilo,
+                                .buildingAirport,
+                                .buildingPort,
+                                .buildingTower,
+                                .buildingLab
+                            ]
+                            guard !hiddenBuildings.contains(item.element.simplified) else { return false }
+                            return visibleArmies(for: .gbWars).contains(item.element.army)
+                                || item.element.army == AWConstants.armyNeutral
+                        }
+
+                        let hiddenTerrain: Set<Element> = [
+                            .terrainPlainD,
+                            .terrainReef,
+                            .terrainShoal,
+                            .terrainRiver,
+                            .terrainPipe,
+                            .terrainSeam
+                        ]
+                        return !hiddenTerrain.contains(item.element.simplified)
+                    }
+                    return true
+                }
+                .map { item in
+                    guard item.element.isBuilding else { return item }
+                    return item.withLabel(buildingLabel(for: item.element, tileset: .gbWars))
+                }
+        }
+
+        // Famicom Wars predates the Dual Strike map objectives and the
+        // additional AW property set. Keep those entries out of the authoring
+        // palette instead of showing a guessed fallback sprite from the
+        // source-derived atlas.
+        guard tileset == .famicomWars else { return items }
+        return items
+            .filter { item in
+                if item.element.isBuilding {
+                    guard visibleArmies(for: .famicomWars).contains(item.element.army)
+                            || item.element.army == AWConstants.armyNeutral else { return false }
+                }
+                switch item.element.simplified {
+                case .terrainPlainD, .terrainPipe, .terrainSeam,
+                     .buildingTower, .buildingLab, .buildingSilo:
+                    return false
+                default:
+                    return true
+                }
+            }
+            .map { item in
+                guard item.element.isBuilding else { return item }
+                return item.withLabel(buildingLabel(for: item.element, tileset: .famicomWars))
+            }
+    }
+
+    static func label(for element: Element, tileset: Tileset? = nil) -> String {
         if element == .unitEmpty { return "Empty Unit" }
+
+        if tileset == .gbWars, let label = gbWarsUnitLabel(for: element) {
+            return label
+        }
+
+        if element.isBuilding {
+            return buildingLabel(for: element, tileset: tileset)
+        }
 
         let items: [PaletteItem]
         if element.isUnit {
@@ -50,6 +178,55 @@ enum PaletteCatalog {
         if element.isExtra { return "Extra" }
         if element.isTerrain { return "Terrain" }
         return "Tile"
+    }
+
+    /// The GB Wars cartridge uses a smaller roster and its own names for a
+    /// few of the shared sprite slots. Keep the source element identities so
+    /// the playtest rules can reuse the existing movement and damage tables.
+    private static let gbWarsUnitRoster: [Element] = [
+        .unitInfantry,
+        .unitMech,
+        .unitAPC,
+        .unitRecon,
+        .unitRocket,
+        .unitAntiAir,
+        .unitArtillery,
+        .unitTank,
+        .unitTCopter,
+        .unitBCopter,
+        .unitBomber,
+        .unitLander,
+        .unitSub,
+        .unitCruiser,
+        .unitBattleship
+    ]
+
+    private static func gbWarsUnitLabel(for element: Element) -> String? {
+        switch element.simplified {
+        case .unitRecon: return "Combat Buggy"
+        case .unitRocket: return "Rocket Launcher"
+        case .unitAntiAir: return "Anti-Air"
+        case .unitTCopter: return "Transport Plane"
+        case .unitBCopter: return "Copter"
+        case .unitBattleship: return "Aegis Warship"
+        default: return nil
+        }
+    }
+
+    private static func buildingLabel(for element: Element, tileset: Tileset?) -> String {
+        let buildingName: String
+        switch element.simplified {
+        case .buildingHQ: buildingName = "HQ"
+        case .buildingCity: buildingName = "City"
+        case .buildingBase: buildingName = "Base"
+        case .buildingAirport: buildingName = "Airport"
+        case .buildingPort: buildingName = "Port"
+        case .buildingTower: buildingName = "Tower"
+        case .buildingLab: buildingName = "Lab"
+        case .buildingSilo: buildingName = "Missile silo"
+        default: buildingName = "Building"
+        }
+        return "\(armyName(element.army, tileset: tileset)) \(buildingName)"
     }
 
     static let terrainItems: [PaletteItem] = {
@@ -153,25 +330,35 @@ enum PaletteCatalog {
         return entries.map { PaletteItem($0.0, label: $0.1, tab: .extra, position: $0.2) }
     }()
 
-    static func armyName(_ army: Int) -> String {
+    static func armyName(_ army: Int, tileset: Tileset? = nil) -> String {
+        if tileset == .famicomWars {
+            switch army {
+            case AWConstants.armyOrangeStar: return "Red Star"
+            case AWConstants.armyBlueMoon: return "White Moon"
+            case AWConstants.armyGreenEarth: return "Green Soil"
+            case AWConstants.armyYellowComet: return "Yellow Star"
+            case AWConstants.armyNeutral: return "Neutral"
+            default: return "Unavailable"
+            }
+        }
+        if tileset == .gbWars {
+            switch army {
+            case AWConstants.armyOrangeStar: return "Red Star"
+            case AWConstants.armyBlueMoon: return "White Moon"
+            default: break
+            }
+        }
         switch army {
-        case AWConstants.armyOrangeStar: "Orange Star"
-        case AWConstants.armyBlueMoon: "Blue Moon"
-        case AWConstants.armyGreenEarth: "Green Earth"
-        case AWConstants.armyYellowComet: "Gold Comet"
-        case AWConstants.armyBlackHole: "Black Hole"
-        default: "Neutral"
+        case AWConstants.armyOrangeStar: return "Orange Star"
+        case AWConstants.armyBlueMoon: return "Blue Moon"
+        case AWConstants.armyGreenEarth: return "Green Earth"
+        case AWConstants.armyYellowComet: return "Gold Comet"
+        case AWConstants.armyBlackHole: return "Black Hole"
+        default: return "Neutral"
         }
     }
 
-    static func armyAbbreviation(_ army: Int) -> String {
-        switch army {
-        case AWConstants.armyOrangeStar: "Orange Star"
-        case AWConstants.armyBlueMoon: "Blue Moon"
-        case AWConstants.armyGreenEarth: "Green Earth"
-        case AWConstants.armyYellowComet: "Gold Comet"
-        case AWConstants.armyBlackHole: "Black Hole"
-        default: "–"
-        }
+    static func armyAbbreviation(_ army: Int, tileset: Tileset? = nil) -> String {
+        armyName(army, tileset: tileset)
     }
 }

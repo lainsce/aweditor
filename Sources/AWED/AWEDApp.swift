@@ -52,7 +52,11 @@ final class AWEDSession {
         model = EditorModel()
         atlas = SpriteAtlas()
         music = BackgroundMusicController()
-        music.apply(enabled: model.preferences.volumeEnabled, volume: model.preferences.volume)
+        music.apply(
+            tileset: model.map.tileset,
+            enabled: model.preferences.volumeEnabled,
+            volume: model.preferences.volume
+        )
     }
 }
 

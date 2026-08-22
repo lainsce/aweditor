@@ -36,9 +36,11 @@ open "Build/DerivedData/Build/Products/Debug/AW Map Editor.app"
 
 The port reads and writes `.awm`, `.aw2`, `.awd`, and variable-size `.aws`
 maps, preserves the documented metadata fields, and warns before lossy legacy
-format conversion. Xcode copies the sprite sheets and bundled `bgm.mp3` into
-the application bundle. The music follows the Preferences enable/volume
-controls and loops while the editor is open. Preferences also toggle the
+format conversion. Xcode copies the sprite sheets and bundled BGM tracks into
+the application bundle. Dual Strike variants use `bgm.mp3`, Advance Wars 1/2
+use `bgm_2.mp3`, Famicom Wars uses `bgm_3.mp3`, and GB Wars uses `bgm_4.mp3`.
+The music follows the Preferences enable/volume controls and loops while the
+editor is open. Preferences also toggle the
 original AW-style tile frames and allowed/forbidden/delete pointer glyphs; the
 cursor setting applies immediately to the map canvas.
 

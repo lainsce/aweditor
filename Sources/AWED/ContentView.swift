@@ -21,7 +21,10 @@ struct ContentView: View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
                 MapWorkspaceView(model: model, atlas: atlas) {
-                    playtestLaunch = PlaytestLaunch(map: model.map)
+                    playtestLaunch = PlaytestLaunch(
+                        map: model.map,
+                        visualVariant: model.visualVariant
+                    )
                 }
                 Divider()
                     .ignoresSafeArea(.container)
@@ -47,11 +50,22 @@ struct ContentView: View {
                 screenshotAction: saveScreenshot
             )
         }
+        .onChange(of: model.map.tileset) { _, tileset in
+            music.apply(
+                tileset: tileset,
+                enabled: model.preferences.volumeEnabled,
+                volume: model.preferences.volume
+            )
+        }
         .sheet(item: $model.dialog) { dialog in
             DialogContainer(dialog: dialog, model: model, music: music)
         }
         .sheet(item: $playtestLaunch) { launch in
-            PlaytestView(map: launch.map, atlas: atlas)
+            PlaytestView(
+                map: launch.map,
+                visualVariant: launch.visualVariant,
+                atlas: atlas
+            )
         }
         .alert("Map compatibility", isPresented: $isShowingWarning) {
             Button("Cancel", role: .cancel) {
@@ -128,7 +142,7 @@ struct ContentView: View {
     private func saveScreenshot() {
         guard let request = FilePanelService.saveScreenshot(defaultURL: model.filename) else { return }
         do {
-            let image = ScreenshotRenderer.render(map: model.map, atlas: atlas)
+            let image = ScreenshotRenderer.render(map: model.map, atlas: atlas, palette: model.renderPalette)
             try ScreenshotRenderer.write(ScreenshotRenderer.apply(request.size, to: image), to: request.url)
         } catch { model.presentError(error) }
     }
@@ -142,9 +156,12 @@ struct MapWorkspaceView: View {
     var body: some View {
         GeometryReader { proxy in
             let mapTileSize = MapCanvasMetrics.tileSize
-            let mapPixelSize = CGSize(
-                width: CGFloat(model.map.width) * mapTileSize,
-                height: CGFloat(model.map.height) * mapTileSize
+            let staggered = MapCanvasMetrics.isStaggeredGB(map: model.map, palette: model.renderPalette)
+            let mapPixelSize = MapCanvasMetrics.mapPixelSize(
+                width: model.map.width,
+                height: model.map.height,
+                tileSize: mapTileSize,
+                staggered: staggered
             )
             let boardSize = CGSize(
                 width: mapPixelSize.width + (MapCanvasMetrics.woodPadding * 2),

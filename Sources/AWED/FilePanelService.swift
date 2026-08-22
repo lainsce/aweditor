@@ -72,27 +72,36 @@ enum ScreenshotSize: CaseIterable {
 
 @MainActor
 enum ScreenshotRenderer {
-    static func render(map: MapState, atlas: SpriteAtlas, scale: Int = 1) -> NSImage {
+    static func render(
+        map: MapState,
+        atlas: SpriteAtlas,
+        scale: Int = 1,
+        palette: SpritePalette? = nil
+    ) -> NSImage {
+        let palette = palette ?? .tileset(map.tileset)
         let tile = 16 * max(1, scale)
         let canvasHeight = CGFloat(map.height * tile)
-        let image = NSImage(size: NSSize(width: map.width * tile, height: map.height * tile))
+        let staggered = MapCanvasMetrics.isStaggeredGB(map: map, palette: palette)
+        let canvasWidth = CGFloat(map.width * tile) + (staggered && map.height > 1 ? CGFloat(tile) / 2 : 0)
+        let image = NSImage(size: NSSize(width: canvasWidth, height: canvasHeight))
         // AppKit's image drawing APIs expect CGImage content in a bottom-left
         // coordinate system. Keep the exported pixels upright by drawing into
         // an unflipped context and converting each map cell from its top-left
         // map coordinate to the corresponding bottom-left rectangle.
         image.lockFocus()
         NSColor.clear.setFill()
-        NSBezierPath(rect: NSRect(x: 0, y: 0, width: map.width * tile, height: map.height * tile)).fill()
+        NSBezierPath(rect: NSRect(x: 0, y: 0, width: canvasWidth, height: canvasHeight)).fill()
         for x in 0..<map.width {
             for y in 0..<map.height {
-                let topRect = NSRect(x: x * tile, y: y * tile, width: tile, height: tile)
+                let rowOffset = staggered && y % 2 != 0 ? CGFloat(tile) / 2 : 0
+                let topRect = NSRect(x: CGFloat(x * tile) + rowOffset, y: CGFloat(y * tile), width: CGFloat(tile), height: CGFloat(tile))
                 let rect = NSRect(x: topRect.minX,
                                   y: canvasHeight - topRect.maxY,
                                   width: topRect.width,
                                   height: topRect.height)
-                draw(map.backgroundDrawElement(atX: x, y: y), in: rect, map: map, atlas: atlas)
-                drawSeaCoast(atX: x, y: y, in: rect, map: map, atlas: atlas)
-                draw(map.foregroundElement(atX: x, y: y), in: rect, map: map, atlas: atlas)
+                draw(map.backgroundDrawElement(atX: x, y: y), in: rect, map: map, atlas: atlas, palette: palette)
+                drawSeaCoast(atX: x, y: y, in: rect, map: map, atlas: atlas, palette: palette)
+                draw(map.foregroundElement(atX: x, y: y), in: rect, map: map, atlas: atlas, palette: palette)
             }
         }
         image.unlockFocus()
@@ -226,14 +235,25 @@ enum ScreenshotRenderer {
         try data.write(to: url, options: .atomic)
     }
 
-    private static func draw(_ element: Element, in rect: NSRect, map: MapState, atlas: SpriteAtlas) {
-        guard let cgImage = atlas.cgImage(for: element, tileset: map.tileset) else { return }
-        let target = element.doubleHeight ? NSRect(x: rect.minX, y: rect.minY, width: rect.width, height: rect.height * 2) : rect
-        NSImage(cgImage: cgImage, size: NSSize(width: target.width, height: target.height)).draw(in: target, from: .zero, operation: .sourceOver, fraction: 1)
+    private static func draw(
+        _ element: Element,
+        in rect: NSRect,
+        map: MapState,
+        atlas: SpriteAtlas,
+        palette: SpritePalette
+    ) {
+        guard let cgImage = atlas.cgImage(for: element, palette: palette) else { return }
+        let isDoubleHeight = palette.doubleHeight(for: element)
+        let target = isDoubleHeight ? NSRect(x: rect.minX, y: rect.minY, width: rect.width, height: rect.height * 2) : rect
+        let image = NSImage(cgImage: cgImage, size: NSSize(width: target.width, height: target.height))
+        // Staggering changes each cell's origin, not its four-sided shape.
+        // Double-height sprites intentionally remain unclipped so they can
+        // project above their anchor cell.
+        image.draw(in: target, from: .zero, operation: .sourceOver, fraction: 1)
     }
 
-    private static func drawSeaCoast(atX x: Int, y: Int, in rect: NSRect, map: MapState, atlas: SpriteAtlas) {
-        guard map.backgroundDrawElement(atX: x, y: y) == .terrainSea else { return }
+    private static func drawSeaCoast(atX x: Int, y: Int, in rect: NSRect, map: MapState, atlas: SpriteAtlas, palette: SpritePalette) {
+        guard map.tileset != .gbWars, map.backgroundDrawElement(atX: x, y: y) == .terrainSea else { return }
         let up = map.backgroundElement(atX: x, y: y - 1)
         let down = map.backgroundElement(atX: x, y: y + 1)
         let left = map.backgroundElement(atX: x - 1, y: y)
@@ -256,6 +276,8 @@ enum ScreenshotRenderer {
             (Element(AWConstants.makeTerrain(5, 1)), down.isLand && left.isLand),
             (Element(AWConstants.makeTerrain(6, 1)), down.isLand && right.isLand)
         ]
-        for (element, shouldDraw) in overlays where shouldDraw { draw(element, in: rect, map: map, atlas: atlas) }
+        for (element, shouldDraw) in overlays where shouldDraw {
+            draw(element, in: rect, map: map, atlas: atlas, palette: palette)
+        }
     }
 }

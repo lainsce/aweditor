@@ -4,6 +4,12 @@ import SwiftUI
 import AppKit
 
 struct GLWNSidebarMaterialBackground: NSViewRepresentable {
+    let blendingMode: NSVisualEffectView.BlendingMode
+
+    init(blendingMode: NSVisualEffectView.BlendingMode = .behindWindow) {
+        self.blendingMode = blendingMode
+    }
+
     func makeNSView(context: Context) -> NSVisualEffectView {
         let view = NSVisualEffectView()
         configure(view)
@@ -16,10 +22,9 @@ struct GLWNSidebarMaterialBackground: NSViewRepresentable {
 
     private func configure(_ view: NSVisualEffectView) {
         view.material = .sidebar
-        view.blendingMode = .behindWindow
+        view.blendingMode = blendingMode
         view.state = .followsWindowActiveState
         view.isEmphasized = false
     }
 }
 #endif
-

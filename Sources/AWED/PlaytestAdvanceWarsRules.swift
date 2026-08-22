@@ -7,6 +7,8 @@ import AWEDCore
 /// Keeping the cartridge-specific table here prevents an AW2 Neotank or
 /// AW2-era damage value from leaking into an AW1 map.
 enum PlaytestAdvanceWarsRules {
+    static let weatherOptions: [PlaytestWeather] = [.random, .clear, .snow]
+
     static let landUnits: [Element] = [
         .unitInfantry, .unitMech, .unitRecon, .unitTank, .unitMDTank,
         .unitAPC, .unitArtillery, .unitRocket, .unitAntiAir, .unitMissile
@@ -19,6 +21,54 @@ enum PlaytestAdvanceWarsRules {
     static let seaUnits: [Element] = [
         .unitBattleship, .unitCruiser, .unitLander, .unitSub
     ]
+
+    /// GB Wars has a compact 15-unit roster: eight land units, three air
+    /// units, and four sea units. The shared element slots are relabeled in
+    /// `PaletteCatalog` to match the GB cartridge's names.
+    static let gbWarsLandUnits: [Element] = [
+        .unitInfantry, .unitMech, .unitAPC, .unitRecon, .unitRocket,
+        .unitAntiAir, .unitArtillery, .unitTank
+    ]
+
+    static let gbWarsAirUnits: [Element] = [
+        .unitTCopter, .unitBCopter, .unitBomber
+    ]
+
+    static let gbWarsSeaUnits: [Element] = [
+        .unitLander, .unitSub, .unitCruiser, .unitBattleship
+    ]
+
+    /// Famicom Wars has a smaller, fixed build roster: ten land units, four
+    /// air units, and only Battleships and Landers at ports. The editor's
+    /// shared element table does not have separate Supply, Scout, and Copter
+    /// identifiers, so those source-game names are represented by the
+    /// compatible existing sprite slots (`Recon`, `B-Copter`, and `T-Copter`)
+    /// when the Famicom production menu is built.
+    static let famicomWarsLandUnits: [Element] = [
+        .unitInfantry, .unitMech, .unitMDTank, .unitTank, .unitAPC,
+        .unitRocket, .unitArtillery, .unitMissile, .unitAntiAir, .unitRecon
+    ]
+
+    static let famicomWarsAirUnits: [Element] = [
+        .unitFighter, .unitBCopter, .unitBomber, .unitTCopter
+    ]
+
+    static let famicomWarsSeaUnits: [Element] = [
+        .unitBattleship, .unitLander
+    ]
+
+    static func famicomWarsProductionLabel(for element: Element) -> String {
+        switch element.simplified {
+        case .unitMDTank: return "Med Tank"
+        case .unitRocket: return "Howitzer"
+        case .unitMissile: return "AA Missile"
+        case .unitAntiAir: return "AA Tank"
+        case .unitRecon: return "Supply"
+        case .unitBCopter: return "Scout"
+        case .unitTCopter: return "Copter"
+        default: return PaletteCatalog.label(for: element)
+        }
+    }
 
     private static let landDamageAttackers: [Element] = [
         .unitInfantry, .unitMech, .unitRecon, .unitTank, .unitMDTank,

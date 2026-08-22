@@ -27,6 +27,13 @@ final class EditorModel {
     var isShowingUnsavedChanges = false
     var statusMessage = ""
 
+    /// Optional render-only palette used by read-only surfaces such as
+    /// playtest. The editor uses `visualVariant` so every supported art
+    /// variant can be previewed while authoring without changing the file
+    /// format's tileset contract.
+    var spritePalette: SpritePalette?
+    var visualVariant: MapVisualVariant
+
     private var dragStart: GridPoint?
     private var lastDragCell: GridPoint?
     private var movingSelectionOrigin: SelectionRect?
@@ -47,6 +54,7 @@ final class EditorModel {
         )
         self.preferences = validatedPreferences
         self.map = initialMap
+        self.visualVariant = .defaultVariant(for: initialMap.tileset)
         self.selectedElement = validatedPreferences.defaultTerrain
         self.statusMessage = "X: –, Y: –"
     }
@@ -58,12 +66,14 @@ final class EditorModel {
         let validatedPreferences = preferences.validated()
         self.preferences = validatedPreferences
         self.map = map
+        self.visualVariant = .defaultVariant(for: map.tileset)
         self.selectedElement = map.backgroundElement(atX: 0, y: 0).simplified
         self.statusMessage = "X: –, Y: –"
     }
 
     var canUndo: Bool { !undoStack.isEmpty }
     var canRedo: Bool { !redoStack.isEmpty }
+    var renderPalette: SpritePalette { spritePalette ?? visualVariant.palette }
     var hasSelection: Bool { selection != nil && selectionFragment != nil }
     var documentTitle: String { filename?.deletingPathExtension().lastPathComponent ?? map.name }
 
@@ -86,6 +96,8 @@ final class EditorModel {
             defaultAuthor: preferences.defaultAuthor
         )
         filename = nil
+        spritePalette = nil
+        visualVariant = .defaultVariant(for: map.tileset)
         undoStack.removeAll()
         redoStack.removeAll()
         clearSelection()
@@ -138,6 +150,8 @@ final class EditorModel {
     func open(url: URL) throws {
         map = try MapFileCodec.read(from: url, defaultAuthor: preferences.defaultAuthor)
         filename = url
+        spritePalette = nil
+        visualVariant = .defaultVariant(for: map.tileset)
         undoStack.removeAll()
         redoStack.removeAll()
         clearSelection()
@@ -163,11 +177,14 @@ final class EditorModel {
 
     func paletteElement(for item: PaletteItem) -> Element {
         guard item.tab == .unit, item.element.isUnitNonEmpty else { return item.element }
-        return item.element.changedArmy(selectedArmy)
+        let army = PaletteCatalog.visibleArmies(for: map.tileset).contains(selectedArmy)
+            ? selectedArmy
+            : PaletteCatalog.visibleArmies(for: map.tileset).first ?? AWConstants.armyOrangeStar
+        return item.element.changedArmy(army)
     }
 
     func selectArmy(_ army: Int) {
-        guard (0..<AWConstants.playableArmies).contains(army) else { return }
+        guard PaletteCatalog.visibleArmies(for: map.tileset).contains(army) else { return }
         selectedArmy = army
         guard selectedTab == .unit else { return }
         selectedElement = selectedElement.isUnitNonEmpty
@@ -192,8 +209,14 @@ final class EditorModel {
         } else {
             let background = map.backgroundElement(atX: point.x, y: point.y)
             if background.isExtra {
-                selectedTab = .extra
-                selectedElement = background.simplified
+                if PaletteCatalog.tabs(for: map.tileset).contains(.extra) {
+                    selectedTab = .extra
+                    selectedElement = background.simplified
+                } else {
+                    // Extra terrain is not editable from this tileset's palette.
+                    selectedTab = .terrain
+                    selectedElement = preferences.defaultTerrain
+                }
             } else if background.isTerrain || background.isBuilding {
                 selectedTab = .terrain
                 // Keep the exact army variant for properties while reducing
@@ -206,8 +229,12 @@ final class EditorModel {
     }
 
     func advancePaletteTab() {
-        guard let currentIndex = PaletteTab.allCases.firstIndex(of: selectedTab) else { return }
-        selectedTab = PaletteTab.allCases[(currentIndex + 1) % PaletteTab.allCases.count]
+        let tabs = PaletteCatalog.tabs(for: map.tileset)
+        guard let currentIndex = tabs.firstIndex(of: selectedTab), !tabs.isEmpty else {
+            selectedTab = tabs.first ?? .terrain
+            return
+        }
+        selectedTab = tabs[(currentIndex + 1) % tabs.count]
     }
 
     @discardableResult
@@ -216,21 +243,25 @@ final class EditorModel {
         let change = wheelDelta > 0 ? 1 : -1
 
         if selectedElement.isBuilding, selectedElement != .buildingSilo {
-            var army = selectedElement.army - change
-            if army < 0 { army = AWConstants.armyNeutral }
-            if army > AWConstants.armyNeutral { army = 0 }
+            let armies = PaletteCatalog.visibleArmies(for: map.tileset) + [AWConstants.armyNeutral]
+            guard !armies.isEmpty else { return false }
+            let currentIndex = armies.firstIndex(of: selectedElement.army) ?? 0
+            let nextIndex = (currentIndex - change + armies.count) % armies.count
+            var army = armies[nextIndex]
             if army == AWConstants.armyNeutral, selectedElement.simplified == .buildingHQ {
                 army = AWConstants.armyOrangeStar
             }
             selectedElement = selectedElement.changedArmy(army)
-            if (0..<AWConstants.playableArmies).contains(army) { selectedArmy = army }
+            if PaletteCatalog.visibleArmies(for: map.tileset).contains(army) { selectedArmy = army }
             return true
         }
 
         guard selectedElement.isUnitNonEmpty else { return false }
-        var army = selectedElement.army - change
-        if army < 0 { army = AWConstants.playableArmies - 1 }
-        if army == AWConstants.armyNeutral { army = AWConstants.armyOrangeStar }
+        let armies = PaletteCatalog.visibleArmies(for: map.tileset)
+        guard !armies.isEmpty else { return false }
+        let currentIndex = armies.firstIndex(of: selectedElement.army) ?? 0
+        let nextIndex = (currentIndex - change + armies.count) % armies.count
+        let army = armies[nextIndex]
         selectedElement = selectedElement.changedArmy(army)
         selectedArmy = army
         return true
@@ -250,6 +281,10 @@ final class EditorModel {
         guard let previous = undoStack.popLast() else { return }
         redoStack.append(map)
         map = previous
+        if visualVariant.baseTileset != map.tileset {
+            visualVariant = .defaultVariant(for: map.tileset)
+        }
+        normalizePaletteTab()
         clearSelection()
     }
 
@@ -257,6 +292,10 @@ final class EditorModel {
         guard let next = redoStack.popLast() else { return }
         undoStack.append(map)
         map = next
+        if visualVariant.baseTileset != map.tileset {
+            visualVariant = .defaultVariant(for: map.tileset)
+        }
+        normalizePaletteTab()
         clearSelection()
     }
 
@@ -275,8 +314,39 @@ final class EditorModel {
     func updateSettings(width: Int, height: Int, tileset: Tileset) {
         addUndoPoint()
         _ = map.setSize(width: width, height: height)
+        let tilesetChanged = map.tileset != tileset
         map.tileset = tileset
         map.updateDraw()
+        if tilesetChanged {
+            visualVariant = .defaultVariant(for: tileset)
+            normalizePaletteTab()
+        }
+    }
+
+    /// Selects an authoring palette. GBA weather variants affect only the
+    /// rendered art; switching the game family still updates the persisted
+    /// base tileset so playtest and file-format rules remain correct.
+    func setVisualVariant(_ variant: MapVisualVariant) {
+        if map.tileset != variant.baseTileset {
+            addUndoPoint()
+            map.tileset = variant.baseTileset
+            map.updateDraw()
+            normalizePaletteTab()
+        }
+        visualVariant = variant
+    }
+
+    private func normalizePaletteTab() {
+        if !PaletteCatalog.tabs(for: map.tileset).contains(selectedTab) {
+            selectedTab = .terrain
+        }
+        normalizeSelectedArmy()
+    }
+
+    private func normalizeSelectedArmy() {
+        let armies = PaletteCatalog.visibleArmies(for: map.tileset)
+        guard !armies.contains(selectedArmy) else { return }
+        selectedArmy = armies.first ?? AWConstants.armyOrangeStar
     }
 
     func deleteAllUnits() {

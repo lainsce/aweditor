@@ -26,6 +26,21 @@ func playtestRulesetMapping() {
     #expect(Tileset.wasteland.playtestRuleset == .dualStrike)
     #expect(Tileset.aw1.playtestRuleset == .advanceWars)
     #expect(Tileset.aw2.playtestRuleset == .advanceWars2)
+    #expect(Tileset.famicomWars.playtestRuleset == .advanceWars)
+    #expect(Tileset.gbWars.playtestRuleset == .advanceWars)
+    #expect(Tileset.launchOrdered == [.famicomWars, .gbWars, .aw1, .aw2, .normal, .snow, .desert, .wasteland])
+}
+
+@Test("tilesets select their matching background music")
+func backgroundMusicMapping() {
+    #expect(Tileset.normal.backgroundMusicResourceName == "bgm")
+    #expect(Tileset.snow.backgroundMusicResourceName == "bgm")
+    #expect(Tileset.desert.backgroundMusicResourceName == "bgm")
+    #expect(Tileset.wasteland.backgroundMusicResourceName == "bgm")
+    #expect(Tileset.aw1.backgroundMusicResourceName == "bgm_2")
+    #expect(Tileset.aw2.backgroundMusicResourceName == "bgm_2")
+    #expect(Tileset.famicomWars.backgroundMusicResourceName == "bgm_3")
+    #expect(Tileset.gbWars.backgroundMusicResourceName == "bgm_4")
 }
 
 @Test("map defaults, placement rules, and drawing variants")
@@ -93,6 +108,51 @@ func enclosedSeaDrawing() {
     _ = mouth.setBackground(.terrainRiver, atX: 2, y: 1, check: false)
     mouth.updateDraw()
     #expect(mouth.backgroundDrawElement(atX: 1, y: 1) == Element(AWConstants.makeTerrain(4, 0)))
+}
+
+@Test("Famicom Wars keeps shoal as its flat cyan tile")
+func famicomShoalDrawing() {
+    var map = MapState(width: 3, height: 3, tileset: .famicomWars, defaultTerrain: .terrainSea)
+    _ = map.setBackground(.terrainPlain, atX: 1, y: 0, check: false)
+    _ = map.setBackground(.terrainShoal, atX: 1, y: 1, check: false)
+    map.updateDraw()
+
+    #expect(map.backgroundDrawElement(atX: 1, y: 1) == .terrainShoal)
+}
+
+@Test("mountain ranges sprinkle taller draw-only variants")
+func mountainRangeDrawing() {
+    var isolated = MapState(width: 1, height: 1, defaultTerrain: .terrainSea)
+    _ = isolated.setBackground(.terrainMountain, atX: 0, y: 0, check: false)
+    #expect(isolated.backgroundElement(atX: 0, y: 0) == .terrainMountain)
+    #expect(isolated.backgroundDrawElement(atX: 0, y: 0) == .terrainMountain)
+
+    var rangeWithMountains = MapState(width: 7, height: 7, defaultTerrain: .terrainSea)
+    for x in 1..<6 {
+        for y in 1..<6 {
+            _ = rangeWithMountains.setBackground(.terrainMountain, atX: x, y: y, check: false)
+        }
+    }
+
+    let tallMountain = Element(AWConstants.makeTerrain(0, 7))
+    var tallCount = 0
+    for x in 0..<rangeWithMountains.width {
+        for y in 0..<rangeWithMountains.height {
+            if rangeWithMountains.backgroundDrawElement(atX: x, y: y) == tallMountain {
+                tallCount += 1
+            }
+        }
+    }
+
+    #expect(tallCount > 0)
+    #expect(rangeWithMountains.backgroundElement(atX: 3, y: 3) == .terrainMountain)
+    #expect(rangeWithMountains.backgroundDrawElement(atX: 3, y: 3).simplified == .terrainMountain)
+
+    var ridge = MapState(width: 3, height: 1, defaultTerrain: .terrainSea)
+    _ = ridge.setBackground(.terrainMountain, atX: 0, y: 0, check: false)
+    _ = ridge.setBackground(.terrainMountain, atX: 1, y: 0, check: false)
+    _ = ridge.setBackground(.terrainMountain, atX: 2, y: 0, check: false)
+    #expect(ridge.backgroundDrawElement(atX: 1, y: 0) == tallMountain)
 }
 
 @Test("sea arc placement checks the complete legacy footprint")

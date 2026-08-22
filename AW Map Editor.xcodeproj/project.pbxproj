@@ -21,10 +21,19 @@
 		000000000000000000002016 /* EditorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001016 /* EditorModel.swift */; };
 		000000000000000000002017 /* EditorPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001017 /* EditorPreferences.swift */; };
 		000000000000000000002018 /* EditorToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001018 /* EditorToolbar.swift */; };
+		000000000000000000002019 /* EditorTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001019 /* EditorTypes.swift */; };
+		00000000000000000000201A /* FilePanelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101A /* FilePanelService.swift */; };
+		00000000000000000000201B /* MapCanvasInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101B /* MapCanvasInput.swift */; };
+		00000000000000000000201C /* MapCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101C /* MapCanvasView.swift */; };
+		00000000000000000000201D /* PaletteCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101D /* PaletteCatalog.swift */; };
+		00000000000000000000201E /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101E /* PaletteView.swift */; };
+		00000000000000000000201F /* SpriteAtlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101F /* SpriteAtlas.swift */; };
+		000000000000000000002020 /* StatusBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001020 /* StatusBarView.swift */; };
 		000000000000000000002021 /* GLWNToolbarButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001021 /* GLWNToolbarButtonStyle.swift */; };
 		000000000000000000002022 /* GLWNToolbarSearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001022 /* GLWNToolbarSearchField.swift */; };
 		000000000000000000002023 /* GLWNToolbarControlGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001023 /* GLWNToolbarControlGroup.swift */; };
 		000000000000000000002024 /* GLWNSidebarSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001024 /* GLWNSidebarSurface.swift */; };
+		000000000000000000002025 /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001025 /* PrivacyPolicyView.swift */; };
 		000000000000000000002027 /* GLWNInContentButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001027 /* GLWNInContentButtonStyle.swift */; };
 		000000000000000000002028 /* GLWNFormRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001028 /* GLWNFormRow.swift */; };
 		000000000000000000002029 /* GLWNTextFieldStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001029 /* GLWNTextFieldStyle.swift */; };
@@ -34,26 +43,12 @@
 		00000000000000000000202D /* GLWNPullDownMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000102D /* GLWNPullDownMenu.swift */; };
 		00000000000000000000202E /* GLWNToolbarMaterialPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000102E /* GLWNToolbarMaterialPalette.swift */; };
 		00000000000000000000202F /* GLWNToolbarButtonSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000102F /* GLWNToolbarButtonSurface.swift */; };
-		000000000000000000002070 /* GLWNToolbarMenuLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001070 /* GLWNToolbarMenuLabel.swift */; };
-		000000000000000000002071 /* GLWNToolbarSurfaceModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001071 /* GLWNToolbarSurfaceModifier.swift */; };
-		000000000000000000002072 /* GLWNSidebarMaterialBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001072 /* GLWNSidebarMaterialBackground.swift */; };
-		000000000000000000002073 /* PlaytestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001073 /* PlaytestView.swift */; };
-		000000000000000000002074 /* PlaytestDualStrikeRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001074 /* PlaytestDualStrikeRules.swift */; };
-		000000000000000000002075 /* PlaytestRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001075 /* PlaytestRules.swift */; };
-		000000000000000000002076 /* PlaytestAdvanceWars2Rules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001076 /* PlaytestAdvanceWars2Rules.swift */; };
-		000000000000000000002077 /* PlaytestAdvanceWarsRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001077 /* PlaytestAdvanceWarsRules.swift */; };
-		000000000000000000002025 /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001025 /* PrivacyPolicyView.swift */; };
-		000000000000000000002019 /* EditorTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001019 /* EditorTypes.swift */; };
-		00000000000000000000201A /* FilePanelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101A /* FilePanelService.swift */; };
-		00000000000000000000201B /* MapCanvasInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101B /* MapCanvasInput.swift */; };
-		00000000000000000000201C /* MapCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101C /* MapCanvasView.swift */; };
-		00000000000000000000201D /* PaletteCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101D /* PaletteCatalog.swift */; };
-		00000000000000000000201E /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101E /* PaletteView.swift */; };
-		00000000000000000000201F /* SpriteAtlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000101F /* SpriteAtlas.swift */; };
-		000000000000000000002020 /* StatusBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001020 /* StatusBarView.swift */; };
 		000000000000000000002030 /* MapCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001030 /* MapCoreTests.swift */; };
 		000000000000000000002040 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001040 /* AppIcon.icon */; };
 		000000000000000000002041 /* bgm.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001041 /* bgm.mp3 */; };
+		000000000000000000002042 /* bgm_2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001042 /* bgm_2.mp3 */; };
+		000000000000000000002043 /* bgm_3.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001043 /* bgm_3.mp3 */; };
+		000000000000000000002044 /* bgm_4.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001044 /* bgm_4.mp3 */; };
 		000000000000000000002050 /* building_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001050 /* building_0.png */; };
 		000000000000000000002051 /* building_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001051 /* building_1.png */; };
 		000000000000000000002052 /* building_2.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001052 /* building_2.png */; };
@@ -81,6 +76,25 @@
 		000000000000000000002068 /* unit_3.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001068 /* unit_3.png */; };
 		000000000000000000002069 /* unit_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001069 /* unit_4.png */; };
 		00000000000000000000206A /* unit_5.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000106A /* unit_5.png */; };
+		000000000000000000002070 /* GLWNToolbarMenuLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001070 /* GLWNToolbarMenuLabel.swift */; };
+		000000000000000000002071 /* GLWNToolbarSurfaceModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001071 /* GLWNToolbarSurfaceModifier.swift */; };
+		000000000000000000002072 /* GLWNSidebarMaterialBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001072 /* GLWNSidebarMaterialBackground.swift */; };
+		000000000000000000002073 /* PlaytestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001073 /* PlaytestView.swift */; };
+		000000000000000000002074 /* PlaytestDualStrikeRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001074 /* PlaytestDualStrikeRules.swift */; };
+		000000000000000000002075 /* PlaytestRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001075 /* PlaytestRules.swift */; };
+		000000000000000000002076 /* PlaytestAdvanceWars2Rules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001076 /* PlaytestAdvanceWars2Rules.swift */; };
+		000000000000000000002077 /* PlaytestAdvanceWarsRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001077 /* PlaytestAdvanceWarsRules.swift */; };
+		000000000000000000002078 /* terrain_aw1_rain.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001078 /* terrain_aw1_rain.png */; };
+		000000000000000000002079 /* terrain_aw1_snow.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001079 /* terrain_aw1_snow.png */; };
+		00000000000000000000207A /* terrain_aw2_rain.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000107A /* terrain_aw2_rain.png */; };
+		00000000000000000000207B /* terrain_aw2_snow.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000107B /* terrain_aw2_snow.png */; };
+		00000000000000000000207C /* PlaytestWeatherOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000107C /* PlaytestWeatherOverlay.swift */; };
+		000000000000000000002080 /* building_6.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001080 /* building_6.png */; };
+		000000000000000000002081 /* building_7.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001081 /* building_7.png */; };
+		000000000000000000002084 /* terrain_6.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001084 /* terrain_6.png */; };
+		000000000000000000002085 /* terrain_7.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001085 /* terrain_7.png */; };
+		000000000000000000002086 /* unit_6.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001086 /* unit_6.png */; };
+		000000000000000000002087 /* unit_7.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001087 /* unit_7.png */; };
 		67803C6230360302005182A2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67803C6130360302005182A2 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -116,10 +130,19 @@
 		000000000000000000001016 /* EditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorModel.swift; sourceTree = "<group>"; };
 		000000000000000000001017 /* EditorPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorPreferences.swift; sourceTree = "<group>"; };
 		000000000000000000001018 /* EditorToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorToolbar.swift; sourceTree = "<group>"; };
+		000000000000000000001019 /* EditorTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorTypes.swift; sourceTree = "<group>"; };
+		00000000000000000000101A /* FilePanelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePanelService.swift; sourceTree = "<group>"; };
+		00000000000000000000101B /* MapCanvasInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCanvasInput.swift; sourceTree = "<group>"; };
+		00000000000000000000101C /* MapCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCanvasView.swift; sourceTree = "<group>"; };
+		00000000000000000000101D /* PaletteCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteCatalog.swift; sourceTree = "<group>"; };
+		00000000000000000000101E /* PaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteView.swift; sourceTree = "<group>"; };
+		00000000000000000000101F /* SpriteAtlas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteAtlas.swift; sourceTree = "<group>"; };
+		000000000000000000001020 /* StatusBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarView.swift; sourceTree = "<group>"; };
 		000000000000000000001021 /* GLWNToolbarButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarButtonStyle.swift; sourceTree = "<group>"; };
 		000000000000000000001022 /* GLWNToolbarSearchField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarSearchField.swift; sourceTree = "<group>"; };
 		000000000000000000001023 /* GLWNToolbarControlGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarControlGroup.swift; sourceTree = "<group>"; };
 		000000000000000000001024 /* GLWNSidebarSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNSidebarSurface.swift; sourceTree = "<group>"; };
+		000000000000000000001025 /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyView.swift; sourceTree = "<group>"; };
 		000000000000000000001027 /* GLWNInContentButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNInContentButtonStyle.swift; sourceTree = "<group>"; };
 		000000000000000000001028 /* GLWNFormRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNFormRow.swift; sourceTree = "<group>"; };
 		000000000000000000001029 /* GLWNTextFieldStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNTextFieldStyle.swift; sourceTree = "<group>"; };
@@ -129,26 +152,12 @@
 		00000000000000000000102D /* GLWNPullDownMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNPullDownMenu.swift; sourceTree = "<group>"; };
 		00000000000000000000102E /* GLWNToolbarMaterialPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarMaterialPalette.swift; sourceTree = "<group>"; };
 		00000000000000000000102F /* GLWNToolbarButtonSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarButtonSurface.swift; sourceTree = "<group>"; };
-		000000000000000000001070 /* GLWNToolbarMenuLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarMenuLabel.swift; sourceTree = "<group>"; };
-		000000000000000000001071 /* GLWNToolbarSurfaceModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarSurfaceModifier.swift; sourceTree = "<group>"; };
-		000000000000000000001072 /* GLWNSidebarMaterialBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNSidebarMaterialBackground.swift; sourceTree = "<group>"; };
-		000000000000000000001073 /* PlaytestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestView.swift; sourceTree = "<group>"; };
-		000000000000000000001074 /* PlaytestDualStrikeRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestDualStrikeRules.swift; sourceTree = "<group>"; };
-		000000000000000000001075 /* PlaytestRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestRules.swift; sourceTree = "<group>"; };
-		000000000000000000001076 /* PlaytestAdvanceWars2Rules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestAdvanceWars2Rules.swift; sourceTree = "<group>"; };
-		000000000000000000001077 /* PlaytestAdvanceWarsRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestAdvanceWarsRules.swift; sourceTree = "<group>"; };
-		000000000000000000001025 /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyView.swift; sourceTree = "<group>"; };
-		000000000000000000001019 /* EditorTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorTypes.swift; sourceTree = "<group>"; };
-		00000000000000000000101A /* FilePanelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePanelService.swift; sourceTree = "<group>"; };
-		00000000000000000000101B /* MapCanvasInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCanvasInput.swift; sourceTree = "<group>"; };
-		00000000000000000000101C /* MapCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCanvasView.swift; sourceTree = "<group>"; };
-		00000000000000000000101D /* PaletteCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteCatalog.swift; sourceTree = "<group>"; };
-		00000000000000000000101E /* PaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteView.swift; sourceTree = "<group>"; };
-		00000000000000000000101F /* SpriteAtlas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteAtlas.swift; sourceTree = "<group>"; };
-		000000000000000000001020 /* StatusBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarView.swift; sourceTree = "<group>"; };
 		000000000000000000001030 /* MapCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCoreTests.swift; sourceTree = "<group>"; };
 		000000000000000000001040 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		000000000000000000001041 /* bgm.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm.mp3; sourceTree = "<group>"; };
+		000000000000000000001042 /* bgm_2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Resources/bgm_2.mp3"; sourceTree = SOURCE_ROOT; };
+		000000000000000000001043 /* bgm_3.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Resources/bgm_3.mp3"; sourceTree = SOURCE_ROOT; };
+		000000000000000000001044 /* bgm_4.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Resources/bgm_4.mp3"; sourceTree = SOURCE_ROOT; };
 		000000000000000000001050 /* building_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_0.png; sourceTree = "<group>"; };
 		000000000000000000001051 /* building_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_1.png; sourceTree = "<group>"; };
 		000000000000000000001052 /* building_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_2.png; sourceTree = "<group>"; };
@@ -176,7 +185,26 @@
 		000000000000000000001068 /* unit_3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_3.png; sourceTree = "<group>"; };
 		000000000000000000001069 /* unit_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_4.png; sourceTree = "<group>"; };
 		00000000000000000000106A /* unit_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_5.png; sourceTree = "<group>"; };
-		000000000000000000001080 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		000000000000000000001070 /* GLWNToolbarMenuLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarMenuLabel.swift; sourceTree = "<group>"; };
+		000000000000000000001071 /* GLWNToolbarSurfaceModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNToolbarSurfaceModifier.swift; sourceTree = "<group>"; };
+		000000000000000000001072 /* GLWNSidebarMaterialBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLWNSidebarMaterialBackground.swift; sourceTree = "<group>"; };
+		000000000000000000001073 /* PlaytestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestView.swift; sourceTree = "<group>"; };
+		000000000000000000001074 /* PlaytestDualStrikeRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestDualStrikeRules.swift; sourceTree = "<group>"; };
+		000000000000000000001075 /* PlaytestRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestRules.swift; sourceTree = "<group>"; };
+		000000000000000000001076 /* PlaytestAdvanceWars2Rules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestAdvanceWars2Rules.swift; sourceTree = "<group>"; };
+		000000000000000000001077 /* PlaytestAdvanceWarsRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestAdvanceWarsRules.swift; sourceTree = "<group>"; };
+		000000000000000000001078 /* terrain_aw1_rain.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_aw1_rain.png; sourceTree = "<group>"; };
+		000000000000000000001079 /* terrain_aw1_snow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_aw1_snow.png; sourceTree = "<group>"; };
+		00000000000000000000107A /* terrain_aw2_rain.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_aw2_rain.png; sourceTree = "<group>"; };
+		00000000000000000000107B /* terrain_aw2_snow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_aw2_snow.png; sourceTree = "<group>"; };
+		00000000000000000000107C /* PlaytestWeatherOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestWeatherOverlay.swift; sourceTree = "<group>"; };
+		000000000000000000001080 /* building_6.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_6.png; sourceTree = "<group>"; };
+		000000000000000000001081 /* building_7.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_7.png; sourceTree = "<group>"; };
+		000000000000000000001084 /* terrain_6.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_6.png; sourceTree = "<group>"; };
+		000000000000000000001085 /* terrain_7.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_7.png; sourceTree = "<group>"; };
+		000000000000000000001086 /* unit_6.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_6.png; sourceTree = "<group>"; };
+		000000000000000000001087 /* unit_7.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_7.png; sourceTree = "<group>"; };
+		000000000000000000001088 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		000000000000000000001090 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		000000000000000000001091 /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		000000000000000000001101 /* AW Map Editor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AW Map Editor.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -240,6 +268,7 @@
 				000000000000000000001075 /* PlaytestRules.swift */,
 				000000000000000000001076 /* PlaytestAdvanceWars2Rules.swift */,
 				000000000000000000001077 /* PlaytestAdvanceWarsRules.swift */,
+				00000000000000000000107C /* PlaytestWeatherOverlay.swift */,
 				000000000000000000001019 /* EditorTypes.swift */,
 				00000000000000000000101A /* FilePanelService.swift */,
 				00000000000000000000101B /* MapCanvasInput.swift */,
@@ -248,7 +277,7 @@
 				00000000000000000000101E /* PaletteView.swift */,
 				00000000000000000000101F /* SpriteAtlas.swift */,
 				000000000000000000001020 /* StatusBarView.swift */,
-				000000000000000000001080 /* Info.plist */,
+				000000000000000000001088 /* Info.plist */,
 				000000000000000000000005 /* Resources */,
 			);
 			path = Sources/AWED;
@@ -259,6 +288,9 @@
 			children = (
 				000000000000000000001040 /* AppIcon.icon */,
 				000000000000000000001041 /* bgm.mp3 */,
+				000000000000000000001042 /* bgm_2.mp3 */,
+				000000000000000000001043 /* bgm_3.mp3 */,
+				000000000000000000001044 /* bgm_4.mp3 */,
 				000000000000000000000006 /* Spritesheets */,
 			);
 			path = Resources;
@@ -273,6 +305,8 @@
 				000000000000000000001053 /* building_3.png */,
 				000000000000000000001054 /* building_4.png */,
 				000000000000000000001055 /* building_5.png */,
+				000000000000000000001080 /* building_6.png */,
+				000000000000000000001081 /* building_7.png */,
 				000000000000000000001056 /* extra_0.png */,
 				000000000000000000001057 /* extra_1.png */,
 				000000000000000000001058 /* extra_2.png */,
@@ -288,12 +322,20 @@
 				000000000000000000001062 /* terrain_3.png */,
 				000000000000000000001063 /* terrain_4.png */,
 				000000000000000000001064 /* terrain_5.png */,
+				000000000000000000001084 /* terrain_6.png */,
+				000000000000000000001085 /* terrain_7.png */,
+				000000000000000000001078 /* terrain_aw1_rain.png */,
+				000000000000000000001079 /* terrain_aw1_snow.png */,
+				00000000000000000000107A /* terrain_aw2_rain.png */,
+				00000000000000000000107B /* terrain_aw2_snow.png */,
 				000000000000000000001065 /* unit_0.png */,
 				000000000000000000001066 /* unit_1.png */,
 				000000000000000000001067 /* unit_2.png */,
 				000000000000000000001068 /* unit_3.png */,
 				000000000000000000001069 /* unit_4.png */,
 				00000000000000000000106A /* unit_5.png */,
+				000000000000000000001086 /* unit_6.png */,
+				000000000000000000001087 /* unit_7.png */,
 			);
 			path = Spritesheets;
 			sourceTree = "<group>";
@@ -408,7 +450,6 @@
 				Base,
 			);
 			mainGroup = 000000000000000000000001;
-			name = "AW Map Editor";
 			preferredProjectObjectVersion = 110;
 			productRefGroup = 000000000000000000000002 /* Products */;
 			projectDirPath = "";
@@ -427,12 +468,17 @@
 			files = (
 				000000000000000000002040 /* AppIcon.icon in Resources */,
 				000000000000000000002041 /* bgm.mp3 in Resources */,
+				000000000000000000002042 /* bgm_2.mp3 in Resources */,
+				000000000000000000002043 /* bgm_3.mp3 in Resources */,
+				000000000000000000002044 /* bgm_4.mp3 in Resources */,
 				000000000000000000002050 /* building_0.png in Resources */,
 				000000000000000000002051 /* building_1.png in Resources */,
 				000000000000000000002052 /* building_2.png in Resources */,
 				000000000000000000002053 /* building_3.png in Resources */,
 				000000000000000000002054 /* building_4.png in Resources */,
 				000000000000000000002055 /* building_5.png in Resources */,
+				000000000000000000002080 /* building_6.png in Resources */,
+				000000000000000000002081 /* building_7.png in Resources */,
 				000000000000000000002056 /* extra_0.png in Resources */,
 				000000000000000000002057 /* extra_1.png in Resources */,
 				67803C6230360302005182A2 /* Assets.xcassets in Resources */,
@@ -449,12 +495,20 @@
 				000000000000000000002062 /* terrain_3.png in Resources */,
 				000000000000000000002063 /* terrain_4.png in Resources */,
 				000000000000000000002064 /* terrain_5.png in Resources */,
+				000000000000000000002084 /* terrain_6.png in Resources */,
+				000000000000000000002085 /* terrain_7.png in Resources */,
+				000000000000000000002078 /* terrain_aw1_rain.png in Resources */,
+				000000000000000000002079 /* terrain_aw1_snow.png in Resources */,
+				00000000000000000000207A /* terrain_aw2_rain.png in Resources */,
+				00000000000000000000207B /* terrain_aw2_snow.png in Resources */,
 				000000000000000000002065 /* unit_0.png in Resources */,
 				000000000000000000002066 /* unit_1.png in Resources */,
 				000000000000000000002067 /* unit_2.png in Resources */,
 				000000000000000000002068 /* unit_3.png in Resources */,
 				000000000000000000002069 /* unit_4.png in Resources */,
 				00000000000000000000206A /* unit_5.png in Resources */,
+				000000000000000000002086 /* unit_6.png in Resources */,
+				000000000000000000002087 /* unit_7.png in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
@@ -512,6 +566,7 @@
 				000000000000000000002075 /* PlaytestRules.swift in Sources */,
 				000000000000000000002076 /* PlaytestAdvanceWars2Rules.swift in Sources */,
 				000000000000000000002077 /* PlaytestAdvanceWarsRules.swift in Sources */,
+				00000000000000000000207C /* PlaytestWeatherOverlay.swift in Sources */,
 			);
 		};
 		000000000000000000000505 /* Sources */ = {

@@ -65,7 +65,7 @@ final class CursorAtlas {
 
     private func sheetName(for tileset: Tileset) -> String {
         switch tileset {
-        case .normal, .snow, .desert, .wasteland: "misc_0"
+        case .normal, .snow, .desert, .wasteland, .famicomWars, .gbWars: "misc_0"
         case .aw1: "misc_4"
         case .aw2: "misc_5"
         }

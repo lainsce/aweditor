@@ -27,7 +27,7 @@ struct AWEDCommands: Commands {
             Button("Save Screenshot…") {
                 guard let request = FilePanelService.saveScreenshot(defaultURL: model.filename) else { return }
                 do {
-                    let image = ScreenshotRenderer.render(map: model.map, atlas: SpriteAtlas())
+                    let image = ScreenshotRenderer.render(map: model.map, atlas: SpriteAtlas(), palette: model.renderPalette)
                     try ScreenshotRenderer.write(ScreenshotRenderer.apply(request.size, to: image), to: request.url)
                 } catch { model.presentError(error) }
             }

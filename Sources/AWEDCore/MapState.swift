@@ -280,6 +280,40 @@ public struct MapState: Codable, Equatable, Sendable {
         return element.simplified == .terrainPlainD && allowPlacement(.terrainSeam, atX: x, y: y)
     }
 
+    /// Returns the number of mountain cells immediately surrounding a tile.
+    ///
+    /// The authoring map stores the ordinary one-cell mountain tile. A taller
+    /// mountain is a render-only variant, so the neighbourhood is intentionally
+    /// read from `background` rather than `backgroundDraw` to avoid the derived
+    /// artwork feeding back into its own selection.
+    private func mountainNeighbourCount(atX x: Int, y: Int) -> Int {
+        var count = 0
+        for dx in -1...1 {
+            for dy in -1...1 where !(dx == 0 && dy == 0) {
+                if backgroundElement(atX: x + dx, y: y + dy).simplified == .terrainMountain {
+                    count += 1
+                }
+            }
+        }
+        return count
+    }
+
+    /// Decides whether a mountain cell gets the taller range artwork.
+    ///
+    /// Two neighbours is the smallest useful range (for example the centre of
+    /// a three-cell ridge). Larger clusters are sparsely sprinkled using a
+    /// coordinate-stable hash, so a redraw never causes the mountain tops to
+    /// jump around and a dense field does not become one solid wall of peaks.
+    private func shouldDrawTallMountain(atX x: Int, y: Int) -> Bool {
+        guard backgroundElement(atX: x, y: y).simplified == .terrainMountain else { return false }
+        let neighbours = mountainNeighbourCount(atX: x, y: y)
+        guard neighbours >= 2 else { return false }
+        if neighbours == 2 { return true }
+
+        let seed = x &* 31 &+ y &* 17 &+ x &* y &* 7
+        return seed % 3 == 0
+    }
+
     private func drawElement(atX x: Int, y: Int) -> Element {
         let element = backgroundElement(atX: x, y: y)
         guard element.isTerrain else { return element }
@@ -288,6 +322,13 @@ public struct MapState: Codable, Equatable, Sendable {
         let left = backgroundElement(atX: x - 1, y: y)
         let right = backgroundElement(atX: x + 1, y: y)
         switch element.value {
+        case Element.terrainMountain.value, AWConstants.makeTerrain(0, 7):
+            // Keep the tall mountain in the derived layer only. This makes it
+            // safe to apply the same rule to freshly drawn and imported maps
+            // without changing their persisted terrain values.
+            return shouldDrawTallMountain(atX: x, y: y)
+                ? Element(AWConstants.makeTerrain(0, 7))
+                : Element.terrainMountain
         case Element.terrainRoad.value:
             if up.isRoad && down.isRoad && left.isRoad && right.isRoad { return Element(AWConstants.makeTerrain(1, 2)) }
             if up.isRoad && down.isRoad && right.isRoad { return Element(AWConstants.makeTerrain(1, 5)) }
@@ -348,6 +389,10 @@ public struct MapState: Codable, Equatable, Sendable {
             }
             return element
         case Element.terrainShoal.value:
+            // Famicom Wars uses one flat cyan shoal sprite. Its source sheet
+            // does not contain the later Advance Wars shoreline variants, so
+            // keep the authoring tile unchanged regardless of neighbours.
+            if tileset == .famicomWars { return element }
             // Match the original editor's shoal shoreline table. The tile
             // values encode the local land/shoal arrangement in the sheet.
             if down.isLand && left.isLand && right.isLand { return Element(AWConstants.makeTerrain(9, 7)) }
