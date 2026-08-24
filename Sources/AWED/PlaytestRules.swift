@@ -98,9 +98,9 @@ struct PlaytestProductionOption: Identifiable {
     var id: Int { element.simplified.value }
 }
 
-/// Shared rules for the editor's local playtest. Cartridge-specific rosters
-/// and tables live in the dedicated Dual Strike, AW1, and AW2 rule files so
-/// each game can evolve without making this dispatch layer harder to maintain.
+/// Shared dispatch for the editor's local playtest. Cartridge-specific
+/// rosters and tables live in dedicated rule files so one game's mechanics do
+/// not silently leak into another game's tileset.
 enum PlaytestRulebook {
     static func formatFunds(_ amount: Int) -> String {
         "\(amount.formatted()) G"
@@ -114,7 +114,36 @@ enum PlaytestRulebook {
             return PlaytestAdvanceWarsRules.weatherOptions
         case .advanceWars2:
             return PlaytestAdvanceWars2Rules.weatherOptions
+        case .famicomWars:
+            return PlaytestFamicomWarsRules.weatherOptions
+        case .superFamicomWars:
+            return PlaytestSuperFamicomWarsRules.weatherOptions
+        case .gameBoyWars, .gameBoyWars2, .gameBoyWars3:
+            return PlaytestGameBoyWarsRules.weatherOptions
+        case .daysOfRuin:
+            return PlaytestDaysOfRuinRules.weatherOptions
         }
+    }
+
+    static func supportsWeatherControl(_ ruleset: PlaytestRuleset) -> Bool {
+        weatherOptions(for: ruleset).count > 1
+    }
+
+    static func supportsFogOfWar(_ ruleset: PlaytestRuleset) -> Bool {
+        switch ruleset {
+        case .famicomWars, .gameBoyWars:
+            return false
+        case .superFamicomWars:
+            return PlaytestSuperFamicomWarsRules.supportsFogOfWar
+        case .gameBoyWars2, .gameBoyWars3:
+            return PlaytestGameBoyWarsRules.supportsFogOfWar(for: ruleset)
+        case .dualStrike, .advanceWars, .advanceWars2, .daysOfRuin:
+            return true
+        }
+    }
+
+    static func weatherForcesFog(_ ruleset: PlaytestRuleset, weather: PlaytestWeather) -> Bool {
+        weather == .rain && (ruleset == .dualStrike || ruleset == .daysOfRuin)
     }
 
     static func concreteWeatherOptions(for ruleset: PlaytestRuleset) -> [PlaytestWeather] {
@@ -132,7 +161,8 @@ enum PlaytestRulebook {
     static func initialWeather(for variant: MapVisualVariant, ruleset: PlaytestRuleset) -> PlaytestWeather {
         let requested: PlaytestWeather
         switch variant {
-        case .famicomWars, .gbWars, .dualStrikeNormal, .dualStrikeWasteland, .aw1Clear, .aw2Clear:
+        case .famicomWars, .gbWars, .superFamicomWars, .gbWars2, .gbWars3,
+             .daysOfRuin, .dualStrikeNormal, .dualStrikeWasteland, .aw1Clear, .aw2Clear:
             requested = .clear
         case .dualStrikeSnow, .aw1Snow, .aw2Snow:
             requested = .snow
@@ -163,6 +193,18 @@ enum PlaytestRulebook {
             return .aw1
         case .advanceWars2:
             return .aw2
+        case .famicomWars:
+            return .famicomWars
+        case .gameBoyWars:
+            return .gbWars
+        case .superFamicomWars:
+            return .superFamicomWars
+        case .gameBoyWars2:
+            return .gbWars2
+        case .gameBoyWars3:
+            return .gbWars3
+        case .daysOfRuin:
+            return .daysOfRuin
         }
     }
 
@@ -182,8 +224,11 @@ enum PlaytestRulebook {
             switch weather {
             case .rain: return .gbaRain(base: .aw2)
             case .snow: return .gbaSnow(base: .aw2)
-            case .clear, .sandstorm, .random: return .tileset(.aw2)
+                case .clear, .sandstorm, .random: return .tileset(.aw2)
             }
+        case .famicomWars, .gameBoyWars, .superFamicomWars,
+             .gameBoyWars2, .gameBoyWars3, .daysOfRuin:
+            return .tileset(visualTileset(for: ruleset, weather: weather))
         }
     }
 
@@ -198,7 +243,13 @@ enum PlaytestRulebook {
                 weather: weather
             )
         }
-        return manualFogEnabled
+        if ruleset == .daysOfRuin {
+            return PlaytestDaysOfRuinRules.fogOfWarIsActive(
+                manualFogEnabled: manualFogEnabled,
+                weather: weather
+            )
+        }
+        return supportsFogOfWar(ruleset) && manualFogEnabled
     }
 
     static func resourceLabel(for element: Element) -> String {
@@ -210,11 +261,37 @@ enum PlaytestRulebook {
         }
     }
 
+    /// The 8/16-bit games use a dedicated Supply Truck in the shared Recon
+    /// slot. Later games fold the same adjacent resupply role into APC/Rig.
+    static func resuppliesAdjacentUnits(_ element: Element, ruleset: PlaytestRuleset) -> Bool {
+        switch ruleset {
+        case .famicomWars, .superFamicomWars:
+            return element.simplified == .unitRecon
+        case .dualStrike, .advanceWars, .advanceWars2,
+             .gameBoyWars, .gameBoyWars2, .gameBoyWars3, .daysOfRuin:
+            return element.simplified == .unitAPC
+        }
+    }
+
+    /// Direct combat in Super Famicom Wars is resolved simultaneously, so a
+    /// defender that is destroyed still returns fire at its starting strength.
+    static func counterattackUsesStartingStrength(_ ruleset: PlaytestRuleset) -> Bool {
+        ruleset == .superFamicomWars
+    }
+
     static func canCrossRiver(_ element: Element) -> Bool {
         element.simplified == .unitInfantry || element.simplified == .unitMech
     }
 
-    static func transportCapacity(for element: Element) -> Int {
+    static func transportCapacity(for element: Element, ruleset: PlaytestRuleset) -> Int {
+        if ruleset == .daysOfRuin {
+            switch element.simplified {
+            case .unitAPC, .unitTCopter, .unitBlackBoat: return 1
+            case .unitLander, .unitCruiser: return 2
+            case .unitCarrier: return 4
+            default: return 0
+            }
+        }
         switch element.simplified {
         case .unitAPC: return 1
         case .unitLander: return 2
@@ -231,8 +308,20 @@ enum PlaytestRulebook {
         if ruleset == .advanceWars {
             return PlaytestAdvanceWarsRules.canTransport(transport, cargo: cargo)
         }
+        if ruleset == .famicomWars {
+            return PlaytestFamicomWarsRules.canTransport(transport, cargo: cargo)
+        }
+        if ruleset == .superFamicomWars {
+            return PlaytestSuperFamicomWarsRules.canTransport(transport, cargo: cargo)
+        }
+        if ruleset == .gameBoyWars || ruleset == .gameBoyWars2 || ruleset == .gameBoyWars3 {
+            return PlaytestGameBoyWarsRules.canTransport(transport, cargo: cargo, ruleset: ruleset)
+        }
+        if ruleset == .daysOfRuin {
+            return PlaytestDaysOfRuinRules.canTransport(transport, cargo: cargo)
+        }
 
-        guard transportCapacity(for: transport) > 0,
+        guard transportCapacity(for: transport, ruleset: ruleset) > 0,
               let cargoStats = stats(for: cargo, ruleset: ruleset),
               cargo.army == transport.army else { return false }
 
@@ -264,13 +353,20 @@ enum PlaytestRulebook {
         if ruleset == .advanceWars {
             return PlaytestAdvanceWarsRules.stats(for: element)
         }
-        guard isSupported(element, ruleset: ruleset) else { return nil }
-
-        if ruleset == .dualStrike {
+        switch ruleset {
+        case .dualStrike:
             return PlaytestDualStrikeRules.stats(for: element)
+        case .famicomWars:
+            return PlaytestFamicomWarsRules.stats(for: element)
+        case .superFamicomWars:
+            return PlaytestSuperFamicomWarsRules.stats(for: element)
+        case .gameBoyWars, .gameBoyWars2, .gameBoyWars3:
+            return PlaytestGameBoyWarsRules.stats(for: element, ruleset: ruleset)
+        case .daysOfRuin:
+            return PlaytestDaysOfRuinRules.stats(for: element)
+        case .advanceWars, .advanceWars2:
+            return nil
         }
-
-        return nil
     }
 
     static func productionOptions(
@@ -279,50 +375,19 @@ enum PlaytestRulebook {
         tileset: Tileset? = nil
     ) -> [PlaytestProductionOption] {
         let elements: [Element]
-        let famicomRoster = tileset == .famicomWars && ruleset == .advanceWars
-        let gbWarsRoster = tileset == .gbWars && ruleset == .advanceWars
-        if famicomRoster {
-            switch building.simplified {
-            case .buildingBase:
-                elements = PlaytestAdvanceWarsRules.famicomWarsLandUnits
-            case .buildingAirport:
-                elements = PlaytestAdvanceWarsRules.famicomWarsAirUnits
-            case .buildingPort:
-                elements = PlaytestAdvanceWarsRules.famicomWarsSeaUnits
-            default:
-                return []
-            }
-        } else if gbWarsRoster {
-            switch building.simplified {
-            case .buildingBase:
-                elements = PlaytestAdvanceWarsRules.gbWarsLandUnits
-            case .buildingAirport:
-                elements = PlaytestAdvanceWarsRules.gbWarsAirUnits
-            case .buildingPort:
-                elements = PlaytestAdvanceWarsRules.gbWarsSeaUnits
-            default:
-                return []
-            }
-        } else {
-            switch building.simplified {
-            case .buildingBase:
-                elements = landUnits(for: ruleset)
-            case .buildingAirport:
-                elements = airUnits(for: ruleset)
-            case .buildingPort:
-                elements = seaUnits(for: ruleset)
-            default:
-                return []
-            }
+        switch building.simplified {
+        case .buildingBase:
+            elements = landUnits(for: ruleset)
+        case .buildingAirport:
+            elements = airUnits(for: ruleset)
+        case .buildingPort:
+            elements = seaUnits(for: ruleset)
+        default:
+            return []
         }
         return elements.compactMap { element in
             guard let stats = stats(for: element, ruleset: ruleset) else { return nil }
-            let label: String
-            if famicomRoster {
-                label = PlaytestAdvanceWarsRules.famicomWarsProductionLabel(for: element)
-            } else {
-                label = PaletteCatalog.label(for: element, tileset: gbWarsRoster ? .gbWars : nil)
-            }
+            let label = PaletteCatalog.label(for: element, tileset: tileset)
             return PlaytestProductionOption(element: element, label: label, cost: stats.cost)
         }
     }
@@ -355,6 +420,35 @@ enum PlaytestRulebook {
               attackerStats.attackPower > 0 else { return false }
 
         let targetDomain = defenderStats.domain
+        if ruleset == .daysOfRuin {
+            switch attacker.simplified {
+            case .unitInfantry, .unitMech, .unitPipeRunner, .unitRecon,
+                 .unitTank, .unitMDTank, .unitMegaTank, .unitArtillery,
+                 .unitNeoTank, .unitRocket:
+                return targetDomain == .land || targetDomain == .sea
+            case .unitAntiAir:
+                return targetDomain == .air || targetDomain == .land
+            case .unitMissile:
+                return targetDomain == .air
+            case .unitFighter:
+                return targetDomain == .air
+            case .unitBomber:
+                return targetDomain != .air
+            case .unitStealth, .unitBCopter:
+                return targetDomain == .air || targetDomain == .land
+            case .unitBlackBoat:
+                return targetDomain == .sea || targetDomain == .land
+            case .unitCruiser:
+                return targetDomain == .air || targetDomain == .sea
+            case .unitSub:
+                return targetDomain == .sea
+            case .unitBattleship:
+                return targetDomain != .air
+            default:
+                return false
+            }
+        }
+
         switch attacker.simplified {
         case .unitInfantry, .unitMech, .unitRecon, .unitTank, .unitMDTank, .unitNeoTank,
              .unitMegaTank, .unitOozium, .unitAPC, .unitPipeRunner:
@@ -402,76 +496,29 @@ enum PlaytestRulebook {
     /// types instead of broad land/air/sea domains: Dual Strike distinguishes
     /// foot, tires, treads, Piperunners, and naval ships on Woods, Mountains,
     /// Rivers, and Reefs.
-    static func movementCost(for unit: Element, stats: PlaytestUnitStats, terrain: Element, ruleset: PlaytestRuleset = .dualStrike, weather: PlaytestWeather = .clear) -> Int? {
-        if ruleset == .dualStrike {
+    static func movementCost(
+        for unit: Element,
+        stats: PlaytestUnitStats,
+        terrain: Element,
+        ruleset: PlaytestRuleset = .dualStrike,
+        weather: PlaytestWeather = .clear,
+        tileset: Tileset? = nil
+    ) -> Int? {
+        switch ruleset {
+        case .dualStrike:
             return PlaytestDualStrikeRules.movementCost(for: unit, terrain: terrain)
-        }
-        if ruleset == .advanceWars2 {
+        case .advanceWars2:
             return PlaytestAdvanceWars2Rules.movementCost(for: unit, terrain: terrain, weather: weather)
-        }
-        if ruleset == .advanceWars {
+        case .advanceWars:
             return PlaytestAdvanceWarsRules.movementCost(for: unit, terrain: terrain, weather: weather)
-        }
-
-        let tile = terrain.simplified
-
-        if stats.domain == .air {
-            return 1
-        }
-
-        let isBridge = tile == .terrainBridgeH
-        let isPort = tile == .buildingPort
-
-        if stats.domain == .sea {
-            guard !isBridge else { return nil }
-            switch tile {
-            case .terrainSea, .buildingPort:
-                return 1
-            case .terrainReef:
-                return 2
-            case .terrainShoal:
-                return unit.simplified == .unitLander || unit.simplified == .unitBlackBoat ? 1 : nil
-            default:
-                return nil
-            }
-        }
-
-        if unit.simplified == .unitPipeRunner {
-            return tile == .terrainPipe || tile == .terrainSeam || tile == .buildingBase ? 1 : nil
-        }
-
-        // Bridges and properties use the normal land cost. A port is also a
-        // valid one-point docking tile for eligible naval units above.
-        if isBridge || isPort || terrain.isBuilding {
-            return 1
-        }
-
-        // Land units cannot enter open water or reefs. Shoals are the one
-        // coastal terrain every legal ground movement type can cross.
-        guard !terrain.isSea else {
-            return tile == .terrainShoal ? 1 : nil
-        }
-
-        switch unit.simplified {
-        case .unitInfantry:
-            return tile == .terrainMountain || tile == .terrainRiver ? 2 : 1
-        case .unitMech, .unitOozium:
-            return 1
-        case .unitRecon, .unitArtillery, .unitRocket, .unitAntiAir, .unitMissile:
-            switch tile {
-            case .terrainPlain, .terrainPlainD: return 2
-            case .terrainWood: return 3
-            case .terrainMountain, .terrainRiver: return nil
-            default: return 1
-            }
-        case .unitAPC, .unitTank, .unitMDTank, .unitNeoTank, .unitMegaTank:
-            switch tile {
-            case .terrainWood: return 2
-            case .terrainMountain, .terrainRiver: return nil
-            default: return 1
-            }
-        default:
-            return 1
+        case .famicomWars:
+            return PlaytestFamicomWarsRules.movementCost(for: unit, terrain: terrain)
+        case .superFamicomWars:
+            return PlaytestSuperFamicomWarsRules.movementCost(for: unit, terrain: terrain)
+        case .gameBoyWars, .gameBoyWars2, .gameBoyWars3:
+            return PlaytestGameBoyWarsRules.movementCost(for: unit, terrain: terrain, ruleset: ruleset)
+        case .daysOfRuin:
+            return PlaytestDaysOfRuinRules.movementCost(for: unit, terrain: terrain, weather: weather)
         }
     }
 
@@ -492,6 +539,17 @@ enum PlaytestRulebook {
             )
         }
         return movement
+    }
+
+    static func maximumAttackRange(for stats: PlaytestUnitStats, ruleset: PlaytestRuleset, weather: PlaytestWeather) -> Int {
+        switch ruleset {
+        case .dualStrike:
+            return PlaytestDualStrikeRules.maximumAttackRange(for: stats, weather: weather)
+        case .daysOfRuin:
+            return PlaytestDaysOfRuinRules.maximumAttackRange(for: stats, weather: weather)
+        default:
+            return stats.maxRange
+        }
     }
 
     static func damage(
@@ -570,6 +628,26 @@ enum PlaytestRulebook {
         if ruleset == .advanceWars {
             return PlaytestAdvanceWarsRules.terrainStars(for: terrain)
         }
+        if ruleset == .famicomWars || ruleset == .superFamicomWars ||
+            ruleset == .gameBoyWars || ruleset == .gameBoyWars2 || ruleset == .gameBoyWars3 {
+            switch terrain.simplified {
+            case .terrainPlain, .terrainPlainD, .terrainReef: return 1
+            case .terrainWood: return 2
+            case .buildingCity, .buildingBase, .buildingAirport, .buildingPort,
+                 .buildingTower, .buildingLab: return 3
+            case .terrainMountain, .buildingHQ: return 4
+            default: return 0
+            }
+        }
+        if ruleset == .daysOfRuin {
+            switch terrain.simplified {
+            case .terrainPlain, .terrainPlainD, .terrainReef: return 1
+            case .terrainWood: return 3
+            case .buildingCity, .buildingBase, .buildingAirport, .buildingPort: return 3
+            case .terrainMountain, .buildingHQ: return 4
+            default: return 0
+            }
+        }
         switch terrain.simplified {
         case .terrainPlain, .terrainPlainD, .terrainReef: return 1
         case .terrainWood: return 2
@@ -600,6 +678,18 @@ enum PlaytestRulebook {
            [.buildingSilo, .buildingLab, .buildingTower].contains(building.simplified) {
             return false
         }
+        if ruleset == .famicomWars,
+           [.buildingSilo, .buildingLab, .buildingTower].contains(building.simplified) {
+            return false
+        }
+        if ruleset == .gameBoyWars || ruleset == .gameBoyWars2 || ruleset == .gameBoyWars3,
+           [.buildingSilo, .buildingLab, .buildingTower].contains(building.simplified) {
+            return false
+        }
+        if ruleset == .daysOfRuin,
+           [.buildingSilo, .buildingLab, .buildingTower].contains(building.simplified) {
+            return false
+        }
         return true
     }
 
@@ -611,6 +701,14 @@ enum PlaytestRulebook {
             return PlaytestAdvanceWarsRules.stats(for: element) != nil
         case .advanceWars2:
             return PlaytestAdvanceWars2Rules.stats(for: element) != nil
+        case .famicomWars:
+            return PlaytestFamicomWarsRules.stats(for: element) != nil
+        case .superFamicomWars:
+            return PlaytestSuperFamicomWarsRules.stats(for: element) != nil
+        case .gameBoyWars, .gameBoyWars2, .gameBoyWars3:
+            return PlaytestGameBoyWarsRules.stats(for: element, ruleset: ruleset) != nil
+        case .daysOfRuin:
+            return PlaytestDaysOfRuinRules.stats(for: element) != nil
         }
     }
 
@@ -625,7 +723,13 @@ enum PlaytestRulebook {
         if ruleset == .advanceWars {
             return PlaytestAdvanceWarsRules.landUnits
         }
-        return []
+        switch ruleset {
+        case .famicomWars: return PlaytestFamicomWarsRules.landUnits
+        case .superFamicomWars: return PlaytestSuperFamicomWarsRules.landUnits
+        case .gameBoyWars, .gameBoyWars2, .gameBoyWars3: return PlaytestGameBoyWarsRules.landUnits
+        case .daysOfRuin: return PlaytestDaysOfRuinRules.landUnits
+        default: return []
+        }
     }
 
     private static func airUnits(for ruleset: PlaytestRuleset) -> [Element] {
@@ -638,7 +742,13 @@ enum PlaytestRulebook {
         if ruleset == .advanceWars {
             return PlaytestAdvanceWarsRules.airUnits
         }
-        return []
+        switch ruleset {
+        case .famicomWars: return PlaytestFamicomWarsRules.airUnits
+        case .superFamicomWars: return PlaytestSuperFamicomWarsRules.airUnits
+        case .gameBoyWars, .gameBoyWars2, .gameBoyWars3: return PlaytestGameBoyWarsRules.airUnits
+        case .daysOfRuin: return PlaytestDaysOfRuinRules.airUnits
+        default: return []
+        }
     }
 
     private static func seaUnits(for ruleset: PlaytestRuleset) -> [Element] {
@@ -651,6 +761,12 @@ enum PlaytestRulebook {
         if ruleset == .advanceWars {
             return PlaytestAdvanceWarsRules.seaUnits
         }
-        return []
+        switch ruleset {
+        case .famicomWars: return PlaytestFamicomWarsRules.seaUnits
+        case .superFamicomWars: return PlaytestSuperFamicomWarsRules.seaUnits
+        case .gameBoyWars, .gameBoyWars2, .gameBoyWars3: return PlaytestGameBoyWarsRules.seaUnits
+        case .daysOfRuin: return PlaytestDaysOfRuinRules.seaUnits
+        default: return []
+        }
     }
 }

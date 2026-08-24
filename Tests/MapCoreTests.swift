@@ -26,9 +26,30 @@ func playtestRulesetMapping() {
     #expect(Tileset.wasteland.playtestRuleset == .dualStrike)
     #expect(Tileset.aw1.playtestRuleset == .advanceWars)
     #expect(Tileset.aw2.playtestRuleset == .advanceWars2)
-    #expect(Tileset.famicomWars.playtestRuleset == .advanceWars)
-    #expect(Tileset.gbWars.playtestRuleset == .advanceWars)
-    #expect(Tileset.launchOrdered == [.famicomWars, .gbWars, .aw1, .aw2, .normal, .snow, .desert, .wasteland])
+    #expect(Tileset.famicomWars.playtestRuleset == .famicomWars)
+    #expect(Tileset.gbWars.playtestRuleset == .gameBoyWars)
+    #expect(Tileset.superFamicomWars.playtestRuleset == .superFamicomWars)
+    #expect(Tileset.gbWars2.playtestRuleset == .gameBoyWars2)
+    #expect(Tileset.gbWars3.playtestRuleset == .gameBoyWars3)
+    #expect(Tileset.daysOfRuin.playtestRuleset == .daysOfRuin)
+    #expect(Tileset.famicomWars.isFamicomWarsFamily)
+    #expect(Tileset.superFamicomWars.isFamicomWarsFamily)
+    #expect(Tileset.gbWars2.isGameBoyWarsFamily)
+    #expect(Tileset.gbWars3.isGameBoyWarsFamily)
+    #expect(Tileset.launchOrdered == [
+        .famicomWars,
+        .gbWars,
+        .superFamicomWars,
+        .gbWars2,
+        .aw1,
+        .gbWars3,
+        .aw2,
+        .normal,
+        .snow,
+        .desert,
+        .wasteland,
+        .daysOfRuin
+    ])
 }
 
 @Test("tilesets select their matching background music")
@@ -41,6 +62,10 @@ func backgroundMusicMapping() {
     #expect(Tileset.aw2.backgroundMusicResourceName == "bgm_2")
     #expect(Tileset.famicomWars.backgroundMusicResourceName == "bgm_3")
     #expect(Tileset.gbWars.backgroundMusicResourceName == "bgm_4")
+    #expect(Tileset.superFamicomWars.backgroundMusicResourceName == "bgm_7")
+    #expect(Tileset.gbWars2.backgroundMusicResourceName == "bgm_4")
+    #expect(Tileset.daysOfRuin.backgroundMusicResourceName == "bgm_5")
+    #expect(Tileset.gbWars3.backgroundMusicResourceName == "bgm_6")
 }
 
 @Test("map defaults, placement rules, and drawing variants")
@@ -88,6 +113,26 @@ func movementSurfacePlacement() {
     #expect(!river.allowPlacement(.unitOozium, atX: 1, y: 0))
 }
 
+@Test("Super Famicom railroad accepts land and air units but not naval units")
+func superFamicomRailroadPlacement() {
+    var map = MapState(
+        width: 1,
+        height: 1,
+        tileset: .superFamicomWars,
+        defaultTerrain: .terrainPipe
+    )
+
+    #expect(map.allowPlacement(.unitInfantry, atX: 0, y: 0))
+    #expect(map.allowPlacement(.unitTank, atX: 0, y: 0))
+    #expect(map.allowPlacement(.unitFighter, atX: 0, y: 0))
+    #expect(!map.allowPlacement(.unitBattleship, atX: 0, y: 0))
+
+    map.tileset = .famicomWars
+    #expect(!map.allowPlacement(.unitInfantry, atX: 0, y: 0))
+    #expect(!map.allowPlacement(.unitTank, atX: 0, y: 0))
+    #expect(!map.allowPlacement(.unitFighter, atX: 0, y: 0))
+}
+
 @Test("enclosed sea cells use the legacy draw variant")
 func enclosedSeaDrawing() {
     var map = MapState(width: 3, height: 3, defaultTerrain: .terrainPlain)
@@ -118,6 +163,51 @@ func famicomShoalDrawing() {
     map.updateDraw()
 
     #expect(map.backgroundDrawElement(atX: 1, y: 1) == .terrainShoal)
+}
+
+@Test("GB Wars keeps flat terrain cells and bridge orientation")
+func gbWarsFlatTerrainDrawing() {
+    var map = MapState(width: 5, height: 3, tileset: .gbWars, defaultTerrain: .terrainSea)
+    _ = map.setBackground(.terrainPlain, atX: 1, y: 1, check: false)
+    _ = map.setBackground(.terrainRoad, atX: 2, y: 1, check: false)
+    _ = map.setBackground(.terrainBridgeH, atX: 3, y: 1, check: false)
+    _ = map.setBackground(.terrainBridgeV, atX: 4, y: 1, check: false)
+    _ = map.setBackground(.terrainShoal, atX: 1, y: 2, check: false)
+    map.updateDraw()
+
+    #expect(map.backgroundDrawElement(atX: 1, y: 1) == .terrainPlain)
+    #expect(map.backgroundDrawElement(atX: 2, y: 1) == .terrainRoad)
+    #expect(map.backgroundDrawElement(atX: 3, y: 1) == .terrainBridgeH)
+    #expect(map.backgroundDrawElement(atX: 4, y: 1) == .terrainBridgeV)
+    #expect(map.backgroundDrawElement(atX: 1, y: 2) == .terrainShoal)
+}
+
+@Test("bridges reconstruct a matching water underlay")
+func bridgeWaterUnderlay() {
+    var riverCrossing = MapState(width: 3, height: 3, defaultTerrain: .terrainPlain)
+    _ = riverCrossing.setBackground(.terrainRiver, atX: 1, y: 0, check: false)
+    _ = riverCrossing.setBackground(.terrainBridgeH, atX: 1, y: 1, check: false)
+    _ = riverCrossing.setBackground(.terrainRiver, atX: 1, y: 2, check: false)
+    #expect(
+        riverCrossing.bridgeUnderlayDrawElement(atX: 1, y: 1) ==
+            Element(AWConstants.makeTerrain(3, 1))
+    )
+
+    let coastalCrossing = MapState(width: 1, height: 1, defaultTerrain: .terrainBridgeV)
+    #expect(coastalCrossing.bridgeUnderlayDrawElement(atX: 0, y: 0) == .terrainSea)
+    #expect(coastalCrossing.bridgeUnderlayDrawElement(atX: -1, y: 0) == nil)
+}
+
+@Test("buildings reconstruct their terrain underlay")
+func buildingTerrainUnderlay() {
+    var map = MapState(width: 3, height: 1, defaultTerrain: .terrainSea)
+    _ = map.setBackground(.buildingCity, atX: 0, y: 0, check: false)
+    _ = map.setBackground(.buildingPort, atX: 1, y: 0, check: false)
+
+    #expect(map.buildingUnderlayDrawElement(atX: 0, y: 0) == .terrainPlain)
+    #expect(map.buildingUnderlayDrawElement(atX: 1, y: 0) == .terrainShoal)
+    #expect(map.buildingUnderlayDrawElement(atX: 2, y: 0) == nil)
+    #expect(map.buildingUnderlayDrawElement(atX: -1, y: 0) == nil)
 }
 
 @Test("mountain ranges sprinkle taller draw-only variants")

@@ -65,6 +65,13 @@ public enum Tileset: Int, CaseIterable, Codable, Sendable {
     case aw2 = 5
     case famicomWars = 6
     case gbWars = 7
+    // Keep the original raw values above stable for existing map files. The
+    // historical variants are editor-only extensions and therefore append to
+    // the persisted enum rather than being inserted chronologically.
+    case superFamicomWars = 8
+    case daysOfRuin = 9
+    case gbWars2 = 10
+    case gbWars3 = 11
 
     public var displayName: String {
         switch self {
@@ -76,6 +83,10 @@ public enum Tileset: Int, CaseIterable, Codable, Sendable {
         case .aw2: "Advance Wars 2"
         case .famicomWars: "Famicom Wars"
         case .gbWars: "GB Wars"
+        case .superFamicomWars: "Super Famicom Wars"
+        case .daysOfRuin: "Advance Wars: Days of Ruin"
+        case .gbWars2: "Game Boy Wars 2"
+        case .gbWars3: "Game Boy Wars 3"
         }
     }
 
@@ -87,7 +98,10 @@ public enum Tileset: Int, CaseIterable, Codable, Sendable {
         case .normal, .snow, .desert, .wasteland: "bgm"
         case .aw1, .aw2: "bgm_2"
         case .famicomWars: "bgm_3"
-        case .gbWars: "bgm_4"
+        case .gbWars, .gbWars2: "bgm_4"
+        case .daysOfRuin: "bgm_5"
+        case .gbWars3: "bgm_6"
+        case .superFamicomWars: "bgm_7"
         }
     }
 
@@ -95,19 +109,54 @@ public enum Tileset: Int, CaseIterable, Codable, Sendable {
     /// existing AWS/AWD map files continue to decode their original six
     /// tilesets unchanged.
     public static var launchOrdered: [Tileset] {
-        [.famicomWars, .gbWars, .aw1, .aw2, .normal, .snow, .desert, .wasteland]
+        [
+            .famicomWars,
+            .gbWars,
+            .superFamicomWars,
+            .gbWars2,
+            .aw1,
+            .gbWars3,
+            .aw2,
+            .normal,
+            .snow,
+            .desert,
+            .wasteland,
+            .daysOfRuin
+        ]
     }
 
     /// The game rules used when launching an in-editor playtest for this
-    /// tileset. The historical Famicom/GB looks currently use the closest
-    /// implemented GBA rules for playtest mechanics; their art remains
-    /// distinct and the rules can be split out later without changing files.
+    /// tileset. Every historical art family keeps a distinct mechanics
+    /// identity; this enum is not persisted in map files, so adding rulesets
+    /// does not disturb the stable `Tileset` raw values above.
     public var playtestRuleset: PlaytestRuleset {
         switch self {
         case .normal, .snow, .desert, .wasteland: .dualStrike
-        case .aw1, .famicomWars, .gbWars: .advanceWars
+        case .aw1: .advanceWars
         case .aw2: .advanceWars2
+        case .famicomWars: .famicomWars
+        case .gbWars: .gameBoyWars
+        case .superFamicomWars: .superFamicomWars
+        case .gbWars2: .gameBoyWars2
+        case .gbWars3: .gameBoyWars3
+        case .daysOfRuin: .daysOfRuin
         }
+    }
+
+    /// The compact family checks are shared by the editor and playtest
+    /// renderer. They intentionally include the historical variants so the
+    /// staggered Game Boy grid and the limited Famicom palette stay in sync
+    /// everywhere a map can be drawn.
+    public var isFamicomWarsFamily: Bool {
+        self == .famicomWars || self == .superFamicomWars
+    }
+
+    public var isGameBoyWarsFamily: Bool {
+        self == .gbWars || self == .gbWars2 || self == .gbWars3
+    }
+
+    public var isHistoricalWarsVariant: Bool {
+        isFamicomWarsFamily || isGameBoyWarsFamily || self == .daysOfRuin
     }
 }
 
@@ -115,12 +164,24 @@ public enum PlaytestRuleset: String, CaseIterable, Codable, Sendable {
     case dualStrike
     case advanceWars
     case advanceWars2
+    case famicomWars
+    case gameBoyWars
+    case superFamicomWars
+    case gameBoyWars2
+    case gameBoyWars3
+    case daysOfRuin
 
     public var displayName: String {
         switch self {
         case .dualStrike: "Advance Wars: Dual Strike"
         case .advanceWars: "Advance Wars"
         case .advanceWars2: "Advance Wars 2"
+        case .famicomWars: "Famicom Wars"
+        case .gameBoyWars: "Game Boy Wars"
+        case .superFamicomWars: "Super Famicom Wars"
+        case .gameBoyWars2: "Game Boy Wars 2"
+        case .gameBoyWars3: "Game Boy Wars 3"
+        case .daysOfRuin: "Advance Wars: Days of Ruin"
         }
     }
 
@@ -129,6 +190,12 @@ public enum PlaytestRuleset: String, CaseIterable, Codable, Sendable {
         case .dualStrike: "Dual Strike"
         case .advanceWars: "AW1"
         case .advanceWars2: "AW2"
+        case .famicomWars: "Famicom Wars"
+        case .gameBoyWars: "GB Wars"
+        case .superFamicomWars: "SFW"
+        case .gameBoyWars2: "GB Wars 2"
+        case .gameBoyWars3: "GB Wars 3"
+        case .daysOfRuin: "Days of Ruin"
         }
     }
 }

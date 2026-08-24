@@ -99,6 +99,12 @@ enum ScreenshotRenderer {
                                   y: canvasHeight - topRect.maxY,
                                   width: topRect.width,
                                   height: topRect.height)
+                if let buildingUnderlay = map.buildingUnderlayDrawElement(atX: x, y: y) {
+                    draw(buildingUnderlay, in: rect, map: map, atlas: atlas, palette: palette)
+                }
+                if let bridgeUnderlay = map.bridgeUnderlayDrawElement(atX: x, y: y) {
+                    draw(bridgeUnderlay, in: rect, map: map, atlas: atlas, palette: palette)
+                }
                 draw(map.backgroundDrawElement(atX: x, y: y), in: rect, map: map, atlas: atlas, palette: palette)
                 drawSeaCoast(atX: x, y: y, in: rect, map: map, atlas: atlas, palette: palette)
                 draw(map.foregroundElement(atX: x, y: y), in: rect, map: map, atlas: atlas, palette: palette)
@@ -253,7 +259,7 @@ enum ScreenshotRenderer {
     }
 
     private static func drawSeaCoast(atX x: Int, y: Int, in rect: NSRect, map: MapState, atlas: SpriteAtlas, palette: SpritePalette) {
-        guard map.tileset != .gbWars, map.backgroundDrawElement(atX: x, y: y) == .terrainSea else { return }
+        guard !map.tileset.isGameBoyWarsFamily, map.backgroundDrawElement(atX: x, y: y) == .terrainSea else { return }
         let up = map.backgroundElement(atX: x, y: y - 1)
         let down = map.backgroundElement(atX: x, y: y + 1)
         let left = map.backgroundElement(atX: x - 1, y: y)

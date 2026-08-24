@@ -96,7 +96,8 @@ struct PaletteView: View {
     private func buildingColumnCount(for tileset: Tileset) -> Int {
         switch tileset {
         case .famicomWars: 5
-        case .gbWars: 3
+        case .superFamicomWars: 7
+        case .gbWars, .gbWars2, .gbWars3: 5
         default: 7
         }
     }
@@ -244,7 +245,11 @@ private struct ArmyColorTabs: View {
     }
 
     private func color(for army: Int) -> Color {
-        if tileset == .gbWars {
+        if tileset == .daysOfRuin, army == AWConstants.armyBlackHole {
+            return Color(white: 0.12)
+        }
+
+        if tileset.isGameBoyWarsFamily {
             switch army {
             case AWConstants.armyOrangeStar: return Color(red: 0.78, green: 0.12, blue: 0.12)
             case AWConstants.armyBlueMoon: return Color(white: 0.82)

@@ -46,6 +46,38 @@ public struct MapState: Codable, Equatable, Sendable {
         return backgroundDraw[index(x: x, y: y)]
     }
 
+    /// The bridge atlas cells are transparent overlays. Reconstruct the water
+    /// plate beneath them from neighbouring river tiles, falling back to sea
+    /// for coastal bridges and isolated legacy/imported bridge cells.
+    public func bridgeUnderlayDrawElement(atX x: Int, y: Int) -> Element? {
+        let bridge = backgroundElement(atX: x, y: y)
+        guard bridge == .terrainBridgeH || bridge == .terrainBridgeV else { return nil }
+        let neighbours = [
+            backgroundElement(atX: x, y: y - 1),
+            backgroundElement(atX: x, y: y + 1),
+            backgroundElement(atX: x - 1, y: y),
+            backgroundElement(atX: x + 1, y: y),
+        ]
+        guard neighbours.contains(where: { $0.simplified == .terrainRiver }) else {
+            return .terrainSea
+        }
+        // A horizontal bridge crosses the vertical river sprite and vice
+        // versa. GB-family flat river sheets safely map either slot to their
+        // one maintained river cell.
+        return bridge == .terrainBridgeH
+            ? Element(AWConstants.makeTerrain(3, 1))
+            : .terrainRiver
+    }
+
+    /// Building artwork is composited over terrain rather than carrying an
+    /// opaque plate. Ports sit in shoal water; every other property stands on
+    /// the artstyle's plains tile.
+    public func buildingUnderlayDrawElement(atX x: Int, y: Int) -> Element? {
+        let building = backgroundElement(atX: x, y: y)
+        guard building.isBuilding else { return nil }
+        return building.simplified == .buildingPort ? .terrainShoal : .terrainPlain
+    }
+
     public func foregroundElement(atX x: Int, y: Int) -> Element {
         guard isValid(x: x, y: y) else { return .unitEmpty }
         return foreground[index(x: x, y: y)]
@@ -160,13 +192,14 @@ public struct MapState: Codable, Equatable, Sendable {
             if underlying.isExtra { return false }
             if underlying == .terrainBlank { return true }
             let base = underlying.simplified
+            let isSuperFamicomRailroad = tileset == .superFamicomWars && base == .terrainPipe
             switch element.simplified.value {
             case Element.unitInfantry.value, Element.unitMech.value:
-                return base.isBuilding || [.terrainPlain, .terrainPlainD, .terrainWood, .terrainMountain, .terrainRoad, .terrainBridgeH, .terrainRiver, .terrainShoal].contains(base)
+                return isSuperFamicomRailroad || base.isBuilding || [.terrainPlain, .terrainPlainD, .terrainWood, .terrainMountain, .terrainRoad, .terrainBridgeH, .terrainRiver, .terrainShoal].contains(base)
             case Element.unitTank.value, Element.unitMDTank.value, Element.unitNeoTank.value, Element.unitMegaTank.value,
                  Element.unitRecon.value, Element.unitAntiAir.value, Element.unitMissile.value, Element.unitArtillery.value,
                  Element.unitRocket.value, Element.unitAPC.value, Element.unitOozium.value:
-                return base.isBuilding || [.terrainPlain, .terrainPlainD, .terrainWood, .terrainRoad, .terrainBridgeH, .terrainShoal].contains(base)
+                return isSuperFamicomRailroad || base.isBuilding || [.terrainPlain, .terrainPlainD, .terrainWood, .terrainRoad, .terrainBridgeH, .terrainShoal].contains(base)
             case Element.unitPipeRunner.value:
                 return [.terrainPipe, .terrainSeam, .buildingBase].contains(base)
             case Element.unitBlackBoat.value, Element.unitLander.value:
@@ -175,7 +208,7 @@ public struct MapState: Codable, Equatable, Sendable {
                 return [.terrainSea, .terrainReef, .buildingPort].contains(base)
             case Element.unitTCopter.value, Element.unitBCopter.value, Element.unitFighter.value, Element.unitBomber.value,
                  Element.unitStealth.value, Element.unitBlackBomb.value:
-                return base != .terrainPipe && base != .terrainSeam
+                return isSuperFamicomRailroad || (base != .terrainPipe && base != .terrainSeam)
             default:
                 return element == .unitEmpty
             }
@@ -317,6 +350,26 @@ public struct MapState: Codable, Equatable, Sendable {
     private func drawElement(atX x: Int, y: Int) -> Element {
         let element = backgroundElement(atX: x, y: y)
         guard element.isTerrain else { return element }
+
+        // GB Wars uses the compact four-tone atlas as a collection of
+        // finished 16×16 cells. Preserve its two bridge orientations, but
+        // do not synthesize Advance Wars road, river, sea, shoal, or mountain
+        // variants. Canonicalizing those terrain types keeps imported maps
+        // from mixing later-game edge artwork into the Game Boy palette.
+        if tileset.isGameBoyWarsFamily {
+            switch element.simplified {
+            case .terrainPlain: return .terrainPlain
+            case .terrainWood: return .terrainWood
+            case .terrainMountain: return .terrainMountain
+            case .terrainRoad: return .terrainRoad
+            case .terrainBridgeH: return element
+            case .terrainRiver: return .terrainRiver
+            case .terrainSea: return .terrainSea
+            case .terrainShoal: return .terrainShoal
+            default: break
+            }
+        }
+
         let up = backgroundElement(atX: x, y: y - 1)
         let down = backgroundElement(atX: x, y: y + 1)
         let left = backgroundElement(atX: x - 1, y: y)
@@ -392,7 +445,7 @@ public struct MapState: Codable, Equatable, Sendable {
             // Famicom Wars uses one flat cyan shoal sprite. Its source sheet
             // does not contain the later Advance Wars shoreline variants, so
             // keep the authoring tile unchanged regardless of neighbours.
-            if tileset == .famicomWars { return element }
+            if tileset.isFamicomWarsFamily { return element }
             // Match the original editor's shoal shoreline table. The tile
             // values encode the local land/shoal arrangement in the sheet.
             if down.isLand && left.isLand && right.isLand { return Element(AWConstants.makeTerrain(9, 7)) }

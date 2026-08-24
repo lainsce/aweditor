@@ -21,5 +21,9 @@ DerivedData/
 xcuserdata/
 Thumbs.db
 
+# User-supplied game ROMs are local extraction inputs and must never be committed.
+ROMs/
+.rom-extraction/
+
 # Finder metadata
 .DS_Store

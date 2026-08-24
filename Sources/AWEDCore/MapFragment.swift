@@ -49,6 +49,29 @@ public struct MapFragment: Codable, Equatable, Sendable {
         return backgroundDraw[x * height + y]
     }
 
+    public func bridgeUnderlayDrawElement(atX x: Int, y: Int) -> Element? {
+        let bridge = backgroundElement(atX: x, y: y)
+        guard bridge == .terrainBridgeH || bridge == .terrainBridgeV else { return nil }
+        let neighbours = [
+            backgroundElement(atX: x, y: y - 1),
+            backgroundElement(atX: x, y: y + 1),
+            backgroundElement(atX: x - 1, y: y),
+            backgroundElement(atX: x + 1, y: y),
+        ]
+        guard neighbours.contains(where: { $0.simplified == .terrainRiver }) else {
+            return .terrainSea
+        }
+        return bridge == .terrainBridgeH
+            ? Element(AWConstants.makeTerrain(3, 1))
+            : .terrainRiver
+    }
+
+    public func buildingUnderlayDrawElement(atX x: Int, y: Int) -> Element? {
+        let building = backgroundElement(atX: x, y: y)
+        guard building.isBuilding else { return nil }
+        return building.simplified == .buildingPort ? .terrainShoal : .terrainPlain
+    }
+
     public func clipped(toWidth newWidth: Int, height newHeight: Int) -> MapFragment {
         let safeWidth = min(max(0, newWidth), width)
         let safeHeight = min(max(0, newHeight), height)

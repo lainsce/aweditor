@@ -16,8 +16,8 @@ enum MapCanvasMetrics {
     /// editor, hit testing, playtest, and screenshot renderer cannot drift
     /// apart when a GB Wars palette is selected.
     static func isStaggeredGB(map: MapState, palette: SpritePalette? = nil) -> Bool {
-        if map.tileset == .gbWars { return true }
-        if case .gbWars? = palette { return true }
+        if map.tileset.isGameBoyWarsFamily { return true }
+        if let palette, palette.isGameBoyWarsFamily { return true }
         return false
     }
 
@@ -638,19 +638,29 @@ struct MapCanvasView: View {
         let tile = CGFloat(tileSize)
         let mapBounds = CGRect(origin: .zero, size: mapSize)
         context.clip(to: Path(mapBounds))
-        context.fill(Path(mapBounds), with: .color(Color(red: 0.12, green: 0.16, blue: 0.18)))
+        // Keep transparent/unused areas true black so the four-colour Game Boy
+        // palettes do not pick up the editor's dark slate backing.
+        context.fill(Path(mapBounds), with: .color(.black))
 
         for x in 0..<map.width {
             for y in 0..<map.height {
                 let rect = MapCanvasMetrics.tileRect(x: x, y: y, tileSize: tile, staggered: staggered)
-                context.fill(MapCanvasMetrics.tilePath(in: rect, staggered: staggered), with: .color(Color.white.opacity((x + y).isMultiple(of: 2) ? 0.025 : 0.01)))
+                if !map.tileset.isGameBoyWarsFamily {
+                    context.fill(MapCanvasMetrics.tilePath(in: rect, staggered: staggered), with: .color(Color.white.opacity((x + y).isMultiple(of: 2) ? 0.025 : 0.01)))
+                }
                 let terrain = map.backgroundElement(atX: x, y: y)
                 let background = map.backgroundDrawElement(atX: x, y: y)
                 // Row-zero double-height artwork is supplied by the separate
                 // overflow layer so it can project above the wood rim without
                 // bringing the tile background with it.
+                if let buildingUnderlay = map.buildingUnderlayDrawElement(atX: x, y: y) {
+                    drawSprite(buildingUnderlay, at: rect, context: &context)
+                }
                 if !(y == 0 && model.renderPalette.doubleHeight(for: background) &&
                     (background.isBuilding || background.isExtra || background.simplified == .terrainMountain)) {
+                    if let bridgeUnderlay = map.bridgeUnderlayDrawElement(atX: x, y: y) {
+                        drawSprite(bridgeUnderlay, at: rect, context: &context)
+                    }
                     drawSprite(background, at: rect, context: &context)
                 }
                 drawSeaCoast(atX: x, y: y, rect: rect, map: map, context: &context)
@@ -672,7 +682,15 @@ struct MapCanvasView: View {
                         staggered: staggered
                     )
                     let background = fragment.backgroundDrawElement(atX: x, y: y)
-                    if background != .terrainBlank { drawSprite(background, at: rect, context: &context) }
+                    if background != .terrainBlank {
+                        if let buildingUnderlay = fragment.buildingUnderlayDrawElement(atX: x, y: y) {
+                            drawSprite(buildingUnderlay, at: rect, context: &context)
+                        }
+                        if let bridgeUnderlay = fragment.bridgeUnderlayDrawElement(atX: x, y: y) {
+                            drawSprite(bridgeUnderlay, at: rect, context: &context)
+                        }
+                        drawSprite(background, at: rect, context: &context)
+                    }
                     drawSprite(fragment.foregroundElement(atX: x, y: y), at: rect, context: &context)
                 }
             }
@@ -721,7 +739,7 @@ struct MapCanvasView: View {
         // non-sea cell opts out independently even when it borders the sea.
         guard rect.minY == 0,
               terrain.simplified == .terrainSea,
-              map.tileset != .gbWars,
+              !map.tileset.isGameBoyWarsFamily,
               !hasTallSpriteCover(atX: x, y: y, map: map) else { return }
 
         let depthHeight = min(rect.height * 0.38, 10)
@@ -772,7 +790,7 @@ struct MapCanvasView: View {
     private func drawSeaCoast(atX x: Int, y: Int, rect: CGRect, map: MapState, context: inout GraphicsContext) {
         // Enclosed sea cells are already represented by a dedicated draw
         // variant (terrain columns 7). Compose overlays only for base sea.
-        guard map.tileset != .gbWars,
+        guard !map.tileset.isGameBoyWarsFamily,
               map.backgroundDrawElement(atX: x, y: y) == .terrainSea else { return }
         let up = map.backgroundElement(atX: x, y: y - 1)
         let down = map.backgroundElement(atX: x, y: y + 1)

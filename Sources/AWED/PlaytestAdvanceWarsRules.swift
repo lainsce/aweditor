@@ -63,9 +63,9 @@ enum PlaytestAdvanceWarsRules {
         case .unitRocket: return "Howitzer"
         case .unitMissile: return "AA Missile"
         case .unitAntiAir: return "AA Tank"
-        case .unitRecon: return "Supply"
+        case .unitRecon: return "Supply Truck"
         case .unitBCopter: return "Scout"
-        case .unitTCopter: return "Copter"
+        case .unitTCopter: return "Helicopter"
         default: return PaletteCatalog.label(for: element)
         }
     }

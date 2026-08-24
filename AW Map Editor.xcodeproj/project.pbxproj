@@ -46,9 +46,6 @@
 		000000000000000000002030 /* MapCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001030 /* MapCoreTests.swift */; };
 		000000000000000000002040 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001040 /* AppIcon.icon */; };
 		000000000000000000002041 /* bgm.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001041 /* bgm.mp3 */; };
-		000000000000000000002042 /* bgm_2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001042 /* bgm_2.mp3 */; };
-		000000000000000000002043 /* bgm_3.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001043 /* bgm_3.mp3 */; };
-		000000000000000000002044 /* bgm_4.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001044 /* bgm_4.mp3 */; };
 		000000000000000000002050 /* building_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001050 /* building_0.png */; };
 		000000000000000000002051 /* building_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001051 /* building_1.png */; };
 		000000000000000000002052 /* building_2.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001052 /* building_2.png */; };
@@ -95,7 +92,34 @@
 		000000000000000000002085 /* terrain_7.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001085 /* terrain_7.png */; };
 		000000000000000000002086 /* unit_6.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001086 /* unit_6.png */; };
 		000000000000000000002087 /* unit_7.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001087 /* unit_7.png */; };
+		000000000000000000002088 /* PlaytestSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001092 /* PlaytestSession.swift */; };
+		000000000000000000002089 /* PlaytestHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001093 /* PlaytestHeader.swift */; };
+		00000000000000000000208A /* PlaytestMapViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001094 /* PlaytestMapViews.swift */; };
+		00000000000000000000208B /* PlaytestInteractionLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001095 /* PlaytestInteractionLayer.swift */; };
+		00000000000000000000208C /* PlaytestInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001096 /* PlaytestInspector.swift */; };
+		000000000000000000002090 /* building_8.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A0 /* building_8.png */; };
+		000000000000000000002091 /* building_9.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A1 /* building_9.png */; };
+		000000000000000000002092 /* building_10.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A2 /* building_10.png */; };
+		000000000000000000002093 /* building_11.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A3 /* building_11.png */; };
+		000000000000000000002094 /* terrain_8.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A4 /* terrain_8.png */; };
+		000000000000000000002095 /* terrain_9.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A5 /* terrain_9.png */; };
+		000000000000000000002096 /* terrain_10.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A6 /* terrain_10.png */; };
+		000000000000000000002097 /* terrain_11.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A7 /* terrain_11.png */; };
+		000000000000000000002098 /* unit_8.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A8 /* unit_8.png */; };
+		000000000000000000002099 /* unit_9.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A9 /* unit_9.png */; };
+		00000000000000000000209A /* unit_10.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AA /* unit_10.png */; };
+		00000000000000000000209B /* unit_11.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AB /* unit_11.png */; };
+		A10000000000000000000001 /* PlaytestFamicomWarsRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* PlaytestFamicomWarsRules.swift */; };
+		A10000000000000000000002 /* PlaytestSuperFamicomWarsRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* PlaytestSuperFamicomWarsRules.swift */; };
+		A10000000000000000000003 /* PlaytestGameBoyWarsRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* PlaytestGameBoyWarsRules.swift */; };
+		A10000000000000000000004 /* PlaytestDaysOfRuinRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* PlaytestDaysOfRuinRules.swift */; };
 		67803C6230360302005182A2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67803C6130360302005182A2 /* Assets.xcassets */; };
+		67D481A4303B856100B52F6B /* bgm_4.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 67D481A3303B856100B52F6B /* bgm_4.mp3 */; };
+		67D481A5303B856100B52F6B /* bgm_2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 67D481A1303B856100B52F6B /* bgm_2.mp3 */; };
+		67D481A6303B856100B52F6B /* bgm_3.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 67D481A2303B856100B52F6B /* bgm_3.mp3 */; };
+		67D481A9303B856100B52F6B /* bgm_5.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 67D481A7303B856100B52F6B /* bgm_5.mp3 */; };
+		67D481AA303B856100B52F6B /* bgm_6.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 67D481A8303B856100B52F6B /* bgm_6.mp3 */; };
+		67D481AC303B856100B52F6B /* bgm_7.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 67D481AB303B856100B52F6B /* bgm_7.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -155,9 +179,6 @@
 		000000000000000000001030 /* MapCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCoreTests.swift; sourceTree = "<group>"; };
 		000000000000000000001040 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		000000000000000000001041 /* bgm.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm.mp3; sourceTree = "<group>"; };
-		000000000000000000001042 /* bgm_2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Resources/bgm_2.mp3"; sourceTree = SOURCE_ROOT; };
-		000000000000000000001043 /* bgm_3.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Resources/bgm_3.mp3"; sourceTree = SOURCE_ROOT; };
-		000000000000000000001044 /* bgm_4.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Resources/bgm_4.mp3"; sourceTree = SOURCE_ROOT; };
 		000000000000000000001050 /* building_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_0.png; sourceTree = "<group>"; };
 		000000000000000000001051 /* building_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_1.png; sourceTree = "<group>"; };
 		000000000000000000001052 /* building_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_2.png; sourceTree = "<group>"; };
@@ -193,6 +214,10 @@
 		000000000000000000001075 /* PlaytestRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestRules.swift; sourceTree = "<group>"; };
 		000000000000000000001076 /* PlaytestAdvanceWars2Rules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestAdvanceWars2Rules.swift; sourceTree = "<group>"; };
 		000000000000000000001077 /* PlaytestAdvanceWarsRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestAdvanceWarsRules.swift; sourceTree = "<group>"; };
+		A20000000000000000000001 /* PlaytestFamicomWarsRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestFamicomWarsRules.swift; sourceTree = "<group>"; };
+		A20000000000000000000002 /* PlaytestSuperFamicomWarsRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestSuperFamicomWarsRules.swift; sourceTree = "<group>"; };
+		A20000000000000000000003 /* PlaytestGameBoyWarsRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestGameBoyWarsRules.swift; sourceTree = "<group>"; };
+		A20000000000000000000004 /* PlaytestDaysOfRuinRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestDaysOfRuinRules.swift; sourceTree = "<group>"; };
 		000000000000000000001078 /* terrain_aw1_rain.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_aw1_rain.png; sourceTree = "<group>"; };
 		000000000000000000001079 /* terrain_aw1_snow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_aw1_snow.png; sourceTree = "<group>"; };
 		00000000000000000000107A /* terrain_aw2_rain.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_aw2_rain.png; sourceTree = "<group>"; };
@@ -207,10 +232,33 @@
 		000000000000000000001088 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		000000000000000000001090 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		000000000000000000001091 /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
+		000000000000000000001092 /* PlaytestSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestSession.swift; sourceTree = "<group>"; };
+		000000000000000000001093 /* PlaytestHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestHeader.swift; sourceTree = "<group>"; };
+		000000000000000000001094 /* PlaytestMapViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestMapViews.swift; sourceTree = "<group>"; };
+		000000000000000000001095 /* PlaytestInteractionLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestInteractionLayer.swift; sourceTree = "<group>"; };
+		000000000000000000001096 /* PlaytestInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestInspector.swift; sourceTree = "<group>"; };
+		0000000000000000000010A0 /* building_8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_8.png; sourceTree = "<group>"; };
+		0000000000000000000010A1 /* building_9.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_9.png; sourceTree = "<group>"; };
+		0000000000000000000010A2 /* building_10.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_10.png; sourceTree = "<group>"; };
+		0000000000000000000010A3 /* building_11.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_11.png; sourceTree = "<group>"; };
+		0000000000000000000010A4 /* terrain_8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_8.png; sourceTree = "<group>"; };
+		0000000000000000000010A5 /* terrain_9.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_9.png; sourceTree = "<group>"; };
+		0000000000000000000010A6 /* terrain_10.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_10.png; sourceTree = "<group>"; };
+		0000000000000000000010A7 /* terrain_11.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_11.png; sourceTree = "<group>"; };
+		0000000000000000000010A8 /* unit_8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_8.png; sourceTree = "<group>"; };
+		0000000000000000000010A9 /* unit_9.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_9.png; sourceTree = "<group>"; };
+		0000000000000000000010AA /* unit_10.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_10.png; sourceTree = "<group>"; };
+		0000000000000000000010AB /* unit_11.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_11.png; sourceTree = "<group>"; };
 		000000000000000000001101 /* AW Map Editor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AW Map Editor.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000001102 /* libAWEDCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAWEDCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000001103 /* AWEDCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AWEDCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		67803C6130360302005182A2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		67D481A1303B856100B52F6B /* bgm_2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_2.mp3; sourceTree = "<group>"; };
+		67D481A2303B856100B52F6B /* bgm_3.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_3.mp3; sourceTree = "<group>"; };
+		67D481A3303B856100B52F6B /* bgm_4.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_4.mp3; sourceTree = "<group>"; };
+		67D481A7303B856100B52F6B /* bgm_5.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_5.mp3; sourceTree = "<group>"; };
+		67D481A8303B856100B52F6B /* bgm_6.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_6.mp3; sourceTree = "<group>"; };
+		67D481AB303B856100B52F6B /* bgm_7.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_7.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -264,10 +312,19 @@
 				000000000000000000000008 /* Glasswing */,
 				000000000000000000001025 /* PrivacyPolicyView.swift */,
 				000000000000000000001073 /* PlaytestView.swift */,
+				000000000000000000001092 /* PlaytestSession.swift */,
+				000000000000000000001093 /* PlaytestHeader.swift */,
+				000000000000000000001094 /* PlaytestMapViews.swift */,
+				000000000000000000001095 /* PlaytestInteractionLayer.swift */,
+				000000000000000000001096 /* PlaytestInspector.swift */,
 				000000000000000000001074 /* PlaytestDualStrikeRules.swift */,
 				000000000000000000001075 /* PlaytestRules.swift */,
 				000000000000000000001076 /* PlaytestAdvanceWars2Rules.swift */,
 				000000000000000000001077 /* PlaytestAdvanceWarsRules.swift */,
+				A20000000000000000000001 /* PlaytestFamicomWarsRules.swift */,
+				A20000000000000000000002 /* PlaytestSuperFamicomWarsRules.swift */,
+				A20000000000000000000003 /* PlaytestGameBoyWarsRules.swift */,
+				A20000000000000000000004 /* PlaytestDaysOfRuinRules.swift */,
 				00000000000000000000107C /* PlaytestWeatherOverlay.swift */,
 				000000000000000000001019 /* EditorTypes.swift */,
 				00000000000000000000101A /* FilePanelService.swift */,
@@ -288,9 +345,12 @@
 			children = (
 				000000000000000000001040 /* AppIcon.icon */,
 				000000000000000000001041 /* bgm.mp3 */,
-				000000000000000000001042 /* bgm_2.mp3 */,
-				000000000000000000001043 /* bgm_3.mp3 */,
-				000000000000000000001044 /* bgm_4.mp3 */,
+				67D481A1303B856100B52F6B /* bgm_2.mp3 */,
+				67D481A2303B856100B52F6B /* bgm_3.mp3 */,
+				67D481A3303B856100B52F6B /* bgm_4.mp3 */,
+				67D481A7303B856100B52F6B /* bgm_5.mp3 */,
+				67D481A8303B856100B52F6B /* bgm_6.mp3 */,
+				67D481AB303B856100B52F6B /* bgm_7.mp3 */,
 				000000000000000000000006 /* Spritesheets */,
 			);
 			path = Resources;
@@ -307,6 +367,10 @@
 				000000000000000000001055 /* building_5.png */,
 				000000000000000000001080 /* building_6.png */,
 				000000000000000000001081 /* building_7.png */,
+				0000000000000000000010A0 /* building_8.png */,
+				0000000000000000000010A1 /* building_9.png */,
+				0000000000000000000010A2 /* building_10.png */,
+				0000000000000000000010A3 /* building_11.png */,
 				000000000000000000001056 /* extra_0.png */,
 				000000000000000000001057 /* extra_1.png */,
 				000000000000000000001058 /* extra_2.png */,
@@ -324,6 +388,10 @@
 				000000000000000000001064 /* terrain_5.png */,
 				000000000000000000001084 /* terrain_6.png */,
 				000000000000000000001085 /* terrain_7.png */,
+				0000000000000000000010A4 /* terrain_8.png */,
+				0000000000000000000010A5 /* terrain_9.png */,
+				0000000000000000000010A6 /* terrain_10.png */,
+				0000000000000000000010A7 /* terrain_11.png */,
 				000000000000000000001078 /* terrain_aw1_rain.png */,
 				000000000000000000001079 /* terrain_aw1_snow.png */,
 				00000000000000000000107A /* terrain_aw2_rain.png */,
@@ -336,6 +404,10 @@
 				00000000000000000000106A /* unit_5.png */,
 				000000000000000000001086 /* unit_6.png */,
 				000000000000000000001087 /* unit_7.png */,
+				0000000000000000000010A8 /* unit_8.png */,
+				0000000000000000000010A9 /* unit_9.png */,
+				0000000000000000000010AA /* unit_10.png */,
+				0000000000000000000010AB /* unit_11.png */,
 			);
 			path = Spritesheets;
 			sourceTree = "<group>";
@@ -468,17 +540,24 @@
 			files = (
 				000000000000000000002040 /* AppIcon.icon in Resources */,
 				000000000000000000002041 /* bgm.mp3 in Resources */,
-				000000000000000000002042 /* bgm_2.mp3 in Resources */,
-				000000000000000000002043 /* bgm_3.mp3 in Resources */,
-				000000000000000000002044 /* bgm_4.mp3 in Resources */,
 				000000000000000000002050 /* building_0.png in Resources */,
 				000000000000000000002051 /* building_1.png in Resources */,
 				000000000000000000002052 /* building_2.png in Resources */,
 				000000000000000000002053 /* building_3.png in Resources */,
+				67D481A4303B856100B52F6B /* bgm_4.mp3 in Resources */,
+				67D481A5303B856100B52F6B /* bgm_2.mp3 in Resources */,
+				67D481A6303B856100B52F6B /* bgm_3.mp3 in Resources */,
+				67D481A9303B856100B52F6B /* bgm_5.mp3 in Resources */,
+				67D481AA303B856100B52F6B /* bgm_6.mp3 in Resources */,
+				67D481AC303B856100B52F6B /* bgm_7.mp3 in Resources */,
 				000000000000000000002054 /* building_4.png in Resources */,
 				000000000000000000002055 /* building_5.png in Resources */,
 				000000000000000000002080 /* building_6.png in Resources */,
 				000000000000000000002081 /* building_7.png in Resources */,
+				000000000000000000002090 /* building_8.png in Resources */,
+				000000000000000000002091 /* building_9.png in Resources */,
+				000000000000000000002092 /* building_10.png in Resources */,
+				000000000000000000002093 /* building_11.png in Resources */,
 				000000000000000000002056 /* extra_0.png in Resources */,
 				000000000000000000002057 /* extra_1.png in Resources */,
 				67803C6230360302005182A2 /* Assets.xcassets in Resources */,
@@ -497,6 +576,10 @@
 				000000000000000000002064 /* terrain_5.png in Resources */,
 				000000000000000000002084 /* terrain_6.png in Resources */,
 				000000000000000000002085 /* terrain_7.png in Resources */,
+				000000000000000000002094 /* terrain_8.png in Resources */,
+				000000000000000000002095 /* terrain_9.png in Resources */,
+				000000000000000000002096 /* terrain_10.png in Resources */,
+				000000000000000000002097 /* terrain_11.png in Resources */,
 				000000000000000000002078 /* terrain_aw1_rain.png in Resources */,
 				000000000000000000002079 /* terrain_aw1_snow.png in Resources */,
 				00000000000000000000207A /* terrain_aw2_rain.png in Resources */,
@@ -509,6 +592,10 @@
 				00000000000000000000206A /* unit_5.png in Resources */,
 				000000000000000000002086 /* unit_6.png in Resources */,
 				000000000000000000002087 /* unit_7.png in Resources */,
+				000000000000000000002098 /* unit_8.png in Resources */,
+				000000000000000000002099 /* unit_9.png in Resources */,
+				00000000000000000000209A /* unit_10.png in Resources */,
+				00000000000000000000209B /* unit_11.png in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
@@ -562,10 +649,19 @@
 				00000000000000000000201F /* SpriteAtlas.swift in Sources */,
 				000000000000000000002020 /* StatusBarView.swift in Sources */,
 				000000000000000000002073 /* PlaytestView.swift in Sources */,
+				000000000000000000002088 /* PlaytestSession.swift in Sources */,
+				000000000000000000002089 /* PlaytestHeader.swift in Sources */,
+				00000000000000000000208A /* PlaytestMapViews.swift in Sources */,
+				00000000000000000000208B /* PlaytestInteractionLayer.swift in Sources */,
+				00000000000000000000208C /* PlaytestInspector.swift in Sources */,
 				000000000000000000002074 /* PlaytestDualStrikeRules.swift in Sources */,
 				000000000000000000002075 /* PlaytestRules.swift in Sources */,
 				000000000000000000002076 /* PlaytestAdvanceWars2Rules.swift in Sources */,
 				000000000000000000002077 /* PlaytestAdvanceWarsRules.swift in Sources */,
+				A10000000000000000000001 /* PlaytestFamicomWarsRules.swift in Sources */,
+				A10000000000000000000002 /* PlaytestSuperFamicomWarsRules.swift in Sources */,
+				A10000000000000000000003 /* PlaytestGameBoyWarsRules.swift in Sources */,
+				A10000000000000000000004 /* PlaytestDaysOfRuinRules.swift in Sources */,
 				00000000000000000000207C /* PlaytestWeatherOverlay.swift in Sources */,
 			);
 		};

@@ -11,15 +11,19 @@ enum SpritePalette {
     case gbaSnow(base: Tileset)
     case famicomWars
     case gbWars
+    case superFamicomWars
+    case gbWars2
+    case gbWars3
+    case daysOfRuin
 
     /// The historical Famicom sheet mixes one-cell properties with the
     /// editor's usual two-cell building sprites. Keep that geometry with the
     /// render palette instead of changing the persisted `Element` contract.
     func doubleHeight(for element: Element) -> Bool {
-        if case .gbWars = self, element.isBuilding {
+        if isGameBoyWarsFamily, element.isBuilding {
             return false
         }
-        guard case .famicomWars = self, element.isBuilding else {
+        guard isFamicomWarsFamily, element.isBuilding else {
             return element.doubleHeight
         }
 
@@ -35,14 +39,14 @@ enum SpritePalette {
     /// two-row building group in the normalized atlas. Keep their source
     /// lookup aligned with that atlas row while cropping only 16 pixels.
     func drawY(for element: Element) -> Int {
-        if case .gbWars = self, element.isBuilding {
+        if isGameBoyWarsFamily, element.isBuilding {
             // The GB Wars property sheet keeps each 16×16 faction row on a
             // two-row cadence, even though the sprites themselves are not
             // double-height. This maps Red Star (row 0), White Moon (row 2),
             // and neutral properties (row 10) to their actual atlas cells.
             return element.y * 2
         }
-        if case .famicomWars = self,
+        if isFamicomWarsFamily,
            element.isBuilding,
            !doubleHeight(for: element) {
             return element.y * 2
@@ -79,6 +83,36 @@ enum SpritePalette {
         case .gbWars:
             // GB Wars uses the compact four-tone reference-derived atlas.
             return "\(kind.rawValue)_7"
+        case .superFamicomWars:
+            // Super Famicom Wars has its own source-derived terrain, property,
+            // and map-unit sheets. Keep it separate from the NES-era atlas so
+            // the selected cartridge identity is visible in the canvas.
+            return "\(kind.rawValue)_8"
+        case .gbWars2:
+            // Game Boy Wars 2's ROM metatile table is decoded into a dedicated
+            // map sheet; properties and units use the same native CGB palette.
+            return "\(kind.rawValue)_10"
+        case .gbWars3:
+            // GB Wars 3 source rips supply the places and unit silhouettes.
+            return "\(kind.rawValue)_11"
+        case .daysOfRuin:
+            // Days of Ruin has source-ripped terrain, properties, and map
+            // units normalized to the editor's 16-pixel atlas contract.
+            return "\(kind.rawValue)_9"
+        }
+    }
+
+    var isFamicomWarsFamily: Bool {
+        switch self {
+        case .famicomWars, .superFamicomWars: true
+        default: false
+        }
+    }
+
+    var isGameBoyWarsFamily: Bool {
+        switch self {
+        case .gbWars, .gbWars2, .gbWars3: true
+        default: false
         }
     }
 
@@ -99,8 +133,11 @@ enum SpritePalette {
 enum MapVisualVariant: String, CaseIterable, Identifiable, Equatable, Sendable {
     case famicomWars
     case gbWars
+    case superFamicomWars
+    case gbWars2
     case aw1Clear
     case aw1Snow
+    case gbWars3
     case aw2Clear
     case aw2Rain
     case aw2Snow
@@ -108,6 +145,7 @@ enum MapVisualVariant: String, CaseIterable, Identifiable, Equatable, Sendable {
     case dualStrikeSnow
     case dualStrikeDesert
     case dualStrikeWasteland
+    case daysOfRuin
 
     struct Group: Identifiable, Sendable {
         let id: String
@@ -158,9 +196,24 @@ enum MapVisualVariant: String, CaseIterable, Identifiable, Equatable, Sendable {
             variants: [.gbWars]
         ),
         Group(
+            id: "superFamicomWars",
+            title: "Super Famicom Wars · 1998",
+            variants: [.superFamicomWars]
+        ),
+        Group(
+            id: "gbWars2",
+            title: "Game Boy Wars 2 · 1998",
+            variants: [.gbWars2]
+        ),
+        Group(
             id: "advanceWars",
             title: "Advance Wars · 2001",
             variants: [.aw1Clear, .aw1Snow]
+        ),
+        Group(
+            id: "gbWars3",
+            title: "Game Boy Wars 3 · 2001",
+            variants: [.gbWars3]
         ),
         Group(
             id: "advanceWars2",
@@ -171,6 +224,11 @@ enum MapVisualVariant: String, CaseIterable, Identifiable, Equatable, Sendable {
             id: "dualStrike",
             title: "Advance Wars: Dual Strike · 2005",
             variants: [.dualStrikeNormal, .dualStrikeSnow, .dualStrikeDesert, .dualStrikeWasteland]
+        ),
+        Group(
+            id: "daysOfRuin",
+            title: "Advance Wars: Days of Ruin · 2008",
+            variants: [.daysOfRuin]
         )
     ]
 
@@ -180,12 +238,16 @@ enum MapVisualVariant: String, CaseIterable, Identifiable, Equatable, Sendable {
         switch self {
         case .famicomWars: .famicomWars
         case .gbWars: .gbWars
+        case .superFamicomWars: .superFamicomWars
+        case .gbWars2: .gbWars2
         case .aw1Clear, .aw1Snow: .aw1
+        case .gbWars3: .gbWars3
         case .aw2Clear, .aw2Rain, .aw2Snow: .aw2
         case .dualStrikeNormal: .normal
         case .dualStrikeSnow: .snow
         case .dualStrikeDesert: .desert
         case .dualStrikeWasteland: .wasteland
+        case .daysOfRuin: .daysOfRuin
         }
     }
 
@@ -193,8 +255,11 @@ enum MapVisualVariant: String, CaseIterable, Identifiable, Equatable, Sendable {
         switch self {
         case .famicomWars: .famicomWars
         case .gbWars: .gbWars
+        case .superFamicomWars: .superFamicomWars
+        case .gbWars2: .gbWars2
         case .aw1Clear: .tileset(.aw1)
         case .aw1Snow: .gbaSnow(base: .aw1)
+        case .gbWars3: .gbWars3
         case .aw2Clear: .tileset(.aw2)
         case .aw2Rain: .gbaRain(base: .aw2)
         case .aw2Snow: .gbaSnow(base: .aw2)
@@ -202,6 +267,7 @@ enum MapVisualVariant: String, CaseIterable, Identifiable, Equatable, Sendable {
         case .dualStrikeSnow: .tileset(.snow)
         case .dualStrikeDesert: .tileset(.desert)
         case .dualStrikeWasteland: .tileset(.wasteland)
+        case .daysOfRuin: .daysOfRuin
         }
     }
 
@@ -209,35 +275,51 @@ enum MapVisualVariant: String, CaseIterable, Identifiable, Equatable, Sendable {
         switch self {
         case .famicomWars: "Famicom Wars"
         case .gbWars: "GB Wars"
+        case .superFamicomWars: "Super Famicom Wars"
+        case .gbWars2: "Game Boy Wars 2"
         case .aw1Clear, .aw1Snow: "Advance Wars"
+        case .gbWars3: "Game Boy Wars 3"
         case .aw2Clear, .aw2Rain, .aw2Snow: "Advance Wars 2"
         case .dualStrikeNormal, .dualStrikeSnow, .dualStrikeDesert, .dualStrikeWasteland: "Dual Strike"
+        case .daysOfRuin: "Days of Ruin"
         }
     }
 
     var shortName: String {
         switch self {
-        case .famicomWars: "Famicom"
-        case .gbWars: "Game Boy"
+        case .famicomWars: "Normal"
+        case .gbWars: "Normal"
+        case .superFamicomWars: "Normal"
+        case .gbWars2: "Normal"
         case .aw1Clear, .aw2Clear: "Clear"
         case .aw1Snow, .aw2Snow: "Snow"
+        case .gbWars3: "Normal"
         case .aw2Rain: "Rain"
         case .dualStrikeNormal: "Normal"
         case .dualStrikeSnow: "Snow"
         case .dualStrikeDesert: "Desert"
         case .dualStrikeWasteland: "Wasteland"
+        case .daysOfRuin: "Normal"
         }
     }
 
-    /// Compact gameplay/rendering modifiers shown beneath each map-art name.
-    /// A zero means the variant has no rules modifier; "Art" marks the
-    /// Dual Strike wasteland palette as visual-only.
+    /// Compact rules/rendering traits shown beneath each map-art name.
+    /// A zero means the variant has no weather modifier; "Art" marks the
+    /// Dual Strike wasteland palette as visual-only within the DS ruleset.
     var effects: [Effect] {
         switch self {
         case .famicomWars:
-            [Effect(systemImage: "paintpalette.fill", value: "8-bit", accessibilityLabel: "Visual palette only", tint: .visual)]
+            [Effect(systemImage: "gamecontroller.fill", value: "FW", accessibilityLabel: "Famicom Wars ruleset", tint: .visual)]
         case .gbWars:
-            [Effect(systemImage: "paintpalette.fill", value: "4-tone", accessibilityLabel: "Visual palette only", tint: .visual)]
+            [Effect(systemImage: "rectangle.split.3x3.fill", value: "Staggered", accessibilityLabel: "Game Boy Wars staggered-grid ruleset", tint: .movement)]
+        case .superFamicomWars:
+            [Effect(systemImage: "arrow.left.arrow.right", value: "Simult.", accessibilityLabel: "Super Famicom Wars simultaneous direct combat", tint: .range)]
+        case .gbWars2:
+            [Effect(systemImage: "eye.fill", value: "Fog", accessibilityLabel: "Game Boy Wars 2 ruleset with Fog of War", tint: .weather)]
+        case .gbWars3:
+            [Effect(systemImage: "eye.fill", value: "Fog", accessibilityLabel: "Game Boy Wars 3 ruleset with Fog of War", tint: .weather)]
+        case .daysOfRuin:
+            [Effect(systemImage: "cloud.rain.fill", value: "Weather", accessibilityLabel: "Days of Ruin ruleset and weather", tint: .weather)]
         case .dualStrikeNormal:
             [Effect(systemImage: "sun.max.fill", value: "0", accessibilityLabel: "No gameplay modifiers", tint: .neutral)]
         case .dualStrikeSnow:
@@ -274,6 +356,10 @@ enum MapVisualVariant: String, CaseIterable, Identifiable, Equatable, Sendable {
         switch tileset {
         case .famicomWars: .famicomWars
         case .gbWars: .gbWars
+        case .superFamicomWars: .superFamicomWars
+        case .gbWars2: .gbWars2
+        case .gbWars3: .gbWars3
+        case .daysOfRuin: .daysOfRuin
         case .normal: .dualStrikeNormal
         case .snow: .dualStrikeSnow
         case .desert: .dualStrikeDesert
