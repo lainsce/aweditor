@@ -181,7 +181,8 @@ enum PlaytestAdvanceWars2Rules {
         attackerHealth: Int,
         defenderHealth: Int,
         terrain: Element,
-        primaryAmmo: Int?
+        primaryAmmo: Int?,
+        randomize: Bool = true
     ) -> Int? {
         guard canAttack(attacker, defender, primaryAmmo: primaryAmmo) else { return nil }
         guard let attackerStats = stats(for: attacker) else { return nil }
@@ -199,7 +200,7 @@ enum PlaytestAdvanceWars2Rules {
             ? 0
             : terrainStars(for: terrain)
         let terrainDefense = max(0, 100 - stars * displayedDefenderHealth)
-        let luck = Int.random(in: 0...9)
+        let luck = randomize ? Int.random(in: 0...9) : 4
         let raw = Double(base + luck)
             * (Double(max(1, min(100, attackerHealth))) / 100)
             * (Double(terrainDefense) / 100)

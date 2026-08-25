@@ -174,13 +174,19 @@ aliasing every game to another game's art:
   captured VRAM/palette dump remains an ignored fallback when the ROM is
   unavailable; no dump is bundled.
 - `*_11` (Game Boy Wars 3) uses the native 2bpp unit artwork from the [GB Wars
-  3 translation project](https://github.com/REONTeam/gbwars3-en) and the
-  compact 16×16 GB map-property reference. The large public [Places sheet](https://www.spriters-resource.com/game_boy_gbc/gbwars3/asset/18437/)
+  3 translation project](https://github.com/REONTeam/gbwars3-en) and crisp
+  16×16 map properties reconstructed from the supplied high-resolution map
+  references. The large public [Places sheet](https://www.spriters-resource.com/game_boy_gbc/gbwars3/asset/18437/)
   is event/presentation art, so it is deliberately excluded from the map
-  atlas. The six supplied GBW3 map cells are used verbatim in the canonical
-  terrain slots: Plains, Mountain, Sea, Road, Woods, and Bridge. The remaining
-  edge/variant slots retain the four-tone GB reference until native GBW3
-  variants are available.
+  atlas. Red Star and White Moon HQ, City, and Base icons remain one logical
+  map cell and keep the atlas's two-row property cadence. Airport and Port
+  retain the established GBW3 cells until a clean unoccluded map capture for
+  those two properties is available.
+  Airport and Port retain the established GBW3 cells until a clean unoccluded
+  map capture for those two properties is available. The six supplied GBW3 map
+  cells are used verbatim in the canonical terrain slots: Plains, Mountain,
+  Sea, Road, Woods, and Bridge. The remaining edge/variant slots retain the
+  four-tone GB reference until native GBW3 variants are available.
 - `*_9` (Days of Ruin / Dark Conflict) uses `ROMs/awdor.nds` to unpack the
   map NARCs and decode their Nintendo DS `0x10` LZ77 `.tex` payloads to native
   512×512 linear-4bpp intermediates, retaining the game's `.cl` palettes. The

@@ -7,7 +7,7 @@ struct PaletteView: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
-            GLWNSegmentedPicker(
+            NativeSegmentedPicker(
                 selection: $model.selectedTab,
                 options: PaletteCatalog.tabs(for: model.map.tileset)
             ) { tab in

@@ -170,7 +170,7 @@ struct PlaytestWeatherOverlay: View {
         size: CGSize,
         context: inout GraphicsContext
     ) {
-        let cloudCount = min(3, max(1, Int(size.width / 360)))
+        let cloudCount = min(3, max(5, Int(size.width / 360)))
         let opacity = reduceTransparency ? 0.06 : 0.13
 
         for index in 0..<cloudCount {

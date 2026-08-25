@@ -3,7 +3,7 @@ import AWEDCore
 
 struct EditorPreferences: Codable, Equatable, Sendable {
     var volumeEnabled = true
-    var volume = 50
+    var volume = 40
     var defaultWidth = AWConstants.mapDefaultWidth
     var defaultHeight = AWConstants.mapDefaultHeight
     var defaultTerrain = Element.terrainSea

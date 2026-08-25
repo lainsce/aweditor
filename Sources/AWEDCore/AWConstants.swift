@@ -14,6 +14,8 @@ public enum AWConstants {
     public static let extraStart = 900
     public static let extraEnd = 1299
 
+    /// Terrain element values use the original editor's 30-column stride.
+    /// This is a persisted-data contract, not the visible width of an atlas.
     public static let terrainColumns = 30
     public static let buildingColumns = 10
     public static let unitColumns = 20
@@ -21,14 +23,14 @@ public enum AWConstants {
 
     public static let mapMinimumWidth = 1
     public static let mapMinimumHeight = 1
-    public static let mapDefaultWidth = 30
+    public static let mapDefaultWidth = 20
     public static let mapDefaultHeight = 20
-    public static let mapMaximumWidth = 10_000
-    public static let mapMaximumHeight = 10_000
+    public static let mapMaximumWidth = 255
+    public static let mapMaximumHeight = 255
 
     public static let nameMaximumLength = 50
     public static let authorMaximumLength = 50
-    public static let descriptionMaximumLength = 1024 * 100
+    public static let descriptionMaximumLength = 255
     public static let propertiesLimit = 60
 
     public static let armyOrangeStar = 0
@@ -90,18 +92,18 @@ public enum Tileset: Int, CaseIterable, Codable, Sendable {
         }
     }
 
-    /// The bundled looping music track for this game's tileset family.
-    /// Dual Strike's four visual variants intentionally share the original
-    /// `bgm.mp3`, while the historical game families use their own tracks.
+    /// The bundled looping Design track for this game's tileset family.
+    /// Dual Strike's four visual variants intentionally share one Design
+    /// track, while the historical game families use their own named tracks.
     public var backgroundMusicResourceName: String {
         switch self {
-        case .normal, .snow, .desert, .wasteland: "bgm"
-        case .aw1, .aw2: "bgm_2"
-        case .famicomWars: "bgm_3"
-        case .gbWars, .gbWars2: "bgm_4"
-        case .daysOfRuin: "bgm_5"
-        case .gbWars3: "bgm_6"
-        case .superFamicomWars: "bgm_7"
+        case .normal, .snow, .desert, .wasteland: "design_dual_strike"
+        case .aw1, .aw2: "design_advance_wars_1_2"
+        case .famicomWars: "design_famicom_wars"
+        case .gbWars, .gbWars2: "design_game_boy_wars_1_2"
+        case .daysOfRuin: "design_days_of_ruin"
+        case .gbWars3: "design_game_boy_wars_3"
+        case .superFamicomWars: "design_super_famicom_wars"
         }
     }
 
@@ -187,15 +189,15 @@ public enum PlaytestRuleset: String, CaseIterable, Codable, Sendable {
 
     public var shortName: String {
         switch self {
-        case .dualStrike: "Dual Strike"
-        case .advanceWars: "AW1"
-        case .advanceWars2: "AW2"
+        case .dualStrike: "Advance Wars: Dual Strike"
+        case .advanceWars: "Advance Wars 1"
+        case .advanceWars2: "Advance Wars 2"
         case .famicomWars: "Famicom Wars"
         case .gameBoyWars: "GB Wars"
-        case .superFamicomWars: "SFW"
+        case .superFamicomWars: "Super Famicom Wars"
         case .gameBoyWars2: "GB Wars 2"
         case .gameBoyWars3: "GB Wars 3"
-        case .daysOfRuin: "Days of Ruin"
+        case .daysOfRuin: "Advance Wars: Days of Ruin"
         }
     }
 }

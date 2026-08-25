@@ -18,14 +18,14 @@ public struct MapState: Codable, Equatable, Sendable {
         height: Int = AWConstants.mapDefaultHeight,
         tileset: Tileset = .normal,
         defaultTerrain: Element = .terrainSea,
-        defaultAuthor: String = "[unknown]"
+        defaultAuthor: String = "Unknown"
     ) {
         let safeWidth = min(max(width, AWConstants.mapMinimumWidth), AWConstants.mapMaximumWidth)
         let safeHeight = min(max(height, AWConstants.mapMinimumHeight), AWConstants.mapMaximumHeight)
         self.width = safeWidth
         self.height = safeHeight
         self.tileset = tileset
-        self.name = "[untitled]"
+        self.name = "Untitled"
         self.author = String(defaultAuthor.prefix(AWConstants.authorMaximumLength))
         self.description = ""
         let count = safeWidth * safeHeight
@@ -104,8 +104,13 @@ public struct MapState: Codable, Equatable, Sendable {
 
     @discardableResult
     public mutating func setBackground(_ element: Element, atX x: Int, y: Int, check: Bool = true) -> Bool {
-        guard isValid(x: x, y: y), !check || allowPlacement(element, atX: x, y: y) else { return false }
-        background[index(x: x, y: y)] = element
+        // HQ ownership is meaningful only for a playable army. A neutral HQ
+        // is the defeated-army representation used by older maps, so keep it
+        // as a neutral City in the live map and never let it become a placeable
+        // property of its own.
+        let normalizedElement = normalizedBackgroundElement(element)
+        guard isValid(x: x, y: y), !check || allowPlacement(normalizedElement, atX: x, y: y) else { return false }
+        background[index(x: x, y: y)] = normalizedElement
         updateDraw(x: x - 2, y: y - 2, width: 5, height: 5)
         isDirty = true
         return true
@@ -185,7 +190,12 @@ public struct MapState: Codable, Equatable, Sendable {
             }
         }
 
-        if element.isBuilding { return true }
+        if element.isBuilding {
+            // There is no neutral HQ property: defeated HQs are neutral City
+            // tiles, and the palette intentionally does not expose this value.
+            if element.simplified == .buildingHQ, element.army == AWConstants.armyNeutral { return false }
+            return true
+        }
 
         if element.isUnit {
             let underlying = backgroundElement(atX: x, y: y)
@@ -306,6 +316,13 @@ public struct MapState: Codable, Equatable, Sendable {
 
     private func index(x: Int, y: Int) -> Int { x * height + y }
     private func isValid(x: Int, y: Int) -> Bool { x >= 0 && x < width && y >= 0 && y < height }
+
+    private func normalizedBackgroundElement(_ element: Element) -> Element {
+        guard element.isBuilding,
+              element.simplified == .buildingHQ,
+              element.army == AWConstants.armyNeutral else { return element }
+        return Element.buildingCity.changedArmy(AWConstants.armyNeutral)
+    }
 
     private func isPipeForDrawing(atX x: Int, y: Int) -> Bool {
         let element = backgroundElement(atX: x, y: y)

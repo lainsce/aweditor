@@ -105,8 +105,37 @@ enum ScreenshotRenderer {
                 if let bridgeUnderlay = map.bridgeUnderlayDrawElement(atX: x, y: y) {
                     draw(bridgeUnderlay, in: rect, map: map, atlas: atlas, palette: palette)
                 }
-                draw(map.backgroundDrawElement(atX: x, y: y), in: rect, map: map, atlas: atlas, palette: palette)
-                drawSeaCoast(atX: x, y: y, in: rect, map: map, atlas: atlas, palette: palette)
+                let background = map.backgroundDrawElement(atX: x, y: y)
+                if palette.footprint(for: background).width == 1 {
+                    draw(background, in: rect, map: map, atlas: atlas, palette: palette)
+                    drawSeaCoast(atX: x, y: y, in: rect, map: map, atlas: atlas, palette: palette)
+                }
+            }
+        }
+        // Draw wide properties after all terrain cells so their extra rows
+        // are not painted over by neighboring logical cells.
+        for x in 0..<map.width {
+            for y in 0..<map.height {
+                let rowOffset = staggered && y % 2 != 0 ? CGFloat(tile) / 2 : 0
+                let topRect = NSRect(x: CGFloat(x * tile) + rowOffset, y: CGFloat(y * tile), width: CGFloat(tile), height: CGFloat(tile))
+                let rect = NSRect(x: topRect.minX,
+                                  y: canvasHeight - topRect.maxY,
+                                  width: topRect.width,
+                                  height: topRect.height)
+                let background = map.backgroundDrawElement(atX: x, y: y)
+                if palette.footprint(for: background).width > 1 {
+                    draw(background, in: rect, map: map, atlas: atlas, palette: palette)
+                }
+            }
+        }
+        for x in 0..<map.width {
+            for y in 0..<map.height {
+                let rowOffset = staggered && y % 2 != 0 ? CGFloat(tile) / 2 : 0
+                let topRect = NSRect(x: CGFloat(x * tile) + rowOffset, y: CGFloat(y * tile), width: CGFloat(tile), height: CGFloat(tile))
+                let rect = NSRect(x: topRect.minX,
+                                  y: canvasHeight - topRect.maxY,
+                                  width: topRect.width,
+                                  height: topRect.height)
                 draw(map.foregroundElement(atX: x, y: y), in: rect, map: map, atlas: atlas, palette: palette)
             }
         }
@@ -250,7 +279,20 @@ enum ScreenshotRenderer {
     ) {
         guard let cgImage = atlas.cgImage(for: element, palette: palette) else { return }
         let isDoubleHeight = palette.doubleHeight(for: element)
-        let target = isDoubleHeight ? NSRect(x: rect.minX, y: rect.minY, width: rect.width, height: rect.height * 2) : rect
+        let footprint = palette.footprint(for: element)
+        let target: NSRect
+        if isDoubleHeight {
+            target = NSRect(x: rect.minX, y: rect.minY, width: rect.width, height: rect.height * 2)
+        } else if footprint.width > 1 || footprint.height > 1 {
+            target = NSRect(
+                x: rect.minX,
+                y: rect.minY - rect.height * CGFloat(footprint.height - 1),
+                width: rect.width * CGFloat(footprint.width),
+                height: rect.height * CGFloat(footprint.height)
+            )
+        } else {
+            target = rect
+        }
         let image = NSImage(cgImage: cgImage, size: NSSize(width: target.width, height: target.height))
         // Staggering changes each cell's origin, not its four-sided shape.
         // Double-height sprites intentionally remain unclipped so they can

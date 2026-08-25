@@ -32,7 +32,7 @@ struct ContentView: View {
                     PaletteView(model: model, atlas: atlas)
                     StatusBarView(name: model.map.name, author: model.map.author, coordinates: model.statusMessage, isDirty: model.map.isDirty)
                 }
-                .background(GLWNSidebarSurface())
+                .background(Color(nsColor: .controlBackgroundColor))
                 .ignoresSafeArea(.all)
             }
         }
@@ -64,7 +64,10 @@ struct ContentView: View {
             PlaytestView(
                 map: launch.map,
                 visualVariant: launch.visualVariant,
-                atlas: atlas
+                atlas: atlas,
+                music: music,
+                designMusicEnabled: model.preferences.volumeEnabled,
+                designMusicVolume: model.preferences.volume
             )
         }
         .alert("Map compatibility", isPresented: $isShowingWarning) {
@@ -185,18 +188,26 @@ struct MapWorkspaceView: View {
                     .frame(width: contentSize.width, height: contentSize.height)
                 }
 
-                Button("Playtest", systemImage: "play.fill", action: playtestAction)
-                    .labelStyle(.iconOnly)
-                    .font(.title3.weight(.semibold))
-                    .buttonStyle(GLWNInContentButtonStyle(tone: .accent, cornerRadius: 999, horizontalPadding: 14, minHeight: 38))
-                    .frame(minWidth: 38, minHeight: 38)
+                Button(action: playtestAction) {
+                    Image(systemName: "play.fill")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 56, height: 56)
+                        .background(.green, in: Circle())
+                        .contentShape(Circle())
+                        .glassEffect(
+                            .regular.tint(.accentColor).interactive(),
+                            in: Circle()
+                        )
+                }
+                    .buttonStyle(.plain)
                     .help("Playtest map")
                     .accessibilityLabel("Playtest map")
                     .padding(18)
             }
             .background {
                 MapParchmentSurface(tileSize: mapTileSize, mapSize: mapPixelSize)
-                    .ignoresSafeArea(.container, edges: .top)
+                    .ignoresSafeArea(.all)
                     .allowsHitTesting(false)
             }
         }

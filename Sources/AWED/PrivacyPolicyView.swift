@@ -46,7 +46,7 @@ struct PrivacyPolicyView: View {
                 HStack {
                     Spacer()
                     Button("Close") { dismiss() }
-                        .buttonStyle(GLWNInContentButtonStyle(tone: .neutral))
+                        .buttonStyle(.bordered)
                         .keyboardShortcut(.cancelAction)
                 }
             }

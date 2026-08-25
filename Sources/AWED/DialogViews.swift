@@ -39,22 +39,22 @@ struct MapInformationView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Map Information").font(.title2).bold()
             Form {
-                GLWNFormRow("Map Name") {
+                NativeFormRow("Map Name") {
                     TextField("", text: $draftName)
-                        .textFieldStyle(GLWNTextFieldStyle())
+                        .textFieldStyle(.roundedBorder)
                         .accessibilityLabel("Map Name")
                         .onChange(of: draftName) { _, newValue in draftName = String(newValue.prefix(AWConstants.nameMaximumLength)) }
                 }
-                GLWNFormRow("Author") {
+                NativeFormRow("Author") {
                     TextField("", text: $draftAuthor)
-                        .textFieldStyle(GLWNTextFieldStyle())
+                        .textFieldStyle(.roundedBorder)
                         .accessibilityLabel("Author")
                         .onChange(of: draftAuthor) { _, newValue in draftAuthor = String(newValue.prefix(AWConstants.authorMaximumLength)) }
                 }
-                GLWNFormRow("Description") {
+                NativeFormRow("Description") {
                     TextField("", text: $draftDescription, axis: .vertical)
                         .lineLimit(5...12)
-                        .textFieldStyle(GLWNTextFieldStyle())
+                        .textFieldStyle(.roundedBorder)
                         .accessibilityLabel("Description")
                 }
             }
@@ -62,12 +62,12 @@ struct MapInformationView: View {
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) { model.dialog = nil }
-                    .buttonStyle(GLWNInContentButtonStyle(tone: .neutral))
+                    .buttonStyle(.bordered)
                 Button("Save") {
                     model.updateInformation(name: draftName, author: draftAuthor, description: draftDescription)
                     model.dialog = nil
                 }
-                .buttonStyle(GLWNInContentButtonStyle(tone: .accent))
+                .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
             }
         }
@@ -89,21 +89,21 @@ struct MapSettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Map Settings").font(.title2).bold()
             Form {
-                GLWNFormRow("Width") {
-                    GLWNTextFieldStepper(
+                NativeFormRow("Width") {
+                    NativeTextFieldStepper(
                         value: $width,
                         in: AWConstants.mapMinimumWidth...AWConstants.mapMaximumWidth,
                         step: 1
                     )
                 }
-                GLWNFormRow("Height") {
-                    GLWNTextFieldStepper(
+                NativeFormRow("Height") {
+                    NativeTextFieldStepper(
                         value: $height,
                         in: AWConstants.mapMinimumHeight...AWConstants.mapMaximumHeight,
                         step: 1
                     )
                 }
-                GLWNFormRow("Map art") {
+                NativeFormRow("Map art") {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(model.visualVariant.displayName)
                             .font(.body)
@@ -122,12 +122,12 @@ struct MapSettingsView: View {
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) { model.dialog = nil }
-                    .buttonStyle(GLWNInContentButtonStyle(tone: .neutral))
+                    .buttonStyle(.bordered)
                 Button("Apply") {
                     model.updateSettings(width: width, height: height, tileset: model.visualVariant.baseTileset)
                     model.dialog = nil
                 }
-                .buttonStyle(GLWNInContentButtonStyle(tone: .accent))
+                .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
             }
         }
@@ -150,15 +150,15 @@ struct PreferencesView: View {
             Text("Editor Preferences").font(.title2).bold()
             Form {
                 Section("Background Music") {
-                    GLWNFormRow("Enable BGM") {
+                    NativeFormRow("Enable BGM") {
                         Toggle("", isOn: $preferences.volumeEnabled)
                             .labelsHidden()
-                            .toggleStyle(GLWNAquaToggleStyle())
+                            .toggleStyle(.switch)
                             .accessibilityLabel("Enable background music")
                     }
-                    GLWNFormRow("Volume") {
+                    NativeFormRow("Volume") {
                         HStack {
-                            GLWNSliderField(
+                            NativeSliderField(
                                 value: Binding(
                                     get: { Double(preferences.volume) },
                                     set: { preferences.volume = Int($0.rounded()) }
@@ -173,22 +173,22 @@ struct PreferencesView: View {
                     }
                 }
                 Section("New Maps") {
-                    GLWNFormRow("Default width") {
-                        GLWNTextFieldStepper(
+                    NativeFormRow("Default width") {
+                        NativeTextFieldStepper(
                             value: $preferences.defaultWidth,
                             in: AWConstants.mapMinimumWidth...AWConstants.mapMaximumWidth,
                             step: 1
                         )
                     }
-                    GLWNFormRow("Default height") {
-                        GLWNTextFieldStepper(
+                    NativeFormRow("Default height") {
+                        NativeTextFieldStepper(
                             value: $preferences.defaultHeight,
                             in: AWConstants.mapMinimumHeight...AWConstants.mapMaximumHeight,
                             step: 1
                         )
                     }
-                    GLWNFormRow("Default terrain") {
-                        GLWNPullDownMenu(
+                    NativeFormRow("Default terrain") {
+                        NativePullDownMenu(
                             "Default terrain",
                             selection: $preferences.defaultTerrain,
                             options: terrainOptions,
@@ -197,8 +197,8 @@ struct PreferencesView: View {
                             Text(terrainTitle(terrain))
                         }
                     }
-                    GLWNFormRow("Default tileset") {
-                        GLWNPullDownMenu(
+                    NativeFormRow("Default tileset") {
+                        NativePullDownMenu(
                             "Default tileset",
                             selection: $preferences.defaultTileset,
                             options: Tileset.launchOrdered,
@@ -207,8 +207,8 @@ struct PreferencesView: View {
                             Text(tile.displayName)
                         }
                     }
-                    GLWNFormRow("Undo/redo limit") {
-                        GLWNPullDownMenu(
+                    NativeFormRow("Undo/redo limit") {
+                        NativePullDownMenu(
                             "Undo/redo limit",
                             selection: $preferences.undoLimit,
                             options: [10, 20, 30, 40, 50, 100],
@@ -217,18 +217,18 @@ struct PreferencesView: View {
                             Text("\(value)")
                         }
                     }
-                    GLWNFormRow("Default author") {
+                    NativeFormRow("Default author") {
                         TextField("", text: $preferences.defaultAuthor)
-                            .textFieldStyle(GLWNTextFieldStyle())
+                            .textFieldStyle(.roundedBorder)
                             .accessibilityLabel("Default author")
                             .onChange(of: preferences.defaultAuthor) { _, newValue in preferences.defaultAuthor = String(newValue.prefix(AWConstants.authorMaximumLength)) }
                     }
                 }
                 Section("Interaction") {
-                    GLWNFormRow("Draw AW-style cursors") {
+                    NativeFormRow("Draw AW-style cursors") {
                         Toggle("", isOn: $preferences.drawCursor)
                             .labelsHidden()
-                            .toggleStyle(GLWNAquaToggleStyle())
+                            .toggleStyle(.switch)
                             .accessibilityLabel("Draw AW-style cursors")
                     }
                 }
@@ -238,7 +238,7 @@ struct PreferencesView: View {
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) { model.dialog = nil }
-                    .buttonStyle(GLWNInContentButtonStyle(tone: .neutral))
+                    .buttonStyle(.bordered)
                 Button("Save") {
                     model.updatePreferences(preferences)
                     music.apply(
@@ -248,7 +248,7 @@ struct PreferencesView: View {
                     )
                     model.dialog = nil
                 }
-                .buttonStyle(GLWNInContentButtonStyle(tone: .accent))
+                .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
             }
         }
@@ -305,7 +305,7 @@ struct MapStatusView: View {
             HStack {
                 Spacer()
                 Button("Close") { model.dialog = nil }
-                    .buttonStyle(GLWNInContentButtonStyle(tone: .neutral))
+                    .buttonStyle(.bordered)
                     .keyboardShortcut(.cancelAction)
             }
         }
@@ -341,7 +341,7 @@ struct AboutView: View {
                 .frame(maxWidth: 390)
             Link("Original Editor", destination: URL(string: "https://github.com/joaofrancese/awsmaped")!)
             Button("Close") { dismiss() }
-                .buttonStyle(GLWNInContentButtonStyle(tone: .neutral))
+                .buttonStyle(.bordered)
                 .keyboardShortcut(.cancelAction)
         }
         .padding(24)

@@ -5,6 +5,9 @@ import Testing
 @Test("element tables preserve the legacy numeric layout")
 func elementTables() {
     #expect(Element.terrainPlain.value == 0)
+    #expect(Element.terrainSea.value == 60)
+    #expect(Element.terrainWood.value == 90)
+    #expect(Element.terrainMountain.value == 150)
     #expect(Element.buildingCity.value == 301)
     #expect(Element.unitInfantry.value == 500)
     #expect(Element.extraVolcano.value == 946)
@@ -16,6 +19,45 @@ func elementTables() {
     #expect(Element.unitTank.changedArmy(AWConstants.armyGreenEarth).army == AWConstants.armyGreenEarth)
     #expect(Element.buildingCity.drawY == 0)
     #expect(Element.buildingCity.changedArmy(AWConstants.armyBlueMoon).drawY == 2)
+}
+
+@Test("AWS terrain IDs load with the stable stride and the compact regression stride")
+func terrainIDCompatibility() throws {
+    let stableURL = try makeTerrainFixture(values: [60, 90, 150])
+    defer { try? FileManager.default.removeItem(at: stableURL) }
+    let stable = try MapFileCodec.read(from: stableURL)
+    #expect(stable.width == 3)
+    #expect(stable.height == 1)
+    #expect(stable.backgroundElement(atX: 0, y: 0) == .terrainSea)
+    #expect(stable.backgroundElement(atX: 1, y: 0) == .terrainWood)
+    #expect(stable.backgroundElement(atX: 2, y: 0) == .terrainMountain)
+
+    let compactURL = try makeTerrainFixture(values: [40, 60, 100])
+    defer { try? FileManager.default.removeItem(at: compactURL) }
+    let compact = try MapFileCodec.read(from: compactURL)
+    #expect(compact.backgroundElement(atX: 0, y: 0) == .terrainSea)
+    #expect(compact.backgroundElement(atX: 1, y: 0) == .terrainWood)
+    #expect(compact.backgroundElement(atX: 2, y: 0) == .terrainMountain)
+}
+
+private func makeTerrainFixture(values: [UInt16]) throws -> URL {
+    let url = FileManager.default.temporaryDirectory
+        .appending(path: "awed-terrain-ids-\(UUID().uuidString).aws")
+    var data = Data("AWSMap001".utf8)
+    data.append(0)
+    data.append(UInt8(values.count))
+    data.append(1)
+    data.append(UInt8(Tileset.normal.rawValue))
+    for value in values {
+        data.append(UInt8(value & 0xFF))
+        data.append(UInt8(value >> 8))
+    }
+    for _ in values {
+        data.append(0xFF)
+        data.append(0xFF)
+    }
+    try data.write(to: url, options: .atomic)
+    return url
 }
 
 @Test("tilesets select their matching playtest rules")
@@ -54,18 +96,18 @@ func playtestRulesetMapping() {
 
 @Test("tilesets select their matching background music")
 func backgroundMusicMapping() {
-    #expect(Tileset.normal.backgroundMusicResourceName == "bgm")
-    #expect(Tileset.snow.backgroundMusicResourceName == "bgm")
-    #expect(Tileset.desert.backgroundMusicResourceName == "bgm")
-    #expect(Tileset.wasteland.backgroundMusicResourceName == "bgm")
-    #expect(Tileset.aw1.backgroundMusicResourceName == "bgm_2")
-    #expect(Tileset.aw2.backgroundMusicResourceName == "bgm_2")
-    #expect(Tileset.famicomWars.backgroundMusicResourceName == "bgm_3")
-    #expect(Tileset.gbWars.backgroundMusicResourceName == "bgm_4")
-    #expect(Tileset.superFamicomWars.backgroundMusicResourceName == "bgm_7")
-    #expect(Tileset.gbWars2.backgroundMusicResourceName == "bgm_4")
-    #expect(Tileset.daysOfRuin.backgroundMusicResourceName == "bgm_5")
-    #expect(Tileset.gbWars3.backgroundMusicResourceName == "bgm_6")
+    #expect(Tileset.normal.backgroundMusicResourceName == "design_dual_strike")
+    #expect(Tileset.snow.backgroundMusicResourceName == "design_dual_strike")
+    #expect(Tileset.desert.backgroundMusicResourceName == "design_dual_strike")
+    #expect(Tileset.wasteland.backgroundMusicResourceName == "design_dual_strike")
+    #expect(Tileset.aw1.backgroundMusicResourceName == "design_advance_wars_1_2")
+    #expect(Tileset.aw2.backgroundMusicResourceName == "design_advance_wars_1_2")
+    #expect(Tileset.famicomWars.backgroundMusicResourceName == "design_famicom_wars")
+    #expect(Tileset.gbWars.backgroundMusicResourceName == "design_game_boy_wars_1_2")
+    #expect(Tileset.superFamicomWars.backgroundMusicResourceName == "design_super_famicom_wars")
+    #expect(Tileset.gbWars2.backgroundMusicResourceName == "design_game_boy_wars_1_2")
+    #expect(Tileset.daysOfRuin.backgroundMusicResourceName == "design_days_of_ruin")
+    #expect(Tileset.gbWars3.backgroundMusicResourceName == "design_game_boy_wars_3")
 }
 
 @Test("map defaults, placement rules, and drawing variants")
@@ -208,6 +250,21 @@ func buildingTerrainUnderlay() {
     #expect(map.buildingUnderlayDrawElement(atX: 1, y: 0) == .terrainShoal)
     #expect(map.buildingUnderlayDrawElement(atX: 2, y: 0) == nil)
     #expect(map.buildingUnderlayDrawElement(atX: -1, y: 0) == nil)
+}
+
+@Test("neutral HQs normalize to neutral cities")
+func neutralHQNormalization() {
+    var map = MapState(width: 1, height: 1, defaultTerrain: .terrainSea)
+    let neutralHQ = Element.buildingHQ.changedArmy(AWConstants.armyNeutral)
+
+    #expect(neutralHQ == Element.buildingCity.changedArmy(AWConstants.armyNeutral))
+    #expect(neutralHQ.simplified == .buildingCity)
+    let placed = map.setBackground(neutralHQ, atX: 0, y: 0, check: false)
+    #expect(placed)
+
+    let stored = map.backgroundElement(atX: 0, y: 0)
+    #expect(stored.simplified == .buildingCity)
+    #expect(stored.army == AWConstants.armyNeutral)
 }
 
 @Test("mountain ranges sprinkle taller draw-only variants")

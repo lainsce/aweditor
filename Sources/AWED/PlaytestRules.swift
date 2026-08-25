@@ -36,6 +36,46 @@ enum PlaytestWeather: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+/// The four alliance flags used by the playtest setup.  Team membership is
+/// deliberately transient: it belongs to a match, not to the map file.
+enum PlaytestTeam: String, CaseIterable, Identifiable, Sendable {
+    case red
+    case blue
+    case yellow
+    case green
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        rawValue.capitalized
+    }
+}
+
+/// Match-only control settings.  The editor's persisted army values remain
+/// unchanged, which keeps old map files and screenshots compatible.
+struct PlaytestConfiguration: Sendable {
+    var playerArmy: Int?
+    var cpuArmies: Set<Int>
+    var teams: [Int: PlaytestTeam]
+
+    static func automatic(for armies: [Int]) -> Self {
+        // Keep the familiar Orange Star default when it is present, while
+        // still choosing the first placed army for maps from another game.
+        let player = armies.contains(AWConstants.armyOrangeStar)
+            ? AWConstants.armyOrangeStar
+            : armies.first
+        let cpu = Set(armies.filter { $0 != player })
+        let teams = Dictionary(uniqueKeysWithValues: armies.enumerated().map { index, army in
+            (army, PlaytestTeam.allCases[index % PlaytestTeam.allCases.count])
+        })
+        return Self(playerArmy: player, cpuArmies: cpu, teams: teams)
+    }
+
+    func team(for army: Int) -> PlaytestTeam {
+        teams[army] ?? .red
+    }
+}
+
 struct PlaytestUnitStats {
     let cost: Int
     let move: Int
@@ -102,6 +142,177 @@ struct PlaytestProductionOption: Identifiable {
 /// rosters and tables live in dedicated rule files so one game's mechanics do
 /// not silently leak into another game's tileset.
 enum PlaytestRulebook {
+    /// Decision weights used by the CPU planner. The legal-action generator
+    /// stays shared, while these values preserve the broad personality of
+    /// each cartridge's CPU without pretending to reproduce its hidden ROM
+    /// tables exactly.
+    struct CPUPolicy: Sendable {
+        let attackBias: Double
+        let counterRiskMultiplier: Double
+        let targetCostMultiplier: Double
+        let captureMultiplier: Double
+        let captureProgressWeight: Double
+        let hqCaptureMultiplier: Double
+        let productionCaptureMultiplier: Double
+        let enemyPropertyMultiplier: Double
+        let propertyApproachMultiplier: Double
+        let contactMultiplier: Double
+        let threatMultiplier: Double
+        let transportTargetMultiplier: Double
+        let loadedTransportBonus: Double
+        let transportActionMultiplier: Double
+        let supplyActionMultiplier: Double
+        let infantryRepeatPenalty: Double
+        let captureUnitBuildMultiplier: Double
+        let buildDiversityPenalty: Double
+        let indirectAttackMultiplier: Double
+        /// A square radius around an owned HQ used by the original Famicom
+        /// production rule. `nil` means the ruleset has no such CPU filter.
+        let hqProductionRadius: Int?
+    }
+
+    /// The source games share the same action vocabulary, but their CPUs do
+    /// not value the same action equally. In particular, AW1's transport
+    /// targeting and AW2's loaded-transport targeting are documented by
+    /// reverse-engineered priority tables, while Super Famicom Wars uses
+    /// simultaneous combat and rewards a more forward attack posture.
+    static func cpuPolicy(for ruleset: PlaytestRuleset) -> CPUPolicy {
+        switch ruleset {
+        case .dualStrike:
+            CPUPolicy(
+                attackBias: 220, counterRiskMultiplier: 0.95, targetCostMultiplier: 1.0,
+                captureMultiplier: 1.0, captureProgressWeight: 12, hqCaptureMultiplier: 1.25,
+                productionCaptureMultiplier: 1.10, enemyPropertyMultiplier: 1.0,
+                propertyApproachMultiplier: 1.0, contactMultiplier: 1.0, threatMultiplier: 0.90,
+                transportTargetMultiplier: 1.0, loadedTransportBonus: 60,
+                transportActionMultiplier: 1.0, supplyActionMultiplier: 1.0,
+                infantryRepeatPenalty: 16, captureUnitBuildMultiplier: 1.0,
+                buildDiversityPenalty: 10, indirectAttackMultiplier: 1.0,
+                hqProductionRadius: nil
+            )
+        case .advanceWars:
+            // AW1's old CPU is notably transport-focused, especially toward
+            // APCs and T-Copters, while still keeping capture soldiers urgent.
+            CPUPolicy(
+                attackBias: 235, counterRiskMultiplier: 0.78, targetCostMultiplier: 1.0,
+                captureMultiplier: 1.05, captureProgressWeight: 14, hqCaptureMultiplier: 1.35,
+                productionCaptureMultiplier: 1.20, enemyPropertyMultiplier: 1.05,
+                propertyApproachMultiplier: 1.10, contactMultiplier: 1.10, threatMultiplier: 0.75,
+                transportTargetMultiplier: 1.70, loadedTransportBonus: 80,
+                transportActionMultiplier: 1.0, supplyActionMultiplier: 1.0,
+                infantryRepeatPenalty: 20, captureUnitBuildMultiplier: 1.05,
+                buildDiversityPenalty: 11, indirectAttackMultiplier: 0.95,
+                hqProductionRadius: nil
+            )
+        case .advanceWars2:
+            // AW2 gives loaded APCs/T-Copters a special target priority. The
+            // higher capture weights also stop a CPU from screening the HQ
+            // forever instead of committing to a property attack.
+            CPUPolicy(
+                attackBias: 228, counterRiskMultiplier: 0.90, targetCostMultiplier: 1.0,
+                captureMultiplier: 1.10, captureProgressWeight: 15, hqCaptureMultiplier: 1.45,
+                productionCaptureMultiplier: 1.25, enemyPropertyMultiplier: 1.10,
+                propertyApproachMultiplier: 1.08, contactMultiplier: 1.05, threatMultiplier: 0.80,
+                transportTargetMultiplier: 1.10, loadedTransportBonus: 170,
+                transportActionMultiplier: 1.10, supplyActionMultiplier: 1.0,
+                infantryRepeatPenalty: 20, captureUnitBuildMultiplier: 1.05,
+                buildDiversityPenalty: 11, indirectAttackMultiplier: 1.0,
+                hqProductionRadius: nil
+            )
+        case .famicomWars:
+            // The NES game is compact and objective-driven: income, capture,
+            // and a direct march toward the opposing HQ matter more than a
+            // modern two-front threat map.
+            CPUPolicy(
+                attackBias: 245, counterRiskMultiplier: 0.70, targetCostMultiplier: 1.0,
+                captureMultiplier: 1.15, captureProgressWeight: 16, hqCaptureMultiplier: 1.40,
+                productionCaptureMultiplier: 1.30, enemyPropertyMultiplier: 1.10,
+                propertyApproachMultiplier: 1.22, contactMultiplier: 1.15, threatMultiplier: 0.60,
+                transportTargetMultiplier: 1.0, loadedTransportBonus: 40,
+                transportActionMultiplier: 1.15, supplyActionMultiplier: 1.10,
+                infantryRepeatPenalty: 22, captureUnitBuildMultiplier: 1.05,
+                buildDiversityPenalty: 10, indirectAttackMultiplier: 1.0,
+                hqProductionRadius: 2
+            )
+        case .superFamicomWars:
+            // Simultaneous combat means the CPU can accept forward trades
+            // that would be too risky under attacker-first combat.
+            CPUPolicy(
+                attackBias: 255, counterRiskMultiplier: 0.60, targetCostMultiplier: 1.0,
+                captureMultiplier: 1.12, captureProgressWeight: 16, hqCaptureMultiplier: 1.45,
+                productionCaptureMultiplier: 1.30, enemyPropertyMultiplier: 1.10,
+                propertyApproachMultiplier: 1.25, contactMultiplier: 1.20, threatMultiplier: 0.45,
+                transportTargetMultiplier: 1.0, loadedTransportBonus: 40,
+                transportActionMultiplier: 1.20, supplyActionMultiplier: 1.10,
+                infantryRepeatPenalty: 22, captureUnitBuildMultiplier: 1.0,
+                buildDiversityPenalty: 11, indirectAttackMultiplier: 1.15,
+                hqProductionRadius: 2
+            )
+        case .gameBoyWars:
+            // GB Wars 1 has a smaller, simpler decision space. Keep the CPU
+            // economical and objective-aware without importing GBA quirks.
+            CPUPolicy(
+                attackBias: 215, counterRiskMultiplier: 0.90, targetCostMultiplier: 1.0,
+                captureMultiplier: 1.0, captureProgressWeight: 12, hqCaptureMultiplier: 1.20,
+                productionCaptureMultiplier: 1.10, enemyPropertyMultiplier: 1.0,
+                propertyApproachMultiplier: 0.95, contactMultiplier: 0.95, threatMultiplier: 0.95,
+                transportTargetMultiplier: 0.90, loadedTransportBonus: 30,
+                transportActionMultiplier: 0.90, supplyActionMultiplier: 0.90,
+                infantryRepeatPenalty: 24, captureUnitBuildMultiplier: 0.95,
+                buildDiversityPenalty: 9, indirectAttackMultiplier: 0.90,
+                hqProductionRadius: nil
+            )
+        case .gameBoyWars2:
+            CPUPolicy(
+                attackBias: 220, counterRiskMultiplier: 0.82, targetCostMultiplier: 1.0,
+                captureMultiplier: 1.05, captureProgressWeight: 13, hqCaptureMultiplier: 1.30,
+                productionCaptureMultiplier: 1.15, enemyPropertyMultiplier: 1.0,
+                propertyApproachMultiplier: 1.0, contactMultiplier: 1.0, threatMultiplier: 0.85,
+                transportTargetMultiplier: 1.0, loadedTransportBonus: 55,
+                transportActionMultiplier: 1.0, supplyActionMultiplier: 0.95,
+                infantryRepeatPenalty: 22, captureUnitBuildMultiplier: 1.0,
+                buildDiversityPenalty: 10, indirectAttackMultiplier: 0.95,
+                hqProductionRadius: nil
+            )
+        case .gameBoyWars3:
+            // GB Wars 3 has the richest of the three GB unit tables, so its
+            // CPU gets slightly more willingness to contest air/sea lanes.
+            CPUPolicy(
+                attackBias: 230, counterRiskMultiplier: 0.78, targetCostMultiplier: 1.0,
+                captureMultiplier: 1.10, captureProgressWeight: 14, hqCaptureMultiplier: 1.35,
+                productionCaptureMultiplier: 1.20, enemyPropertyMultiplier: 1.05,
+                propertyApproachMultiplier: 1.08, contactMultiplier: 1.05, threatMultiplier: 0.75,
+                transportTargetMultiplier: 1.0, loadedTransportBonus: 70,
+                transportActionMultiplier: 1.05, supplyActionMultiplier: 1.0,
+                infantryRepeatPenalty: 24, captureUnitBuildMultiplier: 1.0,
+                buildDiversityPenalty: 12, indirectAttackMultiplier: 1.0,
+                hqProductionRadius: nil
+            )
+        case .daysOfRuin:
+            // DoR's Flare, Anti-Tank, Rig, Radar, and move-and-fire
+            // Battleship exceptions make a pure GBA-era score too passive.
+            CPUPolicy(
+                attackBias: 240, counterRiskMultiplier: 0.75, targetCostMultiplier: 1.0,
+                captureMultiplier: 1.15, captureProgressWeight: 16, hqCaptureMultiplier: 1.45,
+                productionCaptureMultiplier: 1.25, enemyPropertyMultiplier: 1.10,
+                propertyApproachMultiplier: 1.12, contactMultiplier: 1.10, threatMultiplier: 0.70,
+                transportTargetMultiplier: 1.15, loadedTransportBonus: 90,
+                transportActionMultiplier: 1.10, supplyActionMultiplier: 1.05,
+                infantryRepeatPenalty: 20, captureUnitBuildMultiplier: 1.05,
+                buildDiversityPenalty: 12, indirectAttackMultiplier: 1.10,
+                hqProductionRadius: nil
+            )
+        }
+    }
+
+    /// Resolve the CPU profile from the map's art family. Keeping this
+    /// overload next to the ruleset dispatcher makes it hard for a playtest
+    /// to accidentally use the Dual Strike planner after a historical
+    /// tileset is selected.
+    static func cpuPolicy(for tileset: Tileset) -> CPUPolicy {
+        cpuPolicy(for: tileset.playtestRuleset)
+    }
+
     static func formatFunds(_ amount: Int) -> String {
         "\(amount.formatted()) G"
     }
@@ -401,6 +612,16 @@ enum PlaytestRulebook {
         }
     }
 
+    /// The classic cartridges cap the active army at roughly fifty units;
+    /// keeping the cap in the rulebook prevents a CPU turn from creating an
+    /// unbounded army on an authored map.
+    static func unitCap(for ruleset: PlaytestRuleset) -> Int {
+        switch ruleset {
+        case .famicomWars, .superFamicomWars: return 50
+        default: return 50
+        }
+    }
+
     static func canAttack(_ attacker: Element, _ defender: Element, ruleset: PlaytestRuleset, primaryAmmo: Int? = nil) -> Bool {
         if ruleset == .advanceWars2 {
             guard let stats = PlaytestAdvanceWars2Rules.stats(for: attacker),
@@ -418,6 +639,17 @@ enum PlaytestRulebook {
         guard let attackerStats = stats(for: attacker, ruleset: ruleset),
               let defenderStats = stats(for: defender, ruleset: ruleset),
               attackerStats.attackPower > 0 else { return false }
+
+        // Once a limited primary magazine is empty, only a unit with an
+        // explicitly modelled secondary weapon may still attack.  The old
+        // generic path ignored this check, which let artillery, rockets, and
+        // every Game Boy Wars limited-ammo unit fire forever.
+        if let primaryAmmo,
+           attackerStats.primaryAmmo != nil,
+           primaryAmmo <= 0,
+           attackerStats.secondaryAttackPower == nil {
+            return false
+        }
 
         let targetDomain = defenderStats.domain
         if ruleset == .daysOfRuin {
@@ -559,7 +791,8 @@ enum PlaytestRulebook {
         attackerHealth: Int = 100,
         defenderHealth: Int = 100,
         terrain: Element = .terrainPlain,
-        primaryAmmo: Int? = nil
+        primaryAmmo: Int? = nil,
+        randomize: Bool = true
     ) -> Int? {
         if ruleset == .advanceWars2 {
             return PlaytestAdvanceWars2Rules.damage(
@@ -568,7 +801,8 @@ enum PlaytestRulebook {
                 attackerHealth: attackerHealth,
                 defenderHealth: defenderHealth,
                 terrain: terrain,
-                primaryAmmo: primaryAmmo
+                primaryAmmo: primaryAmmo,
+                randomize: randomize
             )
         }
         if ruleset == .advanceWars {
@@ -578,16 +812,24 @@ enum PlaytestRulebook {
                 attackerHealth: attackerHealth,
                 defenderHealth: defenderHealth,
                 terrain: terrain,
-                primaryAmmo: primaryAmmo
+                primaryAmmo: primaryAmmo,
+                randomize: randomize
             )
         }
 
-        guard canAttack(attacker, defender, ruleset: ruleset),
+        guard canAttack(attacker, defender, ruleset: ruleset, primaryAmmo: primaryAmmo),
               let attackerStats = stats(for: attacker, ruleset: ruleset),
               let defenderStats = stats(for: defender, ruleset: ruleset) else { return nil }
 
         let attackerType = attacker.simplified
         let defenderType = defender.simplified
+        let useSecondary = attackerStats.primaryAmmo != nil &&
+            !usesPrimaryWeapon(attacker, defender, ruleset: ruleset, primaryAmmo: primaryAmmo)
+        let baseAttackPower = useSecondary
+            ? (attackerStats.secondaryAttackPower ?? 0)
+            : attackerStats.attackPower
+        guard baseAttackPower > 0 else { return nil }
+
         let multiplier: Int
         switch attackerType {
         case .unitAntiAir:
@@ -617,7 +859,7 @@ enum PlaytestRulebook {
         // 10 HP (100) deals full damage, while 9 HP (90) deals 90%, and so
         // on down to 1 HP (10).
         let healthScale = Double(max(1, min(100, attackerHealth))) / 100
-        let rawDamage = Double(attackerStats.attackPower * multiplier) / 100 * healthScale
+        let rawDamage = Double(baseAttackPower * multiplier) / 100 * healthScale
         return max(1, min(100, Int(rawDamage.rounded(.down))))
     }
 

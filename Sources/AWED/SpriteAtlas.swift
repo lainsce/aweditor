@@ -16,6 +16,23 @@ enum SpritePalette {
     case gbWars3
     case daysOfRuin
 
+    /// GB Wars 3 property rows retain the Game Boy Wars two-row atlas cadence.
+    var usesGBWars3PropertyFootprint: Bool {
+        switch self {
+        case .gbWars3: true
+        case .tileset(let tileset): tileset == .gbWars3
+        default: false
+        }
+    }
+
+    func footprint(for element: Element) -> (width: Int, height: Int) {
+        (1, doubleHeight(for: element) ? 2 : 1)
+    }
+
+    func sourcePixelSize(for element: Element) -> (width: Int, height: Int) {
+        return (16, doubleHeight(for: element) ? 32 : 16)
+    }
+
     /// The historical Famicom sheet mixes one-cell properties with the
     /// editor's usual two-cell building sprites. Keep that geometry with the
     /// render palette instead of changing the persisted `Element` contract.
@@ -81,7 +98,8 @@ enum SpritePalette {
             // sheet, not a recolored Dual Strike fallback.
             return "\(kind.rawValue)_6"
         case .gbWars:
-            // GB Wars uses the compact four-tone reference-derived atlas.
+            // GB Wars uses the compact four-tone atlas reconstructed from
+            // its original 24 Red Star and White Moon unit silhouettes.
             return "\(kind.rawValue)_7"
         case .superFamicomWars:
             // Super Famicom Wars has its own source-derived terrain, property,
@@ -89,11 +107,15 @@ enum SpritePalette {
             // the selected cartridge identity is visible in the canvas.
             return "\(kind.rawValue)_8"
         case .gbWars2:
-            // Game Boy Wars 2's ROM metatile table is decoded into a dedicated
-            // map sheet; properties and units use the same native CGB palette.
+            // Game Boy Wars 2 keeps the GB Wars unit silhouettes, with the
+            // CGB's faction colors: Red Star is red and White Moon is blue.
+            // Terrain and properties still come from the dedicated ROM sheet.
             return "\(kind.rawValue)_10"
         case .gbWars3:
-            // GB Wars 3 source rips supply the places and unit silhouettes.
+            // GB Wars 3 uses native 16×16 map properties reconstructed from
+            // the supplied high-resolution references. Red Star stays
+            // predominantly black/red while White Moon uses white/gray
+            // bodies with a one-pixel dark outline.
             return "\(kind.rawValue)_11"
         case .daysOfRuin:
             // Days of Ruin has source-ripped terrain, properties, and map
@@ -403,10 +425,14 @@ final class SpriteAtlas {
 
     private func croppedImage(for element: Element, sheetName: String, palette: SpritePalette) -> CGImage? {
         guard let sheet = loadSheet(named: sheetName) else { return nil }
-        let sourceWidth = 16
-        let sourceHeight = palette.doubleHeight(for: element) ? 32 : 16
-        let sourceX = element.drawX * 16
-        let sourceYFromTop = palette.drawY(for: element) * 16
+        let sourceSize = palette.sourcePixelSize(for: element)
+        let sourceWidth = sourceSize.width
+        let sourceHeight = sourceSize.height
+        let sourceX = element.drawX * sourceWidth
+        // The normalized atlas keeps the logical building rows on a two-row
+        // cadence, with a 16-pixel source row stride for every era.
+        let sourceRowHeight = 16
+        let sourceYFromTop = palette.drawY(for: element) * sourceRowHeight
         guard sourceX >= 0, sourceYFromTop >= 0, sourceX + sourceWidth <= sheet.width, sourceYFromTop + sourceHeight <= sheet.height else { return nil }
         let sourceRect = CGRect(
             x: sourceX,

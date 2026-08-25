@@ -192,7 +192,17 @@ public struct Element: Hashable, Codable, Sendable {
         guard (isUnitNonEmpty && (0..<AWConstants.playableArmies).contains(newArmy)) ||
                 (isBuilding && (0...AWConstants.armyNeutral).contains(newArmy)) else { return copy }
         if isUnitNonEmpty { copy.value = simplified.value + newArmy * AWConstants.unitColumns * 2 }
-        if isBuilding { copy.value = simplified.value + newArmy * AWConstants.buildingColumns }
+        if isBuilding {
+            // The legacy table places Neutral at row 5, which is also the
+            // numeric slot reserved for the missile silo. A neutral HQ is not
+            // a real property: represent that transition as a neutral City so
+            // it cannot be placed or mistaken for silo artwork.
+            if newArmy == AWConstants.armyNeutral, simplified == .buildingHQ {
+                copy.value = Self.buildingCity.value + newArmy * AWConstants.buildingColumns
+            } else {
+                copy.value = simplified.value + newArmy * AWConstants.buildingColumns
+            }
+        }
         return copy
     }
 

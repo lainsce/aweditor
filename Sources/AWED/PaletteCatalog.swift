@@ -113,11 +113,12 @@ enum PaletteCatalog {
         if let tileset, tileset.isGameBoyWarsFamily {
             if tab == .unit {
                 let deleteItem = items.first(where: { $0.element == .unitDelete })
-                let rosterItems = gbWarsUnitRoster.compactMap { rosterElement in
+                let roster = tileset == .gbWars ? gbWars1UnitRoster : gbWarsSharedUnitRoster
+                let rosterItems = roster.compactMap { rosterElement in
                     items.first(where: { $0.element.simplified == rosterElement })
                 }
                 return ([deleteItem].compactMap { $0 } + rosterItems).map { item in
-                    guard let label = gbWarsUnitLabel(for: item.element) else { return item }
+                    guard let label = gbWarsUnitLabel(for: item.element, tileset: tileset) else { return item }
                     return item.withLabel(label)
                 }
             }
@@ -135,11 +136,14 @@ enum PaletteCatalog {
                                 .buildingLab
                             ]
                             guard !hiddenBuildings.contains(item.element.simplified) else { return false }
-                            // GB Wars has faction HQs/factories/airports/ports;
-                            // the supplied GBW2 map table only has a neutral
-                            // city, so do not offer synthetic neutral slots.
+                            // GB Wars has faction HQs/factories/airports/ports.
+                            // Neutral bases are valid map properties and must
+                            // remain placeable even when a particular source
+                            // atlas does not provide a separate neutral art
+                            // frame. Keep the existing atlas untouched here;
+                            // this filter only controls authoring choices.
                             if item.element.army == AWConstants.armyNeutral,
-                               [.buildingHQ, .buildingBase, .buildingAirport, .buildingPort]
+                               [.buildingHQ]
                                 .contains(item.element.simplified) {
                                 return false
                             }
@@ -215,7 +219,9 @@ enum PaletteCatalog {
     static func label(for element: Element, tileset: Tileset? = nil) -> String {
         if element == .unitEmpty { return "Empty Unit" }
 
-        if tileset?.isGameBoyWarsFamily == true, let label = gbWarsUnitLabel(for: element) {
+        if let tileset,
+           tileset.isGameBoyWarsFamily,
+           let label = gbWarsUnitLabel(for: element, tileset: tileset) {
             return label
         }
 
@@ -260,10 +266,36 @@ enum PaletteCatalog {
         return "Tile"
     }
 
-    /// The GB Wars cartridge uses a smaller roster and its own names for a
-    /// few of the shared sprite slots. Keep the source element identities so
-    /// the playtest rules can reuse the existing movement and damage tables.
-    private static let gbWarsUnitRoster: [Element] = [
+    /// Original GB Wars cartridge order, mapped into the editor's stable unit
+    /// slots. Playtest support remains intentionally separate from authoring.
+    private static let gbWars1UnitRoster: [Element] = [
+        .unitInfantry,
+        .unitMech,
+        .unitMDTank,
+        .unitTank,
+        .unitMegaTank,
+        .unitRocket,
+        .unitArtillery,
+        .unitMissile,
+        .unitAntiAir,
+        .unitPipeRunner,
+        .unitAPC,
+        .unitRecon,
+        .unitFighter,
+        .unitStealth,
+        .unitBomber,
+        .unitBCopter,
+        .unitTCopter,
+        .unitBattleship,
+        .unitCruiser,
+        .unitLander,
+        .unitSub,
+        .unitNeoTank,
+        .unitBlackBomb,
+        .unitCarrier
+    ]
+
+    private static let gbWarsSharedUnitRoster: [Element] = [
         .unitInfantry,
         .unitMech,
         .unitAPC,
@@ -321,14 +353,44 @@ enum PaletteCatalog {
         }
     }
 
-    private static func gbWarsUnitLabel(for element: Element) -> String? {
+    private static func gbWarsUnitLabel(for element: Element, tileset: Tileset) -> String? {
+        guard tileset == .gbWars else {
+            return switch element.simplified {
+            case .unitRecon: "Combat Buggy"
+            case .unitRocket: "Rocket Launcher"
+            case .unitAntiAir: "Anti-Air"
+            case .unitTCopter: "Transport Plane"
+            case .unitBCopter: "Copter"
+            case .unitBattleship: "Aegis Warship"
+            default: nil
+            }
+        }
+
         switch element.simplified {
-        case .unitRecon: return "Combat Buggy"
-        case .unitRocket: return "Rocket Launcher"
-        case .unitAntiAir: return "Anti-Air"
-        case .unitTCopter: return "Transport Plane"
-        case .unitBCopter: return "Copter"
-        case .unitBattleship: return "Aegis Warship"
+        case .unitInfantry: return "Infantry"
+        case .unitMech: return "Combat Engineer"
+        case .unitMDTank: return "Tank A"
+        case .unitTank: return "Tank B"
+        case .unitMegaTank: return "Gun Battery"
+        case .unitRocket: return "Self-Propelled Gun A"
+        case .unitArtillery: return "Self-Propelled Gun B"
+        case .unitMissile: return "Anti-Air Missile"
+        case .unitAntiAir: return "Anti-Air Tank"
+        case .unitPipeRunner: return "Rocket Launcher"
+        case .unitAPC: return "Armored Car"
+        case .unitRecon: return "Supply Transport"
+        case .unitFighter: return "Fighter A"
+        case .unitStealth: return "Fighter B"
+        case .unitBomber: return "Bomber"
+        case .unitBCopter: return "Attack Helicopter"
+        case .unitTCopter: return "Transport Helicopter"
+        case .unitBattleship: return "Battleship"
+        case .unitCruiser: return "Carrier"
+        case .unitLander: return "Transport Ship"
+        case .unitSub: return "Submarine"
+        case .unitNeoTank: return "Tank Z"
+        case .unitBlackBomb: return "Super Missile"
+        case .unitCarrier: return "Radar Transport"
         default: return nil
         }
     }

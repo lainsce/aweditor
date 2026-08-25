@@ -25,14 +25,14 @@ struct AWEDApp: App {
             AWEDCommands(model: session.model)
         }
         .windowResizability(.contentSize)
-        .defaultSize(width: 1024, height: 600)
+        .defaultSize(width: 1024, height: 800)
         .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified(showsTitle: false))
 
         Window("About AW Map Editor", id: AWEDWindowID.about) {
             AboutView()
         }
-        .defaultSize(width: 420, height: 440)
+        .defaultSize(width: 440, height: 440)
         .windowResizability(.contentSize)
 
         Window("Privacy Policy", id: AWEDWindowID.privacyPolicy) {
@@ -49,6 +49,7 @@ final class AWEDSession {
     let music: BackgroundMusicController
 
     init() {
+        PlaytestFontCatalog.registerBundledFonts()
         model = EditorModel()
         atlas = SpriteAtlas()
         music = BackgroundMusicController()

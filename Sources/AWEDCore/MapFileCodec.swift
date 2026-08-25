@@ -71,10 +71,22 @@ public enum MapFileCodec {
             map.tileset = format == .awm ? .aw1 : .aw2
         }
 
+        let backgroundValues = try (0..<(width * height)).map { _ in
+            Int(try reader.readUInt16())
+        }
+        let usesCompactTerrainIDs = usesCompactRegressionTerrainIDs(
+            backgroundValues,
+            format: format
+        )
         for x in 0..<width {
             for y in 0..<height {
-                let value = Int(try reader.readUInt16())
-                _ = map.setBackground(Element(value, mapType: format), atX: x, y: y, check: false)
+                let value = backgroundValues[x * height + y]
+                let element = decodedBackgroundElement(
+                    value,
+                    format: format,
+                    usesCompactTerrainIDs: usesCompactTerrainIDs
+                )
+                _ = map.setBackground(element, atX: x, y: y, check: false)
             }
         }
         for x in 0..<width {
@@ -144,6 +156,60 @@ public enum MapFileCodec {
         let field = Data(string.utf8)
         data.append(contentsOf: UInt32(field.count).littleEndianBytes)
         data.append(field)
+    }
+
+    /// A short-lived regression flattened terrain coordinates using the
+    /// 20-column atlas width instead of the format's stable 30-column stride.
+    /// Detect those files as a whole so maps saved by that build remain usable,
+    /// while ties always prefer the documented legacy encoding.
+    private static func usesCompactRegressionTerrainIDs(
+        _ values: [Int],
+        format: MapFormat
+    ) -> Bool {
+        let terrainValues = values.filter { (0...299).contains($0) }
+        guard !terrainValues.isEmpty else { return false }
+
+        let stableScore = terrainValues.reduce(into: 0) { score, value in
+            score += terrainRecognitionScore(Element(value, mapType: format))
+        }
+        let compactScore = terrainValues.reduce(into: 0) { score, value in
+            score += terrainRecognitionScore(compactRegressionTerrainElement(value))
+        }
+        return compactScore > stableScore
+    }
+
+    private static func decodedBackgroundElement(
+        _ value: Int,
+        format: MapFormat,
+        usesCompactTerrainIDs: Bool
+    ) -> Element {
+        if usesCompactTerrainIDs, (0...299).contains(value) {
+            return compactRegressionTerrainElement(value)
+        }
+        return Element(value, mapType: format)
+    }
+
+    private static func compactRegressionTerrainElement(_ value: Int) -> Element {
+        let compactColumns = 20
+        return Element(AWConstants.makeTerrain(value % compactColumns, value / compactColumns))
+    }
+
+    private static func terrainRecognitionScore(_ element: Element) -> Int {
+        let canonicalElements: [Element] = [
+            .terrainPlain, .terrainPlainD, .terrainWood, .terrainMountain,
+            .terrainRoad, .terrainBridgeH, .terrainBridgeV, .terrainRiver,
+            .terrainPipe, .terrainSeam, .terrainShoal, .terrainSea, .terrainReef,
+        ]
+        if canonicalElements.contains(element) { return 3 }
+
+        switch element.simplified {
+        case .terrainPlain, .terrainPlainD, .terrainWood, .terrainMountain,
+             .terrainRoad, .terrainBridgeH, .terrainRiver, .terrainPipe,
+             .terrainSeam, .terrainShoal, .terrainSea, .terrainReef:
+            return 1
+        default:
+            return 0
+        }
     }
 }
 
