@@ -20,11 +20,23 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                MapWorkspaceView(model: model, atlas: atlas) {
-                    playtestLaunch = PlaytestLaunch(
-                        map: model.map,
-                        visualVariant: model.visualVariant
-                    )
+                if playtestLaunch == nil {
+                    MapWorkspaceView(model: model, atlas: atlas) {
+                        playtestLaunch = PlaytestLaunch(
+                            map: model.map,
+                            visualVariant: model.visualVariant
+                        )
+                    }
+                } else {
+                    // The playtest sheet owns its own read-only board. Do not
+                    // keep the editor canvas in the hierarchy underneath it:
+                    // that avoids a second Canvas render pass and prevents
+                    // editor pointer/hover work from continuing while the
+                    // playtest is active. Preserve the flexible map column so
+                    // the palette does not jump during sheet presentation.
+                    Color.clear
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .accessibilityHidden(true)
                 }
                 Divider()
                     .ignoresSafeArea(.container)
@@ -32,7 +44,7 @@ struct ContentView: View {
                     PaletteView(model: model, atlas: atlas)
                     StatusBarView(name: model.map.name, author: model.map.author, coordinates: model.statusMessage, isDirty: model.map.isDirty)
                 }
-                .background(Color(nsColor: .controlBackgroundColor))
+                .background(.ultraThinMaterial)
                 .ignoresSafeArea(.all)
             }
         }

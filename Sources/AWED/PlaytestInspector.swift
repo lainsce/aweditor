@@ -8,6 +8,10 @@ struct PlaytestInspector: View {
         PlaytestStatusTheme(tileset: session.map.tileset)
     }
 
+    private var hidesLegacyCommandButtons: Bool {
+        session.ruleset.usesLegacyKeyboardControls
+    }
+
     private var sortedRefuelableCells: [GridPoint] {
         session.refuelableCells.sorted {
             $0.y == $1.y ? $0.x < $1.x : $0.y < $1.y
@@ -27,23 +31,27 @@ struct PlaytestInspector: View {
                                 Text(selectedUnitName)
                                     .font(statusTheme.titleFont)
                                 if let health = session.selectedUnitHealth {
-                                    PlaytestEraMeter(
-                                        value: Double(health),
-                                        total: 100,
-                                        tint: health > 50 ? statusTheme.armyAccent(session.activeArmy) : statusTheme.warningText,
-                                        theme: statusTheme
-                                    )
+                                    if statusTheme.showsStatusMeters {
+                                        PlaytestEraMeter(
+                                            value: Double(health),
+                                            total: 100,
+                                            tint: health > 50 ? statusTheme.armyAccent(session.activeArmy) : statusTheme.warningText,
+                                            theme: statusTheme
+                                        )
+                                    }
                                     Text("Health \(health)%")
                                         .font(statusTheme.valueFont)
                                         .foregroundStyle(statusTheme.secondaryText)
                                 }
                                 if let fuel = session.selectedUnitFuel {
-                                    PlaytestEraMeter(
-                                        value: Double(fuel),
-                                        total: Double(session.selectedUnitMaxFuel ?? 100),
-                                        tint: fuel > 25 ? statusTheme.resourceTint : statusTheme.warningText,
-                                        theme: statusTheme
-                                    )
+                                    if statusTheme.showsStatusMeters {
+                                        PlaytestEraMeter(
+                                            value: Double(fuel),
+                                            total: Double(session.selectedUnitMaxFuel ?? 100),
+                                            tint: fuel > 25 ? statusTheme.resourceTint : statusTheme.warningText,
+                                            theme: statusTheme
+                                        )
+                                    }
                                     Text(
                                         "\(session.selectedUnitResourceLabel ?? "Fuel") \(fuel)/\(session.selectedUnitMaxFuel ?? 100)"
                                     )
@@ -69,7 +77,8 @@ struct PlaytestInspector: View {
                                             .foregroundStyle(statusTheme.secondaryText)
                                             .fixedSize(horizontal: false, vertical: true)
                                     }
-                                    if session.selectedCargoNames.count > 1 {
+                                    if !hidesLegacyCommandButtons,
+                                       session.selectedCargoNames.count > 1 {
                                         HStack(spacing: 6) {
                                             ForEach(Array(session.selectedCargoNames.enumerated()), id: \.offset) { index, name in
                                                 Button(name) {
@@ -94,78 +103,82 @@ struct PlaytestInspector: View {
                                         }
                                     }
                                 }
-                                if session.selectedTransportCanResupply {
-                                    if session.selectedTransportIsBlackBoat {
-                                        ForEach(
-                                            sortedRefuelableCells,
-                                            id: \.self
-                                        ) { point in
-                                            PlaytestRepairButton(
-                                                session: session,
-                                                point: point
+                                if !hidesLegacyCommandButtons {
+                                    if session.selectedTransportCanResupply {
+                                        if session.selectedTransportIsBlackBoat {
+                                            ForEach(
+                                                sortedRefuelableCells,
+                                                id: \.self
+                                            ) { point in
+                                                PlaytestRepairButton(
+                                                    session: session,
+                                                    point: point
+                                                )
+                                            }
+                                        } else {
+                                            Button("Resupply adjacent units") {
+                                                session.resupplySelectedTransport()
+                                            }
+                                            .buttonStyle(
+                                                PlaytestEraButtonStyle(theme: statusTheme, tone: .primary)
                                             )
                                         }
-                                    } else {
-                                        Button("Resupply adjacent units") {
-                                            session.resupplySelectedTransport()
-                                        }
+                                    }
+                                    if session.selectedUnitCanLaunchSilo {
+                                        Button("Launch Missile Silo", action: session.beginSiloLaunch)
                                         .buttonStyle(
                                             PlaytestEraButtonStyle(theme: statusTheme, tone: .primary)
                                         )
                                     }
-                                }
-                                if session.selectedUnitCanLaunchSilo {
-                                    Button("Launch Missile Silo", action: session.beginSiloLaunch)
-                                    .buttonStyle(
-                                        PlaytestEraButtonStyle(theme: statusTheme, tone: .primary)
-                                    )
-                                }
-                                if session.selectedUnitCanUseFlare {
-                                    Button("Use Flare", action: session.useFlare)
-                                        .buttonStyle(
-                                            PlaytestEraButtonStyle(theme: statusTheme, tone: .primary)
-                                        )
+                                    if session.selectedUnitCanUseFlare {
+                                        Button("Use Flare", action: session.useFlare)
+                                            .buttonStyle(
+                                                PlaytestEraButtonStyle(theme: statusTheme, tone: .primary)
+                                            )
+                                    }
                                 }
                                 if let progress = session.selectedCaptureProgress {
                                     Text(progress)
                                         .font(statusTheme.valueFont)
                                         .foregroundStyle(statusTheme.secondaryText)
                                 }
-                                HStack(spacing: 8) {
-                                    if session.selectedUnitIsSubmarine {
-                                        Button(
-                                            session.selectedSubmarineIsSubmerged ? "Surface" : "Dive",
-                                            action: session.toggleSubmerge
-                                        )
-                                        .buttonStyle(
-                                            PlaytestEraButtonStyle(theme: statusTheme, tone: .neutral)
-                                        )
-                                    }
-                                    if session.selectedUnitIsStealth {
-                                        Button(
-                                            session.selectedStealthIsCloaked ? "Uncloak" : "Cloak",
-                                            action: session.toggleStealth
-                                        )
-                                        .buttonStyle(
-                                            PlaytestEraButtonStyle(theme: statusTheme, tone: .neutral)
-                                        )
-                                    }
-                                    if session.selectedUnitCanDetonateBlackBomb {
-                                        Button("Detonate", action: session.detonateBlackBomb)
+                                if !hidesLegacyCommandButtons {
+                                    HStack(spacing: 8) {
+                                        if session.selectedUnitIsSubmarine {
+                                            Button(
+                                                session.selectedSubmarineIsSubmerged ? "Surface" : "Dive",
+                                                action: session.toggleSubmerge
+                                            )
                                             .buttonStyle(
-                                                PlaytestEraButtonStyle(theme: statusTheme, tone: .primary)
+                                                PlaytestEraButtonStyle(theme: statusTheme, tone: .neutral)
+                                            )
+                                        }
+                                        if session.selectedUnitIsStealth {
+                                            Button(
+                                                session.selectedStealthIsCloaked ? "Uncloak" : "Cloak",
+                                                action: session.toggleStealth
+                                            )
+                                            .buttonStyle(
+                                                PlaytestEraButtonStyle(theme: statusTheme, tone: .neutral)
+                                            )
+                                        }
+                                        if session.selectedUnitCanDetonateBlackBomb {
+                                            Button("Detonate", action: session.detonateBlackBomb)
+                                                .buttonStyle(
+                                                    PlaytestEraButtonStyle(theme: statusTheme, tone: .primary)
+                                                )
+                                        }
+                                        if session.captureableCells.contains(where: { $0 == session.selectedPoint }) {
+                                            Button("Capture", action: session.capture)
+                                                .buttonStyle(
+                                                    PlaytestEraButtonStyle(theme: statusTheme, tone: .primary)
+                                                )
+                                        }
+                                        Button("Wait", action: session.wait)
+                                            .buttonStyle(
+                                                PlaytestEraButtonStyle(theme: statusTheme, tone: .neutral)
                                             )
                                     }
-                                    if session.captureableCells.contains(where: { $0 == session.selectedPoint }) {
-                                        Button("Capture", action: session.capture)
-                                            .buttonStyle(
-                                                PlaytestEraButtonStyle(theme: statusTheme, tone: .primary)
-                                            )
-                                    }
-                                    Button("Wait", action: session.wait)
-                                        .buttonStyle(
-                                            PlaytestEraButtonStyle(theme: statusTheme, tone: .neutral)
-                                        )
                                 }
                             }
                         }
@@ -182,7 +195,8 @@ struct PlaytestInspector: View {
                                         .font(statusTheme.detailFont)
                                         .foregroundStyle(statusTheme.secondaryText)
                                 }
-                                if !session.productionOptions.isEmpty {
+                                if !session.ruleset.usesLegacyKeyboardControls,
+                                   !session.productionOptions.isEmpty {
                                     Text("Build unit")
                                         .font(statusTheme.bodyFont)
                                     ForEach(session.productionOptions) { option in
@@ -206,8 +220,9 @@ struct PlaytestInspector: View {
                         }
                     }
                 }
-                .padding(14)
+                .padding(16)
             }
+            .scrollContentBackground(.hidden)
 
             PlaytestStatusPanel(
                 "Battle status",
@@ -215,9 +230,10 @@ struct PlaytestInspector: View {
             ) {
                 PlaytestSidebarStatus(session: session)
             }
-            .padding(14)
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .background(Color.clear)
     }
 }
 
@@ -246,34 +262,35 @@ private struct PlaytestSidebarStatus: View {
     }
 
     private var activeTeamColor: Color {
-        switch session.team(for: session.activeArmy) {
-        case .red: .red
-        case .blue: .blue
-        case .yellow: .yellow
-        case .green: .green
+        if theme == .famicomWars {
+            return theme.armyAccent(session.activeArmy)
+        }
+
+        return switch session.team(for: session.activeArmy) {
+            case .red: Color.red
+            case .blue: Color.blue
+            case .yellow: Color.yellow
+            case .green: Color.green
         }
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("DAY \(session.turn)")
-                Spacer(minLength: 8)
+                Spacer(minLength: 6)
                 Text(PlaytestRulebook.formatFunds(session.activeFunds))
             }
             .font(theme.valueFont)
             .foregroundStyle(theme.secondaryText)
 
-            HStack(spacing: 7) {
+            HStack(spacing: 4) {
                 Image(systemName: "flag.fill")
                     .foregroundStyle(activeTeamColor)
                     .accessibilityHidden(true)
-                Text("\(session.activeArmyName)'s turn")
+                Text("\(session.activeArmyName)")
                     .font(theme.titleFont)
                     .lineLimit(1)
-                Text(session.activeArmyIsCPU ? "CPU" : "Player")
-                    .font(theme.detailFont)
-                    .foregroundStyle(theme.secondaryText)
             }
         }
         .accessibilityElement(children: .combine)

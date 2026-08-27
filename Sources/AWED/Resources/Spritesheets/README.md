@@ -34,9 +34,11 @@ project does not claim ownership of the game assets.
   top row of each building group and rendered at 16 pixels, while the paired
   sprites retain their 32-pixel height.
 
-  Famicom Wars exposes Red Star, White Moon, Green Soil, and Yellow Comet in
-  the editor and playtest; Black Hole is omitted because it is not a Famicom
-  Wars army.
+  Famicom Wars exposes only its original Red Star and White Moon armies in
+  the editor and playtest. Green Soil and Yellow Comet are fan additions and
+  are intentionally not available for this tileset; Black Hole is likewise
+  omitted because it is not a Famicom Wars army. Super Famicom Wars keeps its
+  own four-army roster.
 
   The terrain atlas maps the named shoreline rows directly (the source rows
   containing `Land_Border_*`), with the twelve coast-overlay cells oriented to
@@ -54,16 +56,20 @@ project does not claim ownership of the game assets.
   The Famicom authoring palette also omits the
   Dual Strike-only Extra tab. The unit atlas uses the matching [Famicom Wars
   map-unit extraction](https://www.spriters-resource.com/nes/famicomwarsjpn/asset/215810/),
-  fitted into AWED's 16-pixel unit cells. Famicom's four editor faction rows
-  are retained; the unsupported Black Hole row is left as the plain ground
-  plate rather than leaking later-game artwork, while neutral property rows
-  remain neutral. Every opaque pixel in the unit and building sheets is
+  fitted into AWED's 16-pixel unit cells. Only the original Red Star and White
+  Moon faction rows are exposed for Famicom authoring; unsupported army rows
+  are left as the plain ground plate rather than leaking later-game artwork,
+  while neutral property rows remain neutral. Every opaque pixel in the unit
+  and building sheets is
   normalized to a valid colour from the NTSC 2C02 PPU's 64-entry palette.
   Populated historical unit/property frames use the exact Famicom Plains green
   `(72,168,16)` as their ground plate. Every 16×16 Famicom unit cell also
   carries a one-pixel black rule along its final row and column. The river slots are hand-pixeled
   directional variants (straight, turns, tees, and cross), derived from the two
   source River_NS rhythms instead of repeating one vertical cell.
+  The Famicom cursor atlas (`misc_6.png`) uses the same common NTSC 2C02
+  display entries for its opaque pixels: `$0F` black `(0,0,0)`, `$30` white
+  `(252,252,252)`, and `$3A` pale green `(184,248,184)`.
 - The `_7` sheets use the supplied 16×16 Game Boy Wars tile references as a
   four-tone source. The Sea, Shoal, Plains, Road, Woods, Mountain, Bridge,
   and River cells in `terrain_7.png` are reduced from the corresponding
@@ -93,12 +99,11 @@ project does not claim ownership of the game assets.
   Spriters Resource](https://www.spriters-resource.com/nes/famicomwarsjpn/asset/215810/),
   not from an Advance Wars recolor. The sixteen original map units are copied
   from their 16×16 Red Star and Blue Moon cells, with the source's plains-green
-  plate and NES palette retained. Green Soil and Yellow Comet are optional
-  editor-only palette remaps for variety; their sprites use the same original
-  silhouettes. The source's labels and attribution strip are excluded from the
-  atlas. The Famicom unit palette exposes only those sixteen original unit
-  types, using the shared slots for Howitzer, Supply Truck, Helicopter, and
-  Scout where the cross-game element format has no separate identity.
+  plate and NES palette retained. The source's labels and attribution strip
+  are excluded from the atlas. The Famicom unit palette exposes only those
+  sixteen original unit types, using the shared slots for Howitzer, Supply
+  Truck, Helicopter, and Scout where the cross-game element format has no
+  separate identity.
 
 The historical sheets intentionally replace the prior palette-recolor
 fallback. They preserve the source silhouettes and layout selected from those
@@ -206,6 +211,33 @@ These are source-derived compatibility sheets and the project makes no claim
 of ownership. The variant cards and playtest header keep the selected game's
 name visible, while playtest mechanics use the nearest implemented rule table
 until a cartridge-specific table is added.
+
+## Historical cursor sheets
+
+The original wxAWDS editor stores cursor art in a fixed 80×128 `misc` atlas:
+the 16×16 allowed and forbidden pointers, the 32×16 delete pointer, and the
+18×18/48×48/64×64 map-frame slots are all consumed by `CursorAtlas.swift`.
+`misc_0`, `misc_4`, and `misc_5` remain the original Dual Strike, Advance Wars,
+and Advance Wars 2 sheets. The six additional sheets keep the binary layout
+and nearest-neighbour pixel style, but follow the historical games' actual
+map-cursor treatment: the allowed-arrow and forbidden-X slots are transparent
+because those games show corner angles instead, and the delete slot carries a
+compact wrench badge rather than the AWDS hammer:
+
+| sheet | game | visual reference used |
+| --- | --- | --- |
+| `misc_6` | Famicom Wars | white/green four-corner map cursor visible in the Famicom gameplay capture on [Famitsu](https://www.famitsu.com/article/202408/12967) |
+| `misc_7` | Game Boy Wars | DMG four-tone green ramp used by the original Game Boy map screenshots; the `E` badge is the game's used-unit marker, not cursor artwork |
+| `misc_8` | Super Famicom Wars | red/salmon/white corner cursor visible in the [Super Famicom Wars map-unit reference](https://www.spriters-resource.com/snes/superfamicomwarsjpn/asset/125563/) and strategic-map capture |
+| `misc_9` | Days of Ruin / Dark Conflict | charcoal, cream, and red DS map palette from the [Days of Ruin reference sheets](https://www.spriters-resource.com/ds_dsi/advwarsdor/); its crosshead cursor semantics are described in the [gameplay reference](https://strategywiki.org/wiki/Advance_Wars:_Days_of_Ruin/Gameplay) |
+| `misc_10` | Game Boy Wars 2 | CGB blue/white/yellow ramp visible in [Game Boy Wars 2 screenshots](https://gamesdb.launchbox-app.com/games/details/18491-game-boy-wars-2) |
+| `misc_11` | Game Boy Wars 3 | brighter CGB blue/green/white ramp visible in [Game Boy Wars 3 screenshots](https://gamesdb.launchbox-app.com/games/details/18492-game-boy-wars-3); `E` remains a used-unit badge, not a cursor |
+
+These are compatibility reconstructions rather than claims of a complete ROM
+cursor rip. `Tools/build_cursor_atlases.py` is the reproducible assembler; it
+draws the palette-specific map-frame angles and wrench badge while leaving the
+unused arrow/X slots transparent, so the editor and playtest can share the
+same map-frame geometry without showing AWDS-only pointer extras.
 
 ## Supplied ROM verification
 

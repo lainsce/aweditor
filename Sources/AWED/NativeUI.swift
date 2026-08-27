@@ -158,9 +158,6 @@ struct NativePullDownMenu<Selection: Hashable, ItemLabel: View>: View {
                 }
                 label(selection)
                     .lineLimit(1)
-                Image(systemName: "chevron.up.chevron.down")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
             }
             .frame(minHeight: 36, alignment: .leading)
         }

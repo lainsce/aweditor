@@ -48,6 +48,12 @@
 		00000000000000000000205C /* misc_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105C /* misc_0.png */; };
 		00000000000000000000205D /* misc_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105D /* misc_4.png */; };
 		00000000000000000000205E /* misc_5.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105E /* misc_5.png */; };
+		00000000000000000000209C /* misc_6.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AC /* misc_6.png */; };
+		00000000000000000000209D /* misc_7.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AD /* misc_7.png */; };
+		00000000000000000000209E /* misc_8.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AE /* misc_8.png */; };
+		00000000000000000000209F /* misc_9.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AF /* misc_9.png */; };
+		0000000000000000000020A0 /* misc_10.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010B0 /* misc_10.png */; };
+		0000000000000000000020A1 /* misc_11.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010B1 /* misc_11.png */; };
 		00000000000000000000205F /* terrain_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105F /* terrain_0.png */; };
 		000000000000000000002060 /* terrain_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001060 /* terrain_1.png */; };
 		000000000000000000002061 /* terrain_2.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001061 /* terrain_2.png */; };
@@ -106,6 +112,7 @@
 		F10000000000000000000001 /* PlaytestFrameTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000001 /* PlaytestFrameTheme.swift */; };
 		F30000000000000000000001 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = F40000000000000000000001 /* Fonts */; };
 		G30000000000000000000001 /* PlaytestFontCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = G40000000000000000000001 /* PlaytestFontCatalog.swift */; };
+		H10000000000000000000001 /* PlaytestLegacyControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = H20000000000000000000001 /* PlaytestLegacyControls.swift */; };
 		673ACA33303DE9E6003112C6 /* BGM in Resources */ = {isa = PBXBuildFile; fileRef = 673ACA33303DE9E6003112C5 /* BGM */; };
 /* End PBXBuildFile section */
 
@@ -168,6 +175,12 @@
 		00000000000000000000105C /* misc_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_0.png; sourceTree = "<group>"; };
 		00000000000000000000105D /* misc_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_4.png; sourceTree = "<group>"; };
 		00000000000000000000105E /* misc_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_5.png; sourceTree = "<group>"; };
+		0000000000000000000010AC /* misc_6.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_6.png; sourceTree = "<group>"; };
+		0000000000000000000010AD /* misc_7.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_7.png; sourceTree = "<group>"; };
+		0000000000000000000010AE /* misc_8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_8.png; sourceTree = "<group>"; };
+		0000000000000000000010AF /* misc_9.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_9.png; sourceTree = "<group>"; };
+		0000000000000000000010B0 /* misc_10.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_10.png; sourceTree = "<group>"; };
+		0000000000000000000010B1 /* misc_11.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_11.png; sourceTree = "<group>"; };
 		00000000000000000000105F /* terrain_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_0.png; sourceTree = "<group>"; };
 		000000000000000000001060 /* terrain_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_1.png; sourceTree = "<group>"; };
 		000000000000000000001061 /* terrain_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_2.png; sourceTree = "<group>"; };
@@ -232,6 +245,7 @@
 		F20000000000000000000001 /* PlaytestFrameTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestFrameTheme.swift; sourceTree = "<group>"; };
 		F40000000000000000000001 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fonts; sourceTree = "<group>"; };
 		G40000000000000000000001 /* PlaytestFontCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestFontCatalog.swift; sourceTree = "<group>"; };
+		H20000000000000000000001 /* PlaytestLegacyControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestLegacyControls.swift; sourceTree = "<group>"; };
 		673ACA33303DE9E6003112C5 /* BGM */ = {isa = PBXFileReference; lastKnownFileType = folder; path = BGM; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -290,6 +304,7 @@
 				000000000000000000001019 /* EditorTypes.swift */,
 				000000000000000000001025 /* PrivacyPolicyView.swift */,
 				000000000000000000001073 /* PlaytestView.swift */,
+				H20000000000000000000001 /* PlaytestLegacyControls.swift */,
 				000000000000000000001092 /* PlaytestSession.swift */,
 				000000000000000000001093 /* PlaytestHeader.swift */,
 				000000000000000000001094 /* PlaytestMapViews.swift */,
@@ -356,6 +371,12 @@
 				00000000000000000000105C /* misc_0.png */,
 				00000000000000000000105D /* misc_4.png */,
 				00000000000000000000105E /* misc_5.png */,
+				0000000000000000000010AC /* misc_6.png */,
+				0000000000000000000010AD /* misc_7.png */,
+				0000000000000000000010AE /* misc_8.png */,
+				0000000000000000000010AF /* misc_9.png */,
+				0000000000000000000010B0 /* misc_10.png */,
+				0000000000000000000010B1 /* misc_11.png */,
 				00000000000000000000105F /* terrain_0.png */,
 				000000000000000000001060 /* terrain_1.png */,
 				000000000000000000001061 /* terrain_2.png */,
@@ -516,6 +537,12 @@
 				00000000000000000000205C /* misc_0.png in Resources */,
 				00000000000000000000205D /* misc_4.png in Resources */,
 				00000000000000000000205E /* misc_5.png in Resources */,
+				00000000000000000000209C /* misc_6.png in Resources */,
+				00000000000000000000209D /* misc_7.png in Resources */,
+				00000000000000000000209E /* misc_8.png in Resources */,
+				00000000000000000000209F /* misc_9.png in Resources */,
+				0000000000000000000020A0 /* misc_10.png in Resources */,
+				0000000000000000000020A1 /* misc_11.png in Resources */,
 				00000000000000000000205F /* terrain_0.png in Resources */,
 				000000000000000000002060 /* terrain_1.png in Resources */,
 				000000000000000000002061 /* terrain_2.png in Resources */,
@@ -589,6 +616,7 @@
 				00000000000000000000201F /* SpriteAtlas.swift in Sources */,
 				000000000000000000002020 /* StatusBarView.swift in Sources */,
 				000000000000000000002073 /* PlaytestView.swift in Sources */,
+				H10000000000000000000001 /* PlaytestLegacyControls.swift in Sources */,
 				000000000000000000002088 /* PlaytestSession.swift in Sources */,
 				000000000000000000002089 /* PlaytestHeader.swift in Sources */,
 				00000000000000000000208A /* PlaytestMapViews.swift in Sources */,

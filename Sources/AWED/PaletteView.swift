@@ -63,7 +63,7 @@ struct PaletteView: View {
                 .padding(12)
             }
         }
-        .frame(minWidth: 285, idealWidth: 310, maxWidth: 360)
+        .frame(minWidth: 310, idealWidth: 310, maxWidth: 310)
         .ignoresSafeArea(.container)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Tile Palette")
@@ -247,6 +247,17 @@ private struct ArmyColorTabs: View {
     private func color(for army: Int) -> Color {
         if tileset == .daysOfRuin, army == AWConstants.armyBlackHole {
             return Color(white: 0.12)
+        }
+
+        if tileset == .famicomWars {
+            switch army {
+            case AWConstants.armyOrangeStar: return FamicomPPUPalette.red
+            case AWConstants.armyBlueMoon: return FamicomPPUPalette.blue
+            case AWConstants.armyGreenEarth: return FamicomPPUPalette.green
+            case AWConstants.armyYellowComet: return FamicomPPUPalette.yellow
+            case AWConstants.armyBlackHole: return FamicomPPUPalette.purple
+            default: return FamicomPPUPalette.gray
+            }
         }
 
         if tileset.isGameBoyWarsFamily {

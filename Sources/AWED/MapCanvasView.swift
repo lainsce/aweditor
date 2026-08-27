@@ -11,6 +11,26 @@ enum MapCanvasMetrics {
     static let bottomWallHeight: CGFloat = 20
     static let parchmentPadding: CGFloat = 12
 
+    /// Keep a two-pixel breathing gap between a flat frame's innermost rule
+    /// and the map. The inset includes the inspector-style border stack, so
+    /// the rule itself never ends up painted over the first map cells.
+    static func woodPadding(for frameTheme: PlaytestFrameTheme) -> CGFloat {
+        guard case let .inspector(statusTheme) = frameTheme.flatWoodBorderStyle else {
+            return woodPadding
+        }
+
+        let outerExtent = statusTheme.outerBorderPixels
+        let innerExtent = statusTheme.innerBorderPixels > 0
+            ? statusTheme.innerBorderInsetPixels + statusTheme.innerBorderPixels
+            : 0
+        let famicomExtent: CGFloat = statusTheme == .famicomWars ? 6 + 1 : 0
+        return max(outerExtent, innerExtent, famicomExtent) + 2
+    }
+
+    static func bottomWallHeight(for frameTheme: PlaytestFrameTheme) -> CGFloat {
+        frameTheme.usesFlatWoodBorder ? 0 : bottomWallHeight
+    }
+
     /// Game Boy Wars lays out its logical cells as horizontally staggered
     /// four-sided spaces. Keep this decision in one geometry helper so the
     /// editor, hit testing, playtest, and screenshot renderer cannot drift
@@ -53,6 +73,11 @@ enum MapCanvasMetrics {
 struct MapCanvasBoard: View {
     let model: EditorModel
     let atlas: SpriteAtlas
+    /// Optional read-only map source for live playtest rendering. The editor
+    /// keeps using `model.map`; playtest can supply the session snapshot
+    /// directly so a tile-by-tile movement step cannot wait for a secondary
+    /// model-sync callback before the unit sprite changes.
+    let mapOverride: MapState?
     /// Playtest renders the board as a read-only backdrop. Its interaction
     /// layer owns pointer conversion there, so the editor's local event
     /// monitor must not compete for the same mouse events.
@@ -62,26 +87,30 @@ struct MapCanvasBoard: View {
     init(
         model: EditorModel,
         atlas: SpriteAtlas,
+        mapOverride: MapState? = nil,
         interactionEnabled: Bool = true,
         frameTheme: PlaytestFrameTheme = .editor
     ) {
         self.model = model
         self.atlas = atlas
+        self.mapOverride = mapOverride
         self.interactionEnabled = interactionEnabled
         self.frameTheme = frameTheme
     }
 
     var body: some View {
-        let mapHeight = CGFloat(model.map.height) * MapCanvasMetrics.tileSize
-        let staggered = MapCanvasMetrics.isStaggeredGB(map: model.map, palette: model.renderPalette)
+        let renderMap = mapOverride ?? model.map
+        let mapHeight = CGFloat(renderMap.height) * MapCanvasMetrics.tileSize
+        let staggered = MapCanvasMetrics.isStaggeredGB(map: renderMap, palette: model.renderPalette)
         let mapSize = MapCanvasMetrics.mapPixelSize(
-            width: model.map.width,
-            height: model.map.height,
+            width: renderMap.width,
+            height: renderMap.height,
             tileSize: MapCanvasMetrics.tileSize,
             staggered: staggered
         )
-        let boardWidth = mapSize.width + (MapCanvasMetrics.woodPadding * 2)
-        let boardHeight = mapHeight + (MapCanvasMetrics.woodPadding * 2)
+        let woodPadding = MapCanvasMetrics.woodPadding(for: frameTheme)
+        let boardWidth = mapSize.width + (woodPadding * 2)
+        let boardHeight = mapHeight + (woodPadding * 2)
 
         VStack(spacing: 0) {
             ZStack(alignment: .topLeading) {
@@ -90,26 +119,41 @@ struct MapCanvasBoard: View {
                     atlas: atlas,
                     tileSize: Double(MapCanvasMetrics.tileSize),
                     topOverflow: 0,
-                    interactionEnabled: interactionEnabled
+                    interactionEnabled: interactionEnabled,
+                    mapOverride: mapOverride
                 )
                 .offset(
-                    x: MapCanvasMetrics.woodPadding,
-                    y: MapCanvasMetrics.woodPadding
+                    x: woodPadding,
+                    y: woodPadding
                 )
             }
-                .frame(
-                    width: boardWidth,
+            .frame(
+                width: boardWidth,
                 height: boardHeight,
                 alignment: .topLeading
             )
             .background {
-                MapWoodSurface(theme: frameTheme)
+                if case let .inspector(statusTheme) = frameTheme.flatWoodBorderStyle {
+                    Rectangle()
+                        .fill(statusTheme.surface)
+                } else if frameTheme.usesFlatWoodBorder {
+                    Rectangle()
+                        .fill(frameTheme.woodGradient.first ?? frameTheme.woodDeep)
+                } else {
+                    MapWoodSurface(theme: frameTheme)
+                }
             }
             .overlay {
-                MapWoodBorderOverlay(theme: frameTheme)
+                if case let .inspector(statusTheme) = frameTheme.flatWoodBorderStyle {
+                    MapInspectorBorder(theme: statusTheme)
+                } else if !frameTheme.usesFlatWoodBorder {
+                    MapWoodBorderOverlay(theme: frameTheme)
+                }
             }
             .overlay {
-                MapWoodDepthOverlay(theme: frameTheme)
+                if !frameTheme.usesFlatWoodBorder {
+                    MapWoodDepthOverlay(theme: frameTheme)
+                }
             }
             // Keep this in an overlay so its extra drawing height does not
             // change the board's measured height or push the lower wall away.
@@ -117,20 +161,75 @@ struct MapCanvasBoard: View {
                 MapCanvasTallSpriteOverflow(
                     model: model,
                     atlas: atlas,
-                    tileSize: MapCanvasMetrics.tileSize
+                    tileSize: MapCanvasMetrics.tileSize,
+                    mapOverride: mapOverride
                 )
                 .offset(
-                    x: MapCanvasMetrics.woodPadding,
-                    y: MapCanvasMetrics.woodPadding - MapCanvasMetrics.tallSpriteOverflow
+                    x: woodPadding,
+                    y: woodPadding - MapCanvasMetrics.tallSpriteOverflow
                 )
                 .zIndex(2)
             }
 
-            MapWoodLowerWall(theme: frameTheme)
-                .frame(width: boardWidth, height: MapCanvasMetrics.bottomWallHeight)
+            if !frameTheme.usesFlatWoodBorder {
+                MapWoodLowerWall(theme: frameTheme)
+                    .frame(width: boardWidth, height: MapCanvasMetrics.bottomWallHeight)
+            }
         }
         .frame(width: boardWidth)
-        .shadow(color: Color.black.opacity(0.22), radius: 10, y: 5)
+        .shadow(
+            color: frameTheme.usesFlatWoodBorder ? .clear : Color.black.opacity(0.22),
+            radius: frameTheme.usesFlatWoodBorder ? 0 : 10,
+            y: frameTheme.usesFlatWoodBorder ? 0 : 5
+        )
+    }
+}
+
+private struct MapInspectorBorder: View {
+    let theme: PlaytestStatusTheme
+
+    @Environment(\.displayScale) private var displayScale
+
+    var body: some View {
+        let pixel = 1 / max(displayScale, 1)
+        let shape = PlaytestPanelShape(cornerRadius: theme.cornerRadius)
+
+        ZStack {
+            if theme.outerBorderPixels > 0 {
+                shape.strokeBorder(
+                    theme.outerBorder,
+                    style: StrokeStyle(lineWidth: theme.outerBorderPixels * pixel),
+                    antialiased: false
+                )
+            }
+            if theme.innerBorderPixels > 0 {
+                shape
+                    .inset(by: theme.innerBorderInsetPixels * pixel)
+                    .strokeBorder(
+                        theme.innerBorder,
+                        style: StrokeStyle(lineWidth: theme.innerBorderPixels * pixel),
+                        antialiased: false
+                    )
+            }
+            if theme == .famicomWars {
+                shape
+                    .inset(by: 4 * pixel)
+                    .strokeBorder(
+                        theme.outerBorder,
+                        style: StrokeStyle(lineWidth: 2 * pixel),
+                        antialiased: false
+                    )
+                shape
+                    .inset(by: 6 * pixel)
+                    .strokeBorder(
+                        FamicomPPUPalette.black,
+                        style: StrokeStyle(lineWidth: pixel),
+                        antialiased: false
+                    )
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
@@ -138,17 +237,20 @@ private struct MapCanvasTallSpriteOverflow: View {
     let model: EditorModel
     let atlas: SpriteAtlas
     let tileSize: CGFloat
+    let mapOverride: MapState?
+
+    private var renderMap: MapState { mapOverride ?? model.map }
 
     var body: some View {
-        let staggered = MapCanvasMetrics.isStaggeredGB(map: model.map, palette: model.renderPalette)
+        let map = renderMap
+        let staggered = MapCanvasMetrics.isStaggeredGB(map: map, palette: model.renderPalette)
         let mapSize = MapCanvasMetrics.mapPixelSize(
-            width: model.map.width,
-            height: model.map.height,
+            width: map.width,
+            height: map.height,
             tileSize: tileSize,
             staggered: staggered
         )
         Canvas { context, _ in
-            let map = model.map
             for x in 0..<map.width {
                 let origin = MapCanvasMetrics.tileOrigin(x: x, y: 0, tileSize: tileSize, staggered: staggered)
                 let rect = CGRect(origin: origin, size: CGSize(width: tileSize, height: tileSize))
@@ -366,31 +468,40 @@ struct MapParchmentSurface: View {
         GeometryReader { proxy in
             Canvas { context, size in
                 let bounds = CGRect(origin: .zero, size: size)
-                context.fill(
-                    Path(bounds),
-                    with: .linearGradient(
-                        Gradient(colors: [
-                            theme.parchmentGradient[0],
-                            theme.parchmentGradient[1],
-                            theme.parchmentGradient[2]
-                        ]),
-                        startPoint: CGPoint(x: 0, y: 0),
-                        endPoint: CGPoint(x: size.width, y: size.height)
+                if theme.usesFlatParchment {
+                    context.fill(
+                        Path(bounds),
+                        with: .color(theme.parchmentGradient[0])
                     )
-                )
+                } else {
+                    context.fill(
+                        Path(bounds),
+                        with: .linearGradient(
+                            Gradient(colors: [
+                                theme.parchmentGradient[0],
+                                theme.parchmentGradient[1],
+                                theme.parchmentGradient[2]
+                            ]),
+                            startPoint: CGPoint(x: 0, y: 0),
+                            endPoint: CGPoint(x: size.width, y: size.height)
+                        )
+                    )
+                }
 
                 drawPaperGrid(context: &context, size: size)
             }
             .overlay {
-                LinearGradient(
-                    colors: [
-                        theme.parchmentHighlight.opacity(reduceTransparency ? 0.16 : 0.27),
-                        .clear,
-                        theme.parchmentShadow.opacity(reduceTransparency ? 0.07 : 0.13)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
+                if !theme.usesFlatParchment {
+                    LinearGradient(
+                        colors: [
+                            theme.parchmentHighlight.opacity(reduceTransparency ? 0.16 : 0.27),
+                            .clear,
+                            theme.parchmentShadow.opacity(reduceTransparency ? 0.07 : 0.13)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                }
             }
             .accessibilityHidden(true)
             .frame(width: proxy.size.width, height: proxy.size.height)
@@ -554,6 +665,7 @@ struct MapCanvasView: View {
     let tileSize: Double
     let topOverflow: CGFloat
     let interactionEnabled: Bool
+    let mapOverride: MapState?
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var isDragging = false
@@ -563,20 +675,25 @@ struct MapCanvasView: View {
         atlas: SpriteAtlas,
         tileSize: Double = 24,
         topOverflow: CGFloat = MapCanvasMetrics.tallSpriteOverflow,
-        interactionEnabled: Bool = true
+        interactionEnabled: Bool = true,
+        mapOverride: MapState? = nil
     ) {
         self.model = model
         self.atlas = atlas
         self.tileSize = tileSize
         self.topOverflow = topOverflow
         self.interactionEnabled = interactionEnabled
+        self.mapOverride = mapOverride
     }
 
+    private var renderMap: MapState { mapOverride ?? model.map }
+
     var body: some View {
-        let staggered = MapCanvasMetrics.isStaggeredGB(map: model.map, palette: model.renderPalette)
+        let map = renderMap
+        let staggered = MapCanvasMetrics.isStaggeredGB(map: map, palette: model.renderPalette)
         let mapSize = MapCanvasMetrics.mapPixelSize(
-            width: model.map.width,
-            height: model.map.height,
+            width: map.width,
+            height: map.height,
             tileSize: CGFloat(tileSize),
             staggered: staggered
         )
@@ -586,7 +703,7 @@ struct MapCanvasView: View {
         }
         .frame(
             width: mapSize.width,
-            height: (CGFloat(model.map.height) * tileSize) + topOverflow
+            height: (CGFloat(map.height) * tileSize) + topOverflow
         )
         .background(
             Group {
@@ -618,10 +735,10 @@ struct MapCanvasView: View {
         .onChange(of: model.selectedTool) { _, _ in refreshNativeCursor() }
         .onChange(of: model.selectedElement) { _, _ in refreshNativeCursor() }
         .onChange(of: model.pointerCell) { _, _ in refreshNativeCursor() }
-        .onChange(of: model.map.tileset) { _, _ in refreshNativeCursor() }
+        .onChange(of: renderMap.tileset) { _, _ in refreshNativeCursor() }
         .onChange(of: model.preferences.drawCursor) { _, _ in refreshNativeCursor() }
         .onDisappear { AWCursorController.shared.reset() }
-        .accessibilityLabel("Advance Wars map, \(model.map.width) by \(model.map.height) tiles")
+        .accessibilityLabel("Advance Wars map, \(map.width) by \(map.height) tiles")
         .accessibilityHint("Drag to draw with the selected tool")
     }
 
@@ -653,29 +770,34 @@ struct MapCanvasView: View {
 
     private func cell(for location: CGPoint) -> GridPoint {
         let y = Int(floor((location.y - topOverflow) / tileSize))
-        let staggered = MapCanvasMetrics.isStaggeredGB(map: model.map, palette: model.renderPalette)
+        let staggered = MapCanvasMetrics.isStaggeredGB(map: renderMap, palette: model.renderPalette)
         let rowOffset = staggered && y % 2 != 0 ? tileSize / 2 : 0
         return GridPoint(x: Int(floor((location.x - rowOffset) / tileSize)), y: y)
     }
 
     private func isValid(_ point: GridPoint) -> Bool {
-        point.x >= 0 && point.x < model.map.width && point.y >= 0 && point.y < model.map.height
+        point.x >= 0 && point.x < renderMap.width && point.y >= 0 && point.y < renderMap.height
     }
 
     private func drawMap(context: inout GraphicsContext, staggered: Bool, mapSize: CGSize) {
-        let map = model.map
+        let map = renderMap
         let tile = CGFloat(tileSize)
         let mapBounds = CGRect(origin: .zero, size: mapSize)
+        let isFamicom = map.tileset == .famicomWars
+        let emptyColor = isFamicom ? FamicomPPUPalette.black : Color.black
+        let checkerColor = isFamicom ? FamicomPPUPalette.white : Color.white
+        let selectionColor = isFamicom ? FamicomPPUPalette.black : Color.black
+        let previewColor = isFamicom ? FamicomPPUPalette.cyan : Color.accentColor
         context.clip(to: Path(mapBounds))
         // Keep transparent/unused areas true black so the four-colour Game Boy
         // palettes do not pick up the editor's dark slate backing.
-        context.fill(Path(mapBounds), with: .color(.black))
+        context.fill(Path(mapBounds), with: .color(emptyColor))
 
         for x in 0..<map.width {
             for y in 0..<map.height {
                 let rect = MapCanvasMetrics.tileRect(x: x, y: y, tileSize: tile, staggered: staggered)
                 if !map.tileset.isGameBoyWarsFamily {
-                    context.fill(MapCanvasMetrics.tilePath(in: rect, staggered: staggered), with: .color(Color.white.opacity((x + y).isMultiple(of: 2) ? 0.025 : 0.01)))
+                    context.fill(MapCanvasMetrics.tilePath(in: rect, staggered: staggered), with: .color(checkerColor.opacity((x + y).isMultiple(of: 2) ? 0.025 : 0.01)))
                 }
                 let terrain = map.backgroundElement(atX: x, y: y)
                 let background = map.backgroundDrawElement(atX: x, y: y)
@@ -751,7 +873,7 @@ struct MapCanvasView: View {
                 width: CGFloat(selection.width) * tile - 1,
                 height: CGFloat(selection.height) * tile - 1
             )
-            context.stroke(Path(border), with: .color(.black), style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+            context.stroke(Path(border), with: .color(selectionColor), style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
         }
 
         if !model.previewCells.isEmpty {
@@ -764,8 +886,8 @@ struct MapCanvasView: View {
                     inset: 1
                 )
                 let path = MapCanvasMetrics.tilePath(in: rect, staggered: staggered)
-                context.fill(path, with: .color(Color.accentColor.opacity(0.18)))
-                context.stroke(path, with: .color(Color.accentColor), style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
+                context.fill(path, with: .color(previewColor.opacity(0.18)))
+                context.stroke(path, with: .color(previewColor), style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
             }
         }
 
@@ -788,7 +910,9 @@ struct MapCanvasView: View {
               !hasTallSpriteCover(atX: x, y: y, map: map) else { return }
 
         let depthHeight = min(rect.height * 0.38, 10)
-        let shadow = Color(red: 0.02, green: 0.10, blue: 0.16)
+        let shadow = map.tileset == .famicomWars
+            ? FamicomPPUPalette.darkBlue
+            : Color(red: 0.02, green: 0.10, blue: 0.16)
         let leadingOpacity = reduceTransparency ? 0.045 : 0.085
         let trailingOpacity = reduceTransparency ? 0.012 : 0.028
         let depthRect = CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: depthHeight)
@@ -839,7 +963,7 @@ struct MapCanvasView: View {
         } else {
             drawRect = CGRect(x: rect.minX, y: rect.minY, width: rect.width * CGFloat(footprint.width), height: rect.height * CGFloat(footprint.height))
         }
-        if MapCanvasMetrics.isStaggeredGB(map: model.map, palette: model.renderPalette),
+        if MapCanvasMetrics.isStaggeredGB(map: renderMap, palette: model.renderPalette),
            footprint.width == 1, footprint.height == 1 {
             var clippedContext = context
             clippedContext.clip(to: MapCanvasMetrics.tilePath(in: rect, staggered: true))
@@ -922,7 +1046,7 @@ struct MapCanvasView: View {
         } else {
             context.stroke(
                 Path(rect.insetBy(dx: 0.5, dy: 0.5)),
-                with: .color(Color.white.opacity(0.7)),
+                with: .color((map.tileset == .famicomWars ? FamicomPPUPalette.white : Color.white).opacity(0.7)),
                 style: StrokeStyle(lineWidth: 1)
             )
         }

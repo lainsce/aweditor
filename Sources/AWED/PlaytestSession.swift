@@ -3,6 +3,16 @@ import Observation
 import SwiftUI
 import AWEDCore
 
+/// The render layer uses this transient value to show the unit at the current
+/// committed grid cell. The simulation advances one cell at a time; hiding the
+/// committed sprite while this value is active keeps the step visible without
+/// turning the movement into a continuous tween.
+struct PlaytestMovementAnimation: Equatable {
+    let unit: Element
+    let from: GridPoint
+    let to: GridPoint
+}
+
 struct PlaytestLaunch: Identifiable {
     let id = UUID()
     let map: MapState
@@ -21,6 +31,7 @@ final class PlaytestSession {
     private static let cpuActionPause: UInt64 = 90_000_000
     private static let cpuTurnPause: UInt64 = 520_000_000
     private static let cpuMoveStepPause: UInt64 = 125_000_000
+    private static let legacyMoveStepPause: UInt64 = 180_000_000
     private static let cpuRoutePause: UInt64 = 100_000_000
 
     private struct CPUTimingProfile {
@@ -49,6 +60,10 @@ final class PlaytestSession {
 
     private func scaledCPUDelay(_ base: UInt64) -> UInt64 {
         max(1, UInt64((Double(base) * cpuTimingProfile.delayScale).rounded()))
+    }
+
+    private var movementStepDelay: UInt64 {
+        scaledCPUDelay(usesTileMovementAnimation ? Self.legacyMoveStepPause : Self.cpuMoveStepPause)
     }
 
     private struct PlaytestCargo {
@@ -99,6 +114,23 @@ final class PlaytestSession {
         let fuel: Int
     }
 
+    /// Famicom Wars' small CPU should only advance toward objectives that its
+    /// unit can actually reach over the terrain.  Manhattan distance is still
+    /// useful for the newer games' broad heuristics, but it makes an NES land
+    /// unit look as though it can march through a sea gap or around an
+    /// unreachable island.  Keep the target type in the cache key because a
+    /// unit may have a different route to an enemy, a property, and an HQ.
+    private enum CPUTacticalTarget: Hashable {
+        case enemyUnit
+        case enemyProperty
+        case enemyHQ
+    }
+
+    private struct CPUTacticalDistanceKey: Hashable {
+        let unitValue: Int
+        let target: CPUTacticalTarget
+    }
+
     private struct CPUAttackKey: Hashable {
         let origin: GridPoint
         let unitValue: Int
@@ -126,6 +158,7 @@ final class PlaytestSession {
         let enemyUnits: [CPUEnemyInfo]
         let ownPropertyPoints: [GridPoint]
         let enemyPropertyPoints: [GridPoint]
+        let enemyHQPoints: [GridPoint]
         let pipeSeamPoints: [GridPoint]
         let ownCounts: [Int: Int]
         let ownDomains: (land: Int, air: Int, sea: Int)
@@ -147,15 +180,33 @@ final class PlaytestSession {
     var map: MapState {
         didSet {
             invalidateVisibilityCache()
+            // Terrain, units, and property ownership all change through the
+            // live map value. Keep the Famicom strategic distance fields tied
+            // to that snapshot instead of rebuilding them for every action.
+            cpuTacticalDistanceCache.removeAll(keepingCapacity: true)
             mapRevision &+= 1
+            // Cartridge-style movement commits one tile at a time. Defer
+            // cue evaluation until that walk finishes instead of asking the
+            // GB Wars 3 objective scan to run for every intermediate tile.
+            if !isAnimatingCPUMovement && !isAnimatingPlayerMovement {
+                invalidatePlaytestMusic()
+            }
         }
     }
     /// A scalar render revision avoids making SwiftUI compare every terrain,
     /// draw-layer, and foreground array on each CPU move just to refresh the
     /// read-only map backdrop.
     private(set) var mapRevision = 0
+    /// A lightweight state signal for playtest music. Map changes cover unit
+    /// movement, combat, captures, production, and routing; the few
+    /// render-independent objective changes (such as partial HQ capture)
+    /// bump this separately so GB Wars 3 can change cues at the right moment.
+    private(set) var musicRevision = 0
     var activeArmy: Int {
-        didSet { invalidateVisibilityCache() }
+        didSet {
+            invalidateVisibilityCache()
+            cpuTacticalDistanceCache.removeAll(keepingCapacity: true)
+        }
     }
     private(set) var playerArmy: Int?
     var turn = 1
@@ -164,11 +215,18 @@ final class PlaytestSession {
     /// movement, vision, range, and rendering decisions.
     var weatherMode: PlaytestWeather = .clear
     var weather: PlaytestWeather = .clear {
-        didSet { invalidateVisibilityCache() }
+        didSet {
+            invalidateVisibilityCache()
+            cpuTacticalDistanceCache.removeAll(keepingCapacity: true)
+        }
     }
     var fogOfWarEnabled = false {
         didSet { invalidateVisibilityCache() }
     }
+    /// The directional cursor used by the pre-DS playtest controls. This is
+    /// deliberately separate from `selectedPoint`: the cartridges let the
+    /// player browse the map before committing an action with A.
+    var cursorPoint: GridPoint?
     var selectedPoint: GridPoint?
     var reachableCells: Set<GridPoint> = []
     var attackableCells: Set<GridPoint> = []
@@ -182,6 +240,22 @@ final class PlaytestSession {
     /// unit. This is render-only state; the map changes only when the drag is
     /// released on the route's final tile.
     var playerMovementPath: [GridPoint] = []
+    /// A frame-level visual transition for the tile currently being crossed.
+    /// It is deliberately separate from the path so the Canvas can interpolate
+    /// the sprite between cells while the simulation remains tile-accurate.
+    private(set) var playerMovementAnimation: PlaytestMovementAnimation?
+    private(set) var cpuMovementAnimation: PlaytestMovementAnimation?
+    var movementAnimation: PlaytestMovementAnimation? {
+        playerMovementAnimation ?? cpuMovementAnimation
+    }
+    var isMovementAnimating: Bool {
+        movementAnimation != nil
+    }
+    /// The point at which the CPU's current non-movement action is taking
+    /// place. Movement uses `cpuMovementPath` for a tile-by-tile camera
+    /// target; this fallback keeps attacks, captures, production, and cargo
+    /// actions visible even when they complete in one state update.
+    var cpuActionPoint: GridPoint?
     var captureableCells: Set<GridPoint> = []
     var productionOptions: [PlaytestProductionOption] = []
     var movedCells: Set<GridPoint> = []
@@ -218,6 +292,16 @@ final class PlaytestSession {
     private var teamAssignments: [Int: PlaytestTeam]
     private var hasStarted = false
     private var defeatedArmies: Set<Int> = []
+    /// Famicom-era routing can use unit elimination even when an army still
+    /// has a production property. An army that starts a map with no units has
+    /// not been eliminated yet, though; remember which armies have actually
+    /// fielded a supported unit so startup cannot neutralize a perfectly valid
+    /// empty opening army.
+    @ObservationIgnored private var armiesThatHaveHadUnits: Set<Int> = []
+    /// GB Wars 3's losing cue is based on cumulative unit losses, not on a
+    /// generic material score. Keep this transient match state separate from
+    /// the map so loading/restarting a playtest never changes persisted data.
+    @ObservationIgnored private var destroyedUnitCounts: [Int: Int] = [:]
     private var cargo: [GridPoint: [PlaytestCargo]] = [:]
     /// Pipe seams are map objectives rather than units. The cartridges treat
     /// them as 99-HP structures, so keep their damage separate from unit HP
@@ -226,6 +310,8 @@ final class PlaytestSession {
     private var usedMissileSilos: Set<GridPoint> = []
     private var isSelectingSiloTarget = false
     @ObservationIgnored private var isAnimatingCPUMovement = false
+    private var isAnimatingPlayerMovement = false
+    @ObservationIgnored private var playerMovementTask: Task<Void, Never>?
     private var isExecutingCPU = false
     @ObservationIgnored private var cpuTask: Task<Void, Never>?
     @ObservationIgnored private var cpuRunID = UUID()
@@ -235,6 +321,7 @@ final class PlaytestSession {
     @ObservationIgnored private var cpuAttackableCache: [CPUAttackKey: Set<GridPoint>] = [:]
     @ObservationIgnored private var cpuNearestEnemyDistanceCache: [GridPoint: Int] = [:]
     @ObservationIgnored private var cpuNearestEnemyPropertyDistanceCache: [GridPoint: Int] = [:]
+    @ObservationIgnored private var cpuTacticalDistanceCache: [CPUTacticalDistanceKey: [GridPoint: Int]] = [:]
     @ObservationIgnored private var cpuTransportDropOffCache: [CPUTransportKey: [GridPoint]] = [:]
     @ObservationIgnored private var visibilityRevision = 0
     @ObservationIgnored private var cachedVisibilityRevision = -1
@@ -247,6 +334,10 @@ final class PlaytestSession {
     /// committed. The render layer reads this alongside the growing route so
     /// already-finished CPU actions can still use the normal spent-unit tint.
     var isCPUMovementAnimating: Bool { isAnimatingCPUMovement }
+    /// Legacy cartridges commit movement from the command rail. Expose the
+    /// transient animation state so keyboard input cannot queue another action
+    /// while the unit is still walking tile by tile.
+    var isPlayerMovementAnimating: Bool { isAnimatingPlayerMovement }
 
     init(
         map: MapState,
@@ -293,6 +384,7 @@ final class PlaytestSession {
         cpuArmies = resolvedCPUArmies
         teamAssignments = resolvedTeamAssignments
         activeArmy = initialArmy
+        cursorPoint = Self.initialCursor(in: map, army: initialArmy)
         weatherMode = initialWeather
         weather = initialWeather
         funds = Dictionary(uniqueKeysWithValues: availableArmies.map { ($0, 10_000) })
@@ -303,6 +395,7 @@ final class PlaytestSession {
                 : "Select a \(PaletteCatalog.armyName(initialArmy, tileset: map.tileset)) unit to begin."
         initializeUnitResources()
         initializePipeSeams()
+        recordUnitPresence()
         if startCPU {
             startPlaytest()
         }
@@ -366,6 +459,7 @@ final class PlaytestSession {
             (army, configuration.teams[army] ?? automaticConfiguration.team(for: army))
         })
         activeArmy = selectedPlayer ?? armies[0]
+        cursorPoint = Self.initialCursor(in: map, army: activeArmy)
         statusMessage = selectedPlayer.map {
             "Select a \(armyName($0)) unit to begin."
         } ?? "CPU vs CPU: \(armyName(activeArmy)) begins."
@@ -397,47 +491,102 @@ final class PlaytestSession {
     var activeArmyIsCPU: Bool { isCPUArmy(activeArmy) }
     var activeFunds: Int { funds[activeArmy, default: 0] }
     /// GB Wars 3 has separate winning/neutral/losing music for each side.
-    /// Keep the comparison deliberately broad and stable: funds, surviving
-    /// unit value, and property control are enough to signal the cartridge's
-    /// mood without making audio selection part of CPU planning.
+    /// Neutral is the normal state. Losing is driven by the cartridge-like
+    /// casualty comparison, while winning is reserved for a concrete route or
+    /// HQ-capture opportunity rather than a broad material-lead heuristic.
     var playtestMusicCue: PlaytestMusicCue {
         guard ruleset == .gameBoyWars3 else { return .neutral }
         if let winnerArmy {
             return winnerArmy == activeArmy ? .winning : .losing
         }
 
-        let opponents = armies.filter { isHostile($0, activeArmy) }
-        guard !opponents.isEmpty else { return .neutral }
-        let activeScore = musicScore(for: activeArmy)
-        let opponentScores = opponents.map { musicScore(for: $0) }
-        guard let strongestOpponent = opponentScores.max(),
-              let weakestOpponent = opponentScores.min() else { return .neutral }
+        guard armies.contains(activeArmy) else { return .neutral }
+        if isCloseToWinningObjective(for: activeArmy) { return .winning }
 
-        let winningMargin = max(3, Int(Double(max(1, strongestOpponent)) * 0.12))
-        let losingMargin = max(3, Int(Double(max(1, activeScore)) * 0.12))
-        if activeScore >= strongestOpponent + winningMargin { return .winning }
-        if activeScore + losingMargin <= weakestOpponent { return .losing }
-        return .neutral
+        let activeLosses = destroyedUnitCounts[activeArmy, default: 0]
+        let opposingLosses = armies
+            .filter { isHostile($0, activeArmy) }
+            .reduce(0) { result, army in
+                result + destroyedUnitCounts[army, default: 0]
+            }
+        return activeLosses > opposingLosses ? .losing : .neutral
     }
 
-    private func musicScore(for army: Int) -> Int {
-        var score = funds[army, default: 0] / 1_000
-        for x in 0..<map.width {
-            for y in 0..<map.height {
-                let point = GridPoint(x: x, y: y)
-                let unit = map.foregroundElement(atX: x, y: y)
-                if unit.isUnitNonEmpty, unit.army == army,
-                   let stats = PlaytestRulebook.stats(for: unit, ruleset: ruleset) {
-                    score += max(1, stats.cost / 1_000) * 2
-                    score += max(0, unitHealth[point, default: 100] / 10)
-                }
+    /// GB Wars 3's winning cue should only appear when a match is visibly
+    /// approaching an actual objective:
+    ///
+    /// * an Infantry/Mech can capture an opposing HQ now or on its next move;
+    /// * an HQ capture is already at least half complete; or
+    /// * an opponent is one short step from routing (no production property
+    ///   and at most two remaining units).
+    ///
+    /// This intentionally avoids treating money or raw unit value as a win
+    /// signal, keeping the neutral theme as the track heard most of the time.
+    private func isCloseToWinningObjective(for army: Int) -> Bool {
+        let opponents = armies.filter {
+            !defeatedArmies.contains($0) && isHostile(army, $0)
+        }
+        guard !opponents.isEmpty else { return false }
 
-                let building = map.backgroundElement(atX: x, y: y)
-                guard building.isBuilding, building.army == army else { continue }
-                score += building.simplified == .buildingHQ ? 8 : 3
+        for opponent in opponents {
+            let enemyHQs = allMapPoints().filter { point in
+                let building = map.backgroundElement(atX: point.x, y: point.y)
+                return building.simplified == .buildingHQ && building.army == opponent
+            }
+
+            if enemyHQs.contains(where: { hq in
+                if captureProgress[hq, default: 0] >= 10,
+                   let unit = unit(at: hq),
+                   unit.army == army,
+                   PlaytestRulebook.stats(for: unit, ruleset: ruleset)?.canCapture == true {
+                    return true
+                }
+                return captureUnitCanReach(hq: hq, for: army)
+            }) {
+                return true
+            }
+
+            let remainingUnits = unitCount(for: opponent)
+            let productionProperties = productionPropertyCount(for: opponent)
+            if productionProperties == 0 && remainingUnits <= 2 {
+                return true
+            }
+            if productionProperties <= 1 && remainingUnits <= 1 {
+                return true
             }
         }
-        return score
+        return false
+    }
+
+    private func captureUnitCanReach(hq: GridPoint, for army: Int) -> Bool {
+        for point in allMapPoints() {
+            guard let unit = unit(at: point),
+                  unit.army == army,
+                  let stats = PlaytestRulebook.stats(for: unit, ruleset: ruleset),
+                  stats.canCapture else { continue }
+
+            if point == hq { return true }
+            guard !movedCells.contains(point) else { continue }
+            guard distance(from: point, to: hq) <= stats.move else { continue }
+            if movementPaths(from: point, unit: unit, stats: stats)[hq] != nil {
+                return true
+            }
+        }
+        return false
+    }
+
+    private func productionPropertyCount(for army: Int) -> Int {
+        allMapPoints().reduce(into: 0) { count, point in
+            let building = map.backgroundElement(atX: point.x, y: point.y)
+            guard building.isBuilding, building.army == army else { return }
+            if !PlaytestRulebook.productionOptions(
+                for: building,
+                ruleset: ruleset,
+                tileset: map.tileset
+            ).isEmpty {
+                count += 1
+            }
+        }
     }
 
     /// GB Wars uses ordinary four-sided cells with an alternating horizontal
@@ -518,6 +667,20 @@ final class PlaytestSession {
         return true
     }
 
+    var selectedUnitCanToggleDepth: Bool {
+        guard let selectedPoint, selectedUnitIsSubmarine else { return false }
+        return !movedCells.contains(selectedPoint)
+    }
+
+    var selectedUnitCanToggleStealth: Bool {
+        guard let selectedPoint, selectedUnitIsStealth else { return false }
+        return !movedCells.contains(selectedPoint)
+    }
+
+    var selectedUnitCanWait: Bool {
+        selectedPoint != nil && selectedUnitName != nil
+    }
+
     var selectedUnitCanUseFlare: Bool {
         guard ruleset == .daysOfRuin,
               let selectedPoint,
@@ -561,6 +724,21 @@ final class PlaytestSession {
                     _ = result.setBackground(building.changedArmy(AWConstants.armyNeutral), atX: x, y: y, check: false)
                 }
             }
+        }
+        return result
+    }
+
+    /// The board backdrop hides the sprite that is being animated by the
+    /// interaction layer. Both endpoints are removed because the simulation
+    /// commits each step before the visual transition finishes; the transient
+    /// Canvas sprite is then the single visible representation of that unit.
+    var displayMapForPlaytest: MapState {
+        var result = displayMap
+        guard let animation = movementAnimation else { return result }
+
+        for point in Set([animation.from, animation.to]) {
+            guard result.foregroundElement(atX: point.x, y: point.y) == animation.unit else { continue }
+            _ = result.setForeground(.unitEmpty, atX: point.x, y: point.y)
         }
         return result
     }
@@ -685,6 +863,8 @@ final class PlaytestSession {
         stopCPU()
         map = sourceMap
         activeArmy = playerArmy ?? armies.first ?? AWConstants.armyOrangeStar
+        cursorPoint = Self.initialCursor(in: map, army: activeArmy)
+        cpuActionPoint = nil
         turn = 1
         weatherMode = initialWeather
         weather = initialWeather
@@ -692,6 +872,9 @@ final class PlaytestSession {
         funds = Dictionary(uniqueKeysWithValues: armies.map { ($0, 10_000) })
         initializeUnitResources()
         initializePipeSeams()
+        armiesThatHaveHadUnits.removeAll()
+        destroyedUnitCounts.removeAll()
+        recordUnitPresence()
         captureProgress.removeAll()
         cargo.removeAll()
         selectedCargoIndex = 0
@@ -720,11 +903,19 @@ final class PlaytestSession {
         cpuTask?.cancel()
         cpuTask = nil
         isExecutingCPU = false
+        cpuActionPoint = nil
         clearCPUMovementPreview()
+        playerMovementTask?.cancel()
+        playerMovementTask = nil
+        isAnimatingPlayerMovement = false
+        playerMovementPath.removeAll(keepingCapacity: true)
+        playerMovementAnimation = nil
+        cpuMovementAnimation = nil
     }
 
     func handleTap(_ point: GridPoint) {
         guard isValid(point), !isGameOver else { return }
+        cursorPoint = point
         guard !isCPUArmy(activeArmy) else {
             statusMessage = "\(activeArmyName) is controlled by the CPU."
             return
@@ -842,12 +1033,14 @@ final class PlaytestSession {
 
     func endTurn() {
         guard !isGameOver else { return }
+        guard !isAnimatingPlayerMovement else { return }
         guard !armies.isEmpty else {
             statusMessage = "No playable armies are placed on this map yet."
             return
         }
 
         let endingArmy = activeArmy
+        cpuActionPoint = nil
         let routedArmies = resolveRouting()
         guard winnerArmy == nil else { return }
         guard let nextArmy = nextSurvivingArmy(after: endingArmy) else {
@@ -862,6 +1055,7 @@ final class PlaytestSession {
             advanceRandomWeatherIfNeeded()
         }
         activeArmy = nextArmy
+        cursorPoint = Self.initialCursor(in: map, army: activeArmy)
         movedCells.removeAll()
         clearSelection()
         let fuelLossCount = processTurnStart(for: activeArmy)
@@ -907,6 +1101,7 @@ final class PlaytestSession {
         movedCells.insert(point)
         if progress < 20 {
             captureProgress[point] = progress
+            invalidatePlaytestMusic()
             clearSelection()
             statusMessage = "Capturing \(PaletteCatalog.label(for: building, tileset: map.tileset)): \(progress)/20. Continue next turn."
             return
@@ -1011,6 +1206,8 @@ final class PlaytestSession {
             for y in max(0, source.y - 1)...min(map.height - 1, source.y + 1) {
                 let point = GridPoint(x: x, y: y)
                 guard let target = unit(at: point), isHostile(target.army, activeArmy) else { continue }
+                recordDestroyedUnit(target)
+                recordDestroyedCargo(at: point)
                 _ = candidate.setForeground(.unitEmpty, atX: x, y: y)
                 unitHealth.removeValue(forKey: point)
                 unitFuel.removeValue(forKey: point)
@@ -1021,6 +1218,8 @@ final class PlaytestSession {
                 destroyed += 1
             }
         }
+        recordDestroyedUnit(unit(at: source) ?? .unitEmpty)
+        recordDestroyedCargo(at: source)
         _ = candidate.setForeground(.unitEmpty, atX: source.x, y: source.y)
         map = candidate
         unitHealth.removeValue(forKey: source)
@@ -1100,8 +1299,10 @@ final class PlaytestSession {
               !movedCells.contains(point),
               activeFunds >= option.cost,
               unitCount(for: activeArmy) < PlaytestRulebook.unitCap(for: ruleset),
-              productionIsWithinHQArea(point),
               PlaytestRulebook.productionOptions(for: building, ruleset: ruleset, tileset: map.tileset).contains(where: { $0.id == option.id }) else { return false }
+        // Famicom/Super Famicom's local HQ-radius rule belongs to the CPU
+        // planner. Human production remains available at any owned,
+        // production-capable property, matching the visible cartridge menu.
         return map.allowPlacement(option.element.changedArmy(activeArmy), atX: point.x, y: point.y)
     }
 
@@ -1166,7 +1367,8 @@ final class PlaytestSession {
         } else if activeArmyIsCPU {
             statusMessage = "\(PaletteCatalog.label(for: unit, tileset: map.tileset)) is moving."
         } else {
-            statusMessage = "Move to a blue tile, attack a red target, load or unload cargo, or capture the highlighted property."
+            let movementHint = ruleset.showsMovementAvailabilityBadge ? "an M marker" : "a blue tile"
+            statusMessage = "Move to \(movementHint), attack a red target, load or unload cargo, or capture the highlighted property."
         }
     }
 
@@ -1310,6 +1512,11 @@ final class PlaytestSession {
         cachedVisibleCells.removeAll(keepingCapacity: true)
     }
 
+    private func invalidatePlaytestMusic() {
+        guard ruleset == .gameBoyWars3 else { return }
+        musicRevision &+= 1
+    }
+
     /// Map dimensions are stable while units move. Reuse the coordinate list
     /// needed by visibility calculations instead of allocating a new nested
     /// array every time the render-only map snapshot is requested.
@@ -1330,6 +1537,15 @@ final class PlaytestSession {
         guard occupant.isUnitNonEmpty, isHostile(occupant.army, unit.army) else { return false }
         guard isFogOfWarActive || submergedUnits.contains(point) || stealthedUnits.contains(point) else { return false }
         return !isVisible(point)
+    }
+
+    private var usesTileMovementAnimation: Bool {
+        switch ruleset {
+        case .famicomWars, .gameBoyWars, .gameBoyWars2, .gameBoyWars3:
+            true
+        case .superFamicomWars, .advanceWars, .advanceWars2, .dualStrike, .daysOfRuin:
+            false
+        }
     }
 
     private func revealAmbush(
@@ -1406,6 +1622,87 @@ final class PlaytestSession {
     }
 
     private func moveSelectedUnit(to destination: GridPoint) {
+        if usesTileMovementAnimation,
+           !activeArmyIsCPU,
+           !isAnimatingCPUMovement,
+           !isAnimatingPlayerMovement {
+            beginTileMovement(to: destination)
+            return
+        }
+
+        moveSelectedUnitSynchronously(to: destination)
+    }
+
+    /// Starts the cartridge-style walk used by Famicom Wars and GB Wars 1–3.
+    /// The route is committed one tile at a time so both the unit sprite and
+    /// the camera can advance in lockstep instead of jumping to the endpoint.
+    private func beginTileMovement(to destination: GridPoint) {
+        guard let origin = selectedPoint,
+              let unit = unit(at: origin),
+              let stats = PlaytestRulebook.stats(for: unit, ruleset: ruleset) else {
+            clearSelection()
+            return
+        }
+
+        let paths = movementPaths(from: origin, unit: unit, stats: stats)
+        guard paths[destination] != nil,
+              let route = movementRoute(from: origin, to: destination, paths: paths),
+              route.count > 1 else {
+            statusMessage = "That unit cannot move there."
+            return
+        }
+
+        let destinationUnit = map.foregroundElement(atX: destination.x, y: destination.y)
+        let finalTileIsOccupied = destinationUnit.isUnitNonEmpty
+        let animatedRoute = finalTileIsOccupied ? Array(route.dropLast()) : route
+        playerMovementPath = [origin]
+        isAnimatingPlayerMovement = true
+
+        playerMovementTask?.cancel()
+        playerMovementTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            defer {
+                self.isAnimatingPlayerMovement = false
+                self.playerMovementTask = nil
+                self.playerMovementPath.removeAll(keepingCapacity: true)
+                self.playerMovementAnimation = nil
+                self.invalidatePlaytestMusic()
+            }
+
+            for point in animatedRoute.dropFirst() {
+                guard !Task.isCancelled else { return }
+                guard self.map.foregroundElement(atX: point.x, y: point.y) == .unitEmpty else { return }
+                let from = self.selectedPoint ?? origin
+                let stepDelay = self.movementStepDelay
+                self.playerMovementAnimation = PlaytestMovementAnimation(
+                    unit: unit,
+                    from: from,
+                    to: point
+                )
+                self.moveSelectedUnit(to: point)
+                guard self.selectedPoint == point else { return }
+                self.playerMovementPath.append(point)
+                await Task.yield()
+                try? await Task.sleep(nanoseconds: stepDelay)
+            }
+
+            guard !Task.isCancelled else { return }
+            self.playerMovementAnimation = nil
+            self.isAnimatingPlayerMovement = false
+
+            if finalTileIsOccupied {
+                // Show the final destination as the camera's next tile before
+                // resolving a load, join, or hidden-enemy ambush there.
+                self.playerMovementPath.append(destination)
+                self.moveSelectedUnit(to: destination)
+            } else if let finalUnit = self.unit(at: destination),
+                      let finalStats = PlaytestRulebook.stats(for: finalUnit, ruleset: self.ruleset) {
+                self.configurePostMoveActions(for: finalUnit, stats: finalStats, at: destination)
+            }
+        }
+    }
+
+    private func moveSelectedUnitSynchronously(to destination: GridPoint) {
         guard let origin = selectedPoint,
               let unit = unit(at: origin),
               let stats = PlaytestRulebook.stats(for: unit, ruleset: ruleset) else {
@@ -1510,10 +1807,10 @@ final class PlaytestSession {
         }
         movedCells.remove(origin)
         movedCells.insert(destination)
-        if isAnimatingCPUMovement {
-            // Keep the unit selected while the CPU walks it through the
-            // route. Post-move actions are resolved only after the final
-            // tile, so the intermediate sprite updates remain visible.
+        if isAnimatingCPUMovement || isAnimatingPlayerMovement {
+            // Keep the unit selected while a tile-by-tile walk is in progress.
+            // Post-move actions are resolved only after the final tile, so the
+            // intermediate sprite updates remain visible.
             selectedPoint = destination
             reachableCells.removeAll()
             attackableCells.removeAll()
@@ -1620,6 +1917,8 @@ final class PlaytestSession {
         var defenderDestroyed = false
         let remainingDefenderHealth = defenderHealth - damage
         if remainingDefenderHealth <= 0 {
+            recordDestroyedUnit(defender)
+            recordDestroyedCargo(at: destination)
             _ = candidate.setForeground(.unitEmpty, atX: destination.x, y: destination.y)
             unitHealth.removeValue(forKey: destination)
             unitFuel.removeValue(forKey: destination)
@@ -1660,6 +1959,8 @@ final class PlaytestSession {
             }
             let remainingAttackerHealth = unitHealth[origin, default: 100] - counterDamage
             if remainingAttackerHealth <= 0 {
+                recordDestroyedUnit(attacker)
+                recordDestroyedCargo(at: origin)
                 _ = candidate.setForeground(.unitEmpty, atX: origin.x, y: origin.y)
                 unitHealth.removeValue(forKey: origin)
                 unitFuel.removeValue(forKey: origin)
@@ -2336,6 +2637,9 @@ final class PlaytestSession {
         guard !destroyed.isEmpty else { return 0 }
         var candidate = map
         for point in destroyed {
+            let destroyedUnit = unit(at: point) ?? .unitEmpty
+            recordDestroyedUnit(destroyedUnit)
+            recordDestroyedCargo(at: point)
             _ = candidate.setForeground(.unitEmpty, atX: point.x, y: point.y)
             unitHealth.removeValue(forKey: point)
             unitFuel.removeValue(forKey: point)
@@ -2356,21 +2660,39 @@ final class PlaytestSession {
         return consumeDailyFuel(for: army)
     }
 
-    /// An army is routed only when it has neither units nor a property that
-    /// can produce units. This keeps property-only starting positions playable
-    /// while still making a completely eliminated army surrender every
-    /// remaining property; HQs become neutral cities so the map keeps a useful
-    /// property tile instead of retaining a defeated HQ sprite.
+    /// Older Wars cartridges end the battle as soon as an army has no units
+    /// left, even if one of its bases is still open. Later rulesets retain the
+    /// more forgiving property-only state until that production network is
+    /// gone. In either case a defeated army surrenders every property; HQs
+    /// become neutral cities so the map keeps a useful property tile instead
+    /// of retaining a defeated HQ sprite.
     @discardableResult
     private func resolveRouting() -> [Int] {
         guard winnerArmy == nil else { return [] }
 
+        // Record this before checking for an empty army. This catches units
+        // placed by the editor, produced during the match, or carried by a
+        // transport before their eventual destruction.
+        recordUnitPresence()
         let candidates = survivingArmies
         guard !candidates.isEmpty else { return [] }
+
+        // Super Famicom Wars has one additional victory condition: a side
+        // controlling at least 75% of the map's capturable properties wins
+        // by Domination. Check it alongside routing so a capture resolves the
+        // match immediately, without changing the victory rules of the other
+        // cartridges.
+        if resolveDominationVictory(for: candidates) {
+            return []
+        }
         var routed: [Int] = []
 
         for army in candidates {
-            let hasRouted = !hasUnits(for: army) && !hasProductionProperty(for: army)
+            let hasNoUnits = !hasUnits(for: army)
+            let hasNoProduction = !hasProductionProperty(for: army)
+            let hasRouted = hasNoUnits &&
+                (hasNoProduction ||
+                    (usesUnitEliminationVictory && armiesThatHaveHadUnits.contains(army)))
             guard hasRouted else { continue }
             neutralizeProperties(of: army)
             defeatedArmies.insert(army)
@@ -2399,6 +2721,73 @@ final class PlaytestSession {
         return routed
     }
 
+    /// Resolves the Super Famicom Wars property-control victory condition.
+    /// Allied armies share their property count because the playtest setup
+    /// treats an alliance as one side for all victory checks. The denominator
+    /// is every capturable property currently on the map, including neutral
+    /// properties and HQs; neutralizing a defeated army therefore cannot make
+    /// the threshold easier by removing a property from the map.
+    private func resolveDominationVictory(for candidates: [Int]) -> Bool {
+        guard ruleset == .superFamicomWars else { return false }
+
+        let candidateTeams = Set(candidates.map { team(for: $0) })
+        guard candidates.count > 1, candidateTeams.count > 1 else { return false }
+
+        let properties = allMapPoints().compactMap { point -> Element? in
+            let building = map.backgroundElement(atX: point.x, y: point.y)
+            return PlaytestRulebook.isCapturableBuilding(building, ruleset: ruleset)
+                ? building
+                : nil
+        }
+        guard !properties.isEmpty else { return false }
+
+        let totalProperties = properties.count
+        let activeTeam = team(for: activeArmy)
+        var evaluatedTeams: Set<PlaytestTeam> = []
+        var winningTeam: PlaytestTeam?
+        var winningCount = 0
+
+        for army in candidates {
+            let candidateTeam = team(for: army)
+            guard evaluatedTeams.insert(candidateTeam).inserted else { continue }
+
+            let ownedProperties = properties.reduce(into: 0) { count, building in
+                guard building.army != AWConstants.armyNeutral,
+                      candidates.contains(building.army),
+                      team(for: building.army) == candidateTeam else { return }
+                count += 1
+            }
+            guard ownedProperties * 100 >= totalProperties * 75 else { continue }
+
+            // Prefer the active team when two sides somehow qualify on the
+            // same map state; otherwise keep the first qualifying side in the
+            // stable army order used by the playtest session.
+            if ownedProperties > winningCount ||
+                (ownedProperties == winningCount && candidateTeam == activeTeam && winningTeam != activeTeam) {
+                winningTeam = candidateTeam
+                winningCount = ownedProperties
+            }
+        }
+
+        guard let winningTeam,
+              let winner = candidates.first(where: { team(for: $0) == winningTeam }) else {
+            return false
+        }
+
+        winnerArmy = winner
+        statusMessage = "\(armyName(winner)) wins by Domination (\(winningCount)/\(totalProperties) properties)."
+        return true
+    }
+
+    private var usesUnitEliminationVictory: Bool {
+        switch ruleset {
+        case .famicomWars, .superFamicomWars:
+            return true
+        default:
+            return false
+        }
+    }
+
     private func hasUnits(for army: Int) -> Bool {
         for x in 0..<map.width {
             for y in 0..<map.height {
@@ -2411,6 +2800,34 @@ final class PlaytestSession {
             $0.unit.army == army && PlaytestRulebook.stats(for: $0.unit, ruleset: ruleset) != nil
         }) { return true }
         return false
+    }
+
+    private func recordUnitPresence() {
+        for x in 0..<map.width {
+            for y in 0..<map.height {
+                let unit = map.foregroundElement(atX: x, y: y)
+                guard unit.isUnitNonEmpty,
+                      PlaytestRulebook.stats(for: unit, ruleset: ruleset) != nil else { continue }
+                armiesThatHaveHadUnits.insert(unit.army)
+            }
+        }
+
+        for payloads in cargo.values {
+            for payload in payloads where PlaytestRulebook.stats(for: payload.unit, ruleset: ruleset) != nil {
+                armiesThatHaveHadUnits.insert(payload.unit.army)
+            }
+        }
+    }
+
+    private func recordDestroyedUnit(_ unit: Element) {
+        guard unit.isUnitNonEmpty else { return }
+        destroyedUnitCounts[unit.army, default: 0] += 1
+    }
+
+    private func recordDestroyedCargo(at point: GridPoint) {
+        for payload in cargo[point, default: []] {
+            recordDestroyedUnit(payload.unit)
+        }
     }
 
     private func unitCount(for army: Int) -> Int {
@@ -2438,7 +2855,17 @@ final class PlaytestSession {
             for y in 0..<map.height {
                 let building = map.backgroundElement(atX: x, y: y)
                 guard building.isBuilding, building.army == army else { continue }
-                if !PlaytestRulebook.productionOptions(for: building, ruleset: ruleset, tileset: map.tileset).isEmpty { return true }
+                // Routing asks whether the army still owns a property that
+                // can produce units in this ruleset. It must not depend on
+                // the tile being empty right now, or on the CPU's local HQ
+                // build-radius heuristic: a unit can move off the property
+                // and the CPU restriction is enforced separately by
+                // `cpuCanProduce`/`productionIsWithinHQArea`.
+                if !PlaytestRulebook.productionOptions(
+                    for: building,
+                    ruleset: ruleset,
+                    tileset: map.tileset
+                ).isEmpty { return true }
             }
         }
         return false
@@ -2573,6 +3000,11 @@ final class PlaytestSession {
 
     private func prepareCPUMovementPreview(for action: CPUAction) {
         clearCPUMovementPreview()
+        cpuActionPoint = actionFocusPoint(for: action)
+        // The cartridge cursor is the CPU's visible hand. Put it on the
+        // action's focus before the preview pause so captures, attacks,
+        // production, and movement all read as deliberate cursor actions.
+        cursorPoint = cpuActionPoint
 
         guard case let .move(origin, _) = action,
               let unit = unit(at: origin),
@@ -2583,8 +3015,21 @@ final class PlaytestSession {
         cpuMovementPath = [origin]
     }
 
+    private func actionFocusPoint(for action: CPUAction) -> GridPoint {
+        switch action {
+        case let .attack(_, target), let .capture(target), let .build(target, _),
+             let .resupply(target), let .detonate(target), let .flare(target),
+             let .stealth(target), let .wait(target):
+            return target
+        case let .move(origin, _), let .join(origin, _), let .load(origin, _),
+             let .unload(origin, _):
+            return origin
+        }
+    }
+
     private func clearCPUMovementPreview() {
         cpuMovementPath.removeAll(keepingCapacity: true)
+        cpuMovementAnimation = nil
     }
 
     private func makeCPUPlanningSnapshot() -> CPUPlanningSnapshot {
@@ -2593,6 +3038,7 @@ final class PlaytestSession {
         var enemyUnits: [CPUEnemyInfo] = []
         var ownPropertyPoints: [GridPoint] = []
         var enemyPropertyPoints: [GridPoint] = []
+        var enemyHQPoints: [GridPoint] = []
         var pipeSeamPoints: [GridPoint] = []
         var ownCounts: [Int: Int] = [:]
         var ownDomains = (land: 0, air: 0, sea: 0)
@@ -2623,6 +3069,9 @@ final class PlaytestSession {
             }
 
             let building = map.backgroundElement(atX: point.x, y: point.y)
+            if building.simplified == .buildingHQ, isHostile(building.army, activeArmy) {
+                enemyHQPoints.append(point)
+            }
             if building.isBuilding, building.army == activeArmy {
                 ownPropertyPoints.append(point)
             } else if PlaytestRulebook.isCapturableBuilding(building, ruleset: ruleset),
@@ -2641,6 +3090,7 @@ final class PlaytestSession {
             enemyUnits: enemyUnits,
             ownPropertyPoints: ownPropertyPoints,
             enemyPropertyPoints: enemyPropertyPoints,
+            enemyHQPoints: enemyHQPoints,
             pipeSeamPoints: pipeSeamPoints,
             ownCounts: ownCounts,
             ownDomains: ownDomains,
@@ -2699,10 +3149,10 @@ final class PlaytestSession {
             if ruleset == .daysOfRuin, unit.simplified == .unitOozium {
                 return CPUPlan(score: 120, action: .flare(point: point))
             }
-            let capturePlan = captureableCells.first.map {
+            let capturePlan = sortedGridPoints(captureableCells).first.map {
                 CPUPlan(score: captureScore(at: $0), action: .capture(point: $0))
             }
-            let attackPlan: CPUPlan? = attackableCells.max(
+            let attackPlan: CPUPlan? = sortedGridPoints(attackableCells).max(
                 by: { attackScore(from: point, to: $0) < attackScore(from: point, to: $1) }
             ).map {
                 CPUPlan(score: attackScore(from: point, to: $0), action: .attack(origin: point, target: $0))
@@ -2712,10 +3162,10 @@ final class PlaytestSession {
             } ?? CPUPlan(score: -10, action: .wait(point: point))
         }
 
-        let capturePlan = captureableCells.first.map {
+        let capturePlan = sortedGridPoints(captureableCells).first.map {
             CPUPlan(score: captureScore(at: $0), action: .capture(point: $0))
         }
-        let attackPlan: CPUPlan? = attackableCells.max(
+        let attackPlan: CPUPlan? = sortedGridPoints(attackableCells).max(
             by: { attackScore(from: point, to: $0) < attackScore(from: point, to: $1) }
         ).map {
             CPUPlan(score: attackScore(from: point, to: $0), action: .attack(origin: point, target: $0))
@@ -2725,25 +3175,25 @@ final class PlaytestSession {
         }
 
         let capacity = PlaytestRulebook.transportCapacity(for: unit, ruleset: ruleset)
-        if capacity > 0, let cargoPoint = loadableCells.first {
+        if capacity > 0, let cargoPoint = sortedGridPoints(loadableCells).first {
             return CPUPlan(
                 score: 150 * policy.transportActionMultiplier,
                 action: .load(transport: point, cargo: cargoPoint)
             )
         }
-        if capacity == 0, !movedCells.contains(point), let transportPoint = loadableCells.first {
+        if capacity == 0, !movedCells.contains(point), let transportPoint = sortedGridPoints(loadableCells).first {
             return CPUPlan(
                 score: 145 * policy.transportActionMultiplier,
                 action: .move(origin: point, destination: transportPoint)
             )
         }
-        if let destination = unloadableCells.first {
+        if let destination = sortedGridPoints(unloadableCells).first {
             return CPUPlan(
                 score: 140 * policy.transportActionMultiplier,
                 action: .unload(transport: point, destination: destination)
             )
         }
-        if let destination = joinableCells.first {
+        if let destination = sortedGridPoints(joinableCells).first {
             return CPUPlan(score: 95, action: .join(origin: point, destination: destination))
         }
         if !refuelableCells.isEmpty {
@@ -2789,7 +3239,7 @@ final class PlaytestSession {
             if let transport = unit(at: point) {
                 updateTransportActions(for: transport, at: point)
             }
-            resupplySelectedTransport(target: refuelableCells.first)
+            resupplySelectedTransport(target: sortedGridPoints(refuelableCells).first)
         case let .detonate(point):
             selectedPoint = point
             detonateBlackBomb()
@@ -2821,9 +3271,11 @@ final class PlaytestSession {
     /// planned destination. The existing movement routine still owns all
     /// legality, fuel, cargo, and post-move-action rules.
     private func executeCPUMove(from origin: GridPoint, to destination: GridPoint) async {
+        cursorPoint = origin
         guard let unit = unit(at: origin),
               let stats = PlaytestRulebook.stats(for: unit, ruleset: ruleset) else {
             selectUnit(at: origin)
+            cursorPoint = destination
             moveSelectedUnit(to: destination)
             return
         }
@@ -2831,6 +3283,7 @@ final class PlaytestSession {
         let paths = movementPaths(from: origin, unit: unit, stats: stats)
         guard paths[destination] != nil else {
             selectUnit(at: origin)
+            cursorPoint = destination
             moveSelectedUnit(to: destination)
             return
         }
@@ -2840,6 +3293,7 @@ final class PlaytestSession {
         while current != origin {
             guard let path = paths[current], let previous = path.previous else {
                 selectUnit(at: origin)
+                cursorPoint = destination
                 moveSelectedUnit(to: destination)
                 return
             }
@@ -2850,7 +3304,16 @@ final class PlaytestSession {
 
         cpuMovementPath = [origin]
         isAnimatingCPUMovement = true
-        defer { isAnimatingCPUMovement = false }
+        cpuMovementAnimation = PlaytestMovementAnimation(
+            unit: unit,
+            from: origin,
+            to: origin
+        )
+        defer {
+            isAnimatingCPUMovement = false
+            cpuMovementAnimation = nil
+            invalidatePlaytestMusic()
+        }
         selectUnit(at: origin)
         let finalTileIsOccupied = map.foregroundElement(atX: destination.x, y: destination.y).isUnitNonEmpty
         let animatedRoute = finalTileIsOccupied ? Array(route.dropLast()) : route
@@ -2867,12 +3330,28 @@ final class PlaytestSession {
                 break
             }
 
+            let from = selectedPoint ?? origin
+            let stepDelay = movementStepDelay
+            cpuMovementAnimation = PlaytestMovementAnimation(
+                unit: unit,
+                from: from,
+                to: point
+            )
+            cursorPoint = point
             moveSelectedUnit(to: point)
+            guard selectedPoint == point else { return }
+            // Keep the cursor assignment after the map mutation as well. The
+            // map setter can trigger a render before the movement state has
+            // been observed, so this guarantees the frame follows the tile
+            // that was just committed.
+            cursorPoint = point
             cpuMovementPath.append(point)
-            try? await Task.sleep(nanoseconds: scaledCPUDelay(Self.cpuMoveStepPause))
+            await Task.yield()
+            try? await Task.sleep(nanoseconds: stepDelay)
         }
 
         guard !Task.isCancelled else { return }
+        cpuMovementAnimation = nil
         isAnimatingCPUMovement = false
 
         if finalTileIsOccupied || stoppedAtOccupiedIntermediate {
@@ -2881,9 +3360,11 @@ final class PlaytestSession {
             // Still show the complete planned route before resolving that
             // endpoint, keeping every segment tile-bound.
             cpuMovementPath = [origin] + route
+            cursorPoint = destination
             try? await Task.sleep(nanoseconds: scaledCPUDelay(Self.cpuRoutePause))
             moveSelectedUnit(to: destination)
         } else if let finalPoint = animatedRoute.last {
+            cursorPoint = finalPoint
             configurePostMoveActions(for: unit, stats: stats, at: finalPoint)
         }
     }
@@ -2926,7 +3407,7 @@ final class PlaytestSession {
         var plans: [CPUPlan] = []
         for origin in cpuUnitPoints() where !movedCells.contains(origin) {
             let unit = map.foregroundElement(atX: origin.x, y: origin.y)
-            for target in cpuAttackableCells(from: origin, unit: unit) {
+            for target in sortedGridPoints(cpuAttackableCells(from: origin, unit: unit)) {
                 plans.append(CPUPlan(score: attackScore(from: origin, to: target), action: .attack(origin: origin, target: target)))
             }
         }
@@ -3103,8 +3584,11 @@ final class PlaytestSession {
         // that floor high enough that the CPU does not pass on every attack
         // just because a safer build or move scored similarly.
         let attackPriority = policy.attackBias
+        let hqTargetBonus = ruleset == .famicomWars && targetTerrain.simplified == .buildingHQ
+            ? 500.0
+            : 0
         return attackPriority + lethalBonus + targetValue + damageValue * indirectMultiplier + healthValue
-            + transportTargetBonus
+            + transportTargetBonus + hqTargetBonus
             - terrainPenalty - distancePenalty - retaliationPenalty - threatPenalty
     }
 
@@ -3358,6 +3842,37 @@ final class PlaytestSession {
             return policy.supplyActionMultiplier * (18 + min(36, landThreat * 5))
         }
 
+        if ruleset == .famicomWars {
+            // Bean Island's compact opening is a capture race: fill the local
+            // HQ/city production ring with Infantry first, then spend the
+            // growing income on Tanks. Heavy indirects are a response to an
+            // established front, not an opening build.
+            let openingCaptureTarget = min(5, max(3, enemyPropertyCount / 3))
+            switch type {
+            case .unitInfantry:
+                guard captureNeed > 0 else { return -65 }
+                return 95 + min(60, Double(captureNeed) * 13)
+                    - Double(ownCounts[Element.unitInfantry.value, default: 0]) * 4
+            case .unitTank:
+                guard captureUnits >= openingCaptureTarget else { return -35 }
+                return 76 + min(30, landThreat * 4)
+            case .unitMech:
+                return captureNeed > 0 && captureUnits < openingCaptureTarget ? 25 : -30
+            case .unitAPC:
+                return captureUnits >= openingCaptureTarget ? 18 : -15
+            case .unitArtillery:
+                return captureUnits >= openingCaptureTarget + 1 ? 18 + min(24, landThreat * 3) : -28
+            case .unitRocket, .unitMissile, .unitMDTank:
+                return captureUnits >= openingCaptureTarget + 2 ? 12 + min(24, landThreat * 3) : -45
+            case .unitAntiAir:
+                return airThreat > 0 ? 30 + min(30, airThreat * 8) : -20
+            case .unitRecon:
+                return 12
+            default:
+                break
+            }
+        }
+
         switch type {
         case .unitInfantry:
             // One or two infantry are useful for a capture plan. Once that
@@ -3445,7 +3960,8 @@ final class PlaytestSession {
             let unit = map.foregroundElement(atX: origin.x, y: origin.y)
             guard let stats = PlaytestRulebook.stats(for: unit, ruleset: ruleset) else { continue }
             let paths = cpuMovementPaths(from: origin, unit: unit, stats: stats)
-            for (destination, path) in paths {
+            for destination in paths.keys.sorted(by: gridPointOrder) {
+                guard let path = paths[destination] else { continue }
                 let occupant = map.foregroundElement(atX: destination.x, y: destination.y)
                 guard occupant == .unitEmpty ||
                         canLoad(unit, into: occupant, at: destination) ||
@@ -3466,17 +3982,138 @@ final class PlaytestSession {
         return plans
     }
 
+    private var usesFamicomTacticalPlanning: Bool {
+        ruleset == .famicomWars
+    }
+
+    /// Keep a Famicom CPU's direct-objective horizon deliberately short. The
+    /// original NES maps are compact, so a unit that can make contact in two
+    /// turns should commit; a unit that is many turns away should not receive
+    /// a giant score merely because its HQ is on the other side of a large
+    /// editor map.
+    private func famicomTacticalHorizon(for stats: PlaytestUnitStats) -> Int {
+        max(6, (stats.move * 2) + max(1, stats.maxRange))
+    }
+
+    /// Returns movement-point distance to one of the current Famicom
+    /// objectives. This is a reverse flood fill over terrain, not a search for
+    /// a legal turn: foreground units are ignored as blockers, while each
+    /// unit's movement table and terrain placement rules remain authoritative.
+    /// Caching one map per unit kind and objective keeps the per-action planner
+    /// cheap even on a large custom map.
+    private func cpuTacticalDistance(
+        for unit: Element,
+        target: CPUTacticalTarget,
+        from point: GridPoint
+    ) -> Int {
+        guard usesFamicomTacticalPlanning else { return .max }
+        let key = CPUTacticalDistanceKey(unitValue: unit.simplified.value, target: target)
+        if let cached = cpuTacticalDistanceCache[key] {
+            return cached[point] ?? .max
+        }
+
+        let distances = cpuTacticalDistanceMap(for: unit, target: target)
+        cpuTacticalDistanceCache[key] = distances
+        return distances[point] ?? .max
+    }
+
+    private func cpuTacticalDistanceMap(
+        for unit: Element,
+        target: CPUTacticalTarget
+    ) -> [GridPoint: Int] {
+        guard PlaytestRulebook.stats(for: unit, ruleset: ruleset) != nil else { return [:] }
+
+        var distances: [GridPoint: Int] = [:]
+        var frontier: [GridPoint] = []
+        for point in cpuTacticalTargetPoints(for: target) where isValid(point) {
+            guard distances[point] == nil else { continue }
+            distances[point] = 0
+            frontier.append(point)
+        }
+
+        var index = 0
+        while index < frontier.count {
+            let current = frontier[index]
+            index += 1
+            guard let currentDistance = distances[current] else { continue }
+            // Distances are expanded backwards from the objective. Since a
+            // movement cost is charged when entering a tile, the reverse edge
+            // pays the cost of the tile being left (the tile that is entered
+            // in the forward route). A target can itself be a hostile unit on
+            // terrain this unit cannot occupy, so fall back to the neighbour's
+            // cost for that first edge.
+            let currentCost = cpuTacticalTraversalCost(for: unit, at: current)
+
+            for next in cardinalNeighbors(of: current) {
+                guard isValid(next),
+                      let neighbourCost = cpuTacticalTraversalCost(for: unit, at: next) else { continue }
+                let cost = currentCost ?? neighbourCost
+                let candidateDistance = currentDistance + cost
+                if candidateDistance < distances[next, default: .max] {
+                    distances[next] = candidateDistance
+                    frontier.append(next)
+                }
+            }
+        }
+        return distances
+    }
+
+    private func cpuTacticalTargetPoints(for target: CPUTacticalTarget) -> [GridPoint] {
+        switch target {
+        case .enemyUnit:
+            return allEnemyUnitPoints()
+        case .enemyProperty:
+            return enemyPropertyPoints()
+        case .enemyHQ:
+            return cpuPlanningSnapshot?.enemyHQPoints ?? allMapPoints().filter { point in
+                let building = map.backgroundElement(atX: point.x, y: point.y)
+                return building.simplified == .buildingHQ && isHostile(building.army, activeArmy)
+            }
+        }
+    }
+
+    private func cpuTacticalTraversalCost(for unit: Element, at point: GridPoint) -> Int? {
+        let terrain = map.backgroundElement(atX: point.x, y: point.y)
+        guard !terrain.isExtra,
+              let stats = PlaytestRulebook.stats(for: unit, ruleset: ruleset),
+              let cost = PlaytestRulebook.movementCost(
+                  for: unit,
+                  stats: stats,
+                  terrain: terrain,
+                  ruleset: ruleset,
+                  weather: weather,
+                  tileset: map.tileset
+              ),
+              map.allowPlacement(unit, atX: point.x, y: point.y) else { return nil }
+        return cost
+    }
+
     private func cpuMoveScore(unit: Element, origin: GridPoint, destination: GridPoint, movement: Int) -> Double {
         guard let stats = PlaytestRulebook.stats(for: unit, ruleset: ruleset) else { return -.greatestFiniteMagnitude }
         let policy = cpuPolicy
-        let before = nearestEnemyDistance(from: origin)
-        let after = nearestEnemyDistance(from: destination)
+        let before = usesFamicomTacticalPlanning
+            ? cpuTacticalDistance(for: unit, target: .enemyUnit, from: origin)
+            : nearestEnemyDistance(from: origin)
+        let after = usesFamicomTacticalPlanning
+            ? cpuTacticalDistance(for: unit, target: .enemyUnit, from: destination)
+            : nearestEnemyDistance(from: destination)
         let distanceGain = before == .max || after == .max ? 0 : before - after
-        let beforeProperty = nearestEnemyPropertyDistance(from: origin)
-        let afterProperty = nearestEnemyPropertyDistance(from: destination)
+        let beforeProperty = usesFamicomTacticalPlanning
+            ? cpuTacticalDistance(for: unit, target: .enemyProperty, from: origin)
+            : nearestEnemyPropertyDistance(from: origin)
+        let afterProperty = usesFamicomTacticalPlanning
+            ? cpuTacticalDistance(for: unit, target: .enemyProperty, from: destination)
+            : nearestEnemyPropertyDistance(from: destination)
         let propertyDistanceGain = beforeProperty == .max || afterProperty == .max
             ? 0
             : beforeProperty - afterProperty
+        let beforeHQ = usesFamicomTacticalPlanning
+            ? cpuTacticalDistance(for: unit, target: .enemyHQ, from: origin)
+            : nearestEnemyHQDistance(from: origin)
+        let afterHQ = usesFamicomTacticalPlanning
+            ? cpuTacticalDistance(for: unit, target: .enemyHQ, from: destination)
+            : nearestEnemyHQDistance(from: destination)
+        let hqDistanceGain = beforeHQ == .max || afterHQ == .max ? 0 : beforeHQ - afterHQ
         let terrain = map.backgroundElement(atX: destination.x, y: destination.y)
         let terrainStars = PlaytestRulebook.terrainStars(for: terrain, ruleset: ruleset)
         let threat = cpuThreat(for: unit, at: destination)
@@ -3493,8 +4130,10 @@ final class PlaytestSession {
         let attackOpportunity = cpuAdjacentAttackValue(for: unit, at: destination)
         let defensiveValue = Double(terrainStars) * 5
         let movementCost = Double(movement) * 2
+        let famicomHorizon = famicomTacticalHorizon(for: stats)
+        let propertyIsNear = !usesFamicomTacticalPlanning || afterProperty <= famicomHorizon
         let propertyApproachBonus: Double
-        if stats.canCapture, afterProperty != .max {
+        if stats.canCapture, afterProperty != .max, propertyIsNear {
             // Infantry and Mech need a reason to walk toward the next income
             // source even when the nearest enemy unit is being screened. A
             // near property receives a small urgency bonus; landing on it is
@@ -3511,7 +4150,7 @@ final class PlaytestSession {
             origin: origin,
             destination: destination
         )
-        let turnsToEngagement = cpuTurnsToEngagement(at: destination, stats: stats)
+        let turnsToEngagement = cpuTurnsToEngagement(for: unit, at: destination, stats: stats)
         let isTwoTurnApproach = stats.attackPower > 0 && turnsToEngagement <= 2
         // A useful Advance Wars CPU accepts a reasonable exchange to make
         // contact. Threat is a risk adjustment, not a hard exclusion zone;
@@ -3523,10 +4162,30 @@ final class PlaytestSession {
         let attackWindowBonus = stats.attackPower > 0 && after <= stats.maxRange + stats.move
             ? (35.0 + (Double(stats.attackPower) * 0.6)) * policy.contactMultiplier
             : 0
+        // Bean Island is a direct HQ race. Capture units are the decisive
+        // resource, so favour the opposing HQ corridor only once it is a
+        // near-term route. A distant HQ should not pull a unit across the
+        // whole editor canvas simply because Manhattan distance decreases.
+        let hqApproachBonus = ruleset == .famicomWars && afterHQ <= famicomHorizon
+            ? Double(hqDistanceGain) * (stats.canCapture ? 400 : 200)
+            : 0
         let threatPenalty = Double(threat) * threatWeight
+        let hasReachableObjective = before != .max || beforeProperty != .max || beforeHQ != .max
+        if usesFamicomTacticalPlanning,
+           !hasReachableObjective,
+           propertyValue == 0,
+           supplyObjective == 0,
+           transportObjective == 0,
+           attackOpportunity == 0 {
+            // Do not spend turns wandering on an isolated island or across a
+            // sea gap that this unit cannot traverse. Waiting still lets the
+            // CPU build an appropriate transport or defend its position.
+            return -Double(movement) - threatPenalty
+        }
+
         return 8 + Double(distanceGain) * 22 + propertyValue + propertyApproachBonus
             + attackOpportunity + defensiveValue + supplyObjective + transportObjective
-            + approachBonus + attackWindowBonus - movementCost - threatPenalty
+            + approachBonus + attackWindowBonus + hqApproachBonus - movementCost - threatPenalty
     }
 
     private func cpuSupplyPropertyScore(for unit: Element, origin: GridPoint, at point: GridPoint) -> Double {
@@ -3616,9 +4275,11 @@ final class PlaytestSession {
         return points
     }
 
-    private func cpuTurnsToEngagement(at point: GridPoint, stats: PlaytestUnitStats) -> Int {
+    private func cpuTurnsToEngagement(for unit: Element, at point: GridPoint, stats: PlaytestUnitStats) -> Int {
         guard stats.attackPower > 0, stats.maxRange > 0 else { return .max }
-        let nearestDistance = nearestEnemyDistance(from: point)
+        let nearestDistance = usesFamicomTacticalPlanning
+            ? cpuTacticalDistance(for: unit, target: .enemyUnit, from: point)
+            : nearestEnemyDistance(from: point)
         let closestDistance = nearestDistance == .max
             ? Int.max
             : max(0, nearestDistance - stats.maxRange)
@@ -3682,7 +4343,9 @@ final class PlaytestSession {
         guard let stats = PlaytestRulebook.stats(for: unit, ruleset: ruleset),
               stats.maxRange > 0 else { return 0 }
         let policy = cpuPolicy
-        let nearest = nearestEnemyDistance(from: point)
+        let nearest = usesFamicomTacticalPlanning
+            ? cpuTacticalDistance(for: unit, target: .enemyUnit, from: point)
+            : nearestEnemyDistance(from: point)
         guard nearest >= stats.minRange,
               nearest <= PlaytestRulebook.maximumAttackRange(
                 for: stats,
@@ -3695,7 +4358,9 @@ final class PlaytestSession {
 
     private func cpuDestinationScore(for unit: Element, at point: GridPoint) -> Double {
         let policy = cpuPolicy
-        let enemyDistance = nearestEnemyDistance(from: point)
+        let enemyDistance = usesFamicomTacticalPlanning
+            ? cpuTacticalDistance(for: unit, target: .enemyUnit, from: point)
+            : nearestEnemyDistance(from: point)
         let proximity = enemyDistance == Int.max ? 0 : max(0, 8 - enemyDistance)
         let threatPenalty = min(
             Double(cpuThreat(for: unit, at: point)) * 0.6 * policy.threatMultiplier,
@@ -3778,6 +4443,14 @@ final class PlaytestSession {
         return nearest
     }
 
+    private func nearestEnemyHQDistance(from point: GridPoint) -> Int {
+        let points = cpuPlanningSnapshot?.enemyHQPoints ?? allMapPoints().filter {
+            let building = map.backgroundElement(atX: $0.x, y: $0.y)
+            return building.simplified == .buildingHQ && isHostile(building.army, activeArmy)
+        }
+        return points.map { distance(from: point, to: $0) }.min() ?? .max
+    }
+
     private func nearestFriendlyPropertyPoint() -> GridPoint {
         cpuPropertyPoints().first ?? GridPoint(x: 0, y: 0)
     }
@@ -3816,6 +4489,18 @@ final class PlaytestSession {
         cardinalNeighbors(of: point)
     }
 
+    /// Set and dictionary iteration is intentionally randomized by Swift. CPU
+    /// tie scores should not turn the same map into a different opening every
+    /// run, so keep grid-point fallbacks stable (left-to-right, then top-to-
+    /// bottom) whenever the tactical score is equal.
+    private func sortedGridPoints(_ points: Set<GridPoint>) -> [GridPoint] {
+        points.sorted(by: gridPointOrder)
+    }
+
+    private func gridPointOrder(_ lhs: GridPoint, _ rhs: GridPoint) -> Bool {
+        lhs.x == rhs.x ? lhs.y < rhs.y : lhs.x < rhs.x
+    }
+
     private func cardinalNeighbors(of point: GridPoint) -> [GridPoint] {
         [
             GridPoint(x: point.x - 1, y: point.y), GridPoint(x: point.x + 1, y: point.y),
@@ -3843,6 +4528,57 @@ final class PlaytestSession {
         isSelectingSiloTarget = false
         productionOptions.removeAll()
         clearAttackPreview()
+    }
+
+    /// Cancels the currently highlighted action without moving the cartridge
+    /// cursor. This is the B-button path for the legacy menu.
+    func cancelLegacySelection() {
+        clearSelection()
+        statusMessage = "Selection cancelled."
+    }
+
+    /// Selects whatever is under the cartridge cursor, matching an A press on
+    /// the map. The view decides whether a second A opens the command menu.
+    func selectLegacyCursor() {
+        guard let cursorPoint else { return }
+        handleTap(cursorPoint)
+    }
+
+    /// The Stat command first selects the cursor's unit/property, then leaves
+    /// the details visible in the existing inspector panel.
+    func inspectLegacyCursor() {
+        guard let cursorPoint else {
+            statusMessage = "Move the cursor onto a unit or property first."
+            return
+        }
+        if selectedPoint != cursorPoint {
+            handleTap(cursorPoint)
+        } else if let selectedUnitName {
+            statusMessage = "Stats shown for \(selectedUnitName)."
+        } else if let selectedBuildingName {
+            statusMessage = "Stats shown for \(selectedBuildingName)."
+        }
+    }
+
+    func moveCursor(dx: Int, dy: Int) {
+        guard map.width > 0, map.height > 0 else { return }
+        let current = cursorPoint ?? GridPoint(x: 0, y: 0)
+        let next = GridPoint(
+            x: min(max(current.x + dx, 0), map.width - 1),
+            y: min(max(current.y + dy, 0), map.height - 1)
+        )
+        cursorPoint = next
+    }
+
+    func setCursor(_ point: GridPoint) {
+        guard isValid(point) else { return }
+        cursorPoint = point
+    }
+
+    func firstLegacyTarget(in points: Set<GridPoint>) -> GridPoint? {
+        points.sorted { lhs, rhs in
+            lhs.x == rhs.x ? lhs.y < rhs.y : lhs.x < rhs.x
+        }.first
     }
 
     /// Updates the orange route preview for a player drag. The destination
@@ -3933,6 +4669,31 @@ final class PlaytestSession {
     private func maxFuel(for point: GridPoint) -> Int {
         guard let unit = unit(at: point) else { return 100 }
         return PlaytestRulebook.maxFuel(for: unit, ruleset: ruleset)
+    }
+
+    private static func initialCursor(in map: MapState, army: Int) -> GridPoint? {
+        guard map.width > 0, map.height > 0 else { return nil }
+
+        // Start on the first controllable unit, then fall back to an owned
+        // property. This makes the first A press useful on both battle maps
+        // and production-only test maps.
+        for x in 0..<map.width {
+            for y in 0..<map.height {
+                let unit = map.foregroundElement(atX: x, y: y)
+                if unit.isUnitNonEmpty, unit.army == army {
+                    return GridPoint(x: x, y: y)
+                }
+            }
+        }
+        for x in 0..<map.width {
+            for y in 0..<map.height {
+                let building = map.backgroundElement(atX: x, y: y)
+                if building.isBuilding, building.army == army {
+                    return GridPoint(x: x, y: y)
+                }
+            }
+        }
+        return GridPoint(x: 0, y: 0)
     }
 
     private static func armies(in map: MapState) -> [Int] {

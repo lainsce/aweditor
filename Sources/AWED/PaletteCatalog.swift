@@ -45,7 +45,14 @@ enum PaletteCatalog {
                 AWConstants.armyBlackHole
             ]
         }
-        if tileset.isFamicomWarsFamily {
+        // The original NES release is a two-army game. Green Soil and
+        // Yellow Comet are fan additions and must not leak into either the
+        // authoring palette or the Famicom playtest roster. Super Famicom
+        // Wars is a separate release and retains its four-army roster.
+        if tileset == .famicomWars {
+            return [AWConstants.armyOrangeStar, AWConstants.armyBlueMoon]
+        }
+        if tileset == .superFamicomWars {
             return [
                 AWConstants.armyOrangeStar,
                 AWConstants.armyBlueMoon,
@@ -60,10 +67,11 @@ enum PaletteCatalog {
     }
 
     /// Factions that can participate in the local playtest for a tileset.
-    /// Famicom Wars exposes all four editor factions: Orange Star remains the
-    /// human-controlled side while every other participating faction is CPU.
-    /// GB Wars remains two-player. Days of Ruin has no Green Earth-equivalent
-    /// faction, so its four source armies use shared rows 0, 1, 3, and 4.
+    /// Famicom Wars is the original two-army NES game: Red Star remains the
+    /// human-controlled side while White Moon is the opposing CPU side.
+    /// Super Famicom Wars keeps its four-army roster. GB Wars remains
+    /// two-player. Days of Ruin has no Green Earth-equivalent faction, so its
+    /// four source armies use shared rows 0, 1, 3, and 4.
     static func playtestArmies(for tileset: Tileset) -> [Int] {
         switch tileset {
         case .aw1:
@@ -538,7 +546,15 @@ enum PaletteCatalog {
             default: return "Unavailable"
             }
         }
-        if tileset?.isFamicomWarsFamily == true {
+        if tileset == .famicomWars {
+            switch army {
+            case AWConstants.armyOrangeStar: return "Red Star"
+            case AWConstants.armyBlueMoon: return "White Moon"
+            case AWConstants.armyNeutral: return "Neutral"
+            default: return "Unavailable"
+            }
+        }
+        if tileset == .superFamicomWars {
             switch army {
             case AWConstants.armyOrangeStar: return "Red Star"
             case AWConstants.armyBlueMoon: return "White Moon"

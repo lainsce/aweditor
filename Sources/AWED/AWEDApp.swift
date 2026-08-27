@@ -25,7 +25,7 @@ struct AWEDApp: App {
             AWEDCommands(model: session.model)
         }
         .windowResizability(.contentSize)
-        .defaultSize(width: 1024, height: 800)
+        .defaultSize(width: 1024, height: 600)
         .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified(showsTitle: false))
 

@@ -24,6 +24,23 @@ struct PlaytestStatusPanel<Content: View>: View {
         let pixel = 1 / max(displayScale, 1)
         let shape = PlaytestPanelShape(cornerRadius: theme.cornerRadius)
         let shadow = theme.shadow
+        let isFamicomWars = theme == .famicomWars
+        let famicomBorderFrame = ZStack {
+            shape
+                .inset(by: 4 * pixel)
+                .strokeBorder(
+                    theme.outerBorder,
+                    style: StrokeStyle(lineWidth: 2 * pixel),
+                    antialiased: false
+                )
+            shape
+                .inset(by: 6 * pixel)
+                .strokeBorder(
+                    FamicomPPUPalette.black,
+                    style: StrokeStyle(lineWidth: pixel),
+                    antialiased: false
+                )
+        }
 
         content
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -58,6 +75,13 @@ struct PlaytestStatusPanel<Content: View>: View {
                         .allowsHitTesting(false)
                 }
             }
+            .overlay {
+                if isFamicomWars {
+                    // Famicom status cards use a four-rule pixel frame:
+                    // gray 2 px, white 2 px, gray 2 px, then black 1 px.
+                    famicomBorderFrame.allowsHitTesting(false)
+                }
+            }
             .shadow(
                 color: shadow.color,
                 radius: shadow.radius,
@@ -70,7 +94,7 @@ struct PlaytestStatusPanel<Content: View>: View {
     }
 }
 
-private struct PlaytestPanelShape: InsettableShape {
+struct PlaytestPanelShape: InsettableShape {
     let cornerRadius: CGFloat
     private var insetAmount: CGFloat = 0
 

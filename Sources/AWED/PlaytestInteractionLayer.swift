@@ -4,37 +4,84 @@ import AWEDCore
 struct PlaytestInteractionLayer: View {
     let session: PlaytestSession
     let previewModel: EditorModel
+    let atlas: SpriteAtlas
     let tileSize: CGFloat
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var isDragging = false
     @State private var movedDuringDrag = false
 
+    private var canvas: some View { interactionCanvas }
+
+    private var interactionHighlightColor: Color {
+        session.map.tileset == .famicomWars ? FamicomPPUPalette.white : Color.white
+    }
+
     var body: some View {
+        canvas
+        .contentShape(Rectangle())
+        .gesture(pointerGesture)
+        .background {
+            PlaytestMapInput(session: session, previewModel: previewModel, tileSize: tileSize)
+                .allowsHitTesting(false)
+        }
+        .accessibilityElement()
+        .accessibilityLabel("Playtest map")
+        .accessibilityValue(session.statusMessage)
+        .accessibilityHint(session.ruleset.usesLegacyKeyboardControls
+            ? "Use arrow keys to move the map cursor, Z for A to confirm, X for B to cancel, and S for Select to open the command menu."
+            : "Select a unit, drag across blue movement tiles to plan a route, release to move, choose a highlighted destination or target, or right-click a unit to preview its attacks. Use the inspector for capture, refueling, depth, missile silos, and production actions.")
+        .accessibilityAddTraits(.isButton)
+        .allowsHitTesting(!session.ruleset.usesLegacyKeyboardControls)
+    }
+
+    private var interactionCanvas: some View {
         Canvas { context, _ in
-            let movementGlass = Color(red: 0.10, green: 0.52, blue: 1.0)
-            let attackGlass = Color(red: 1.0, green: 0.16, blue: 0.20)
-            let captureFill = Color.yellow.opacity(reduceTransparency ? 0.12 : 0.28)
-            let captureStroke = Color.yellow.opacity(reduceTransparency ? 0.50 : 0.90)
-            let loadFill = Color.cyan.opacity(reduceTransparency ? 0.10 : 0.18)
-            let loadStroke = Color.cyan.opacity(reduceTransparency ? 0.42 : 0.80)
-            let unloadFill = Color.orange.opacity(reduceTransparency ? 0.10 : 0.18)
-            let unloadStroke = Color.orange.opacity(reduceTransparency ? 0.42 : 0.80)
-            let refuelFill = Color.green.opacity(reduceTransparency ? 0.10 : 0.18)
-            let refuelStroke = Color.green.opacity(reduceTransparency ? 0.42 : 0.80)
-            let joinFill = Color.mint.opacity(reduceTransparency ? 0.08 : 0.16)
-            let joinStroke = Color.mint.opacity(reduceTransparency ? 0.40 : 0.75)
-            let siloFill = Color.purple.opacity(reduceTransparency ? 0.08 : 0.16)
-            let siloStroke = Color.purple.opacity(reduceTransparency ? 0.40 : 0.75)
+            let isFamicom = session.map.tileset == .famicomWars
+            let movementGlass = isFamicom
+                ? FamicomPPUPalette.blue
+                : Color(red: 0.10, green: 0.52, blue: 1.0)
+            let attackGlass = isFamicom
+                ? FamicomPPUPalette.red
+                : Color(red: 1.0, green: 0.16, blue: 0.20)
+            let captureBase = isFamicom ? FamicomPPUPalette.yellow : Color.yellow
+            let loadBase = isFamicom ? FamicomPPUPalette.cyan : Color.cyan
+            let unloadBase = isFamicom ? FamicomPPUPalette.orange : Color.orange
+            let refuelBase = isFamicom ? FamicomPPUPalette.green : Color.green
+            let joinBase = isFamicom ? FamicomPPUPalette.paleGreen : Color.mint
+            let siloBase = isFamicom ? FamicomPPUPalette.purple : Color.purple
+            let captureFill = captureBase.opacity(reduceTransparency ? 0.12 : 0.28)
+            let captureStroke = captureBase.opacity(reduceTransparency ? 0.50 : 0.90)
+            let loadFill = loadBase.opacity(reduceTransparency ? 0.10 : 0.18)
+            let loadStroke = loadBase.opacity(reduceTransparency ? 0.42 : 0.80)
+            let unloadFill = unloadBase.opacity(reduceTransparency ? 0.10 : 0.18)
+            let unloadStroke = unloadBase.opacity(reduceTransparency ? 0.42 : 0.80)
+            let refuelFill = refuelBase.opacity(reduceTransparency ? 0.10 : 0.18)
+            let refuelStroke = refuelBase.opacity(reduceTransparency ? 0.42 : 0.80)
+            let joinFill = joinBase.opacity(reduceTransparency ? 0.08 : 0.16)
+            let joinStroke = joinBase.opacity(reduceTransparency ? 0.40 : 0.75)
+            let siloFill = siloBase.opacity(reduceTransparency ? 0.08 : 0.16)
+            let siloStroke = siloBase.opacity(reduceTransparency ? 0.40 : 0.75)
+            let highlightColor = isFamicom ? FamicomPPUPalette.white : Color.white
+            let selectionColor = isFamicom ? FamicomPPUPalette.white : Color.accentColor
 
             drawFogOverlay(context: &context)
 
-            // Blue-glass reachable cells are a player affordance. CPU turns
-            // keep only the current-unit marker below so the AI's planning
-            // does not look like a set of destinations the player can tap.
+            // Reachable cells use the era-specific player affordance (blue
+            // glass for Advance Wars/Famicom, `M` badges for GB Wars). CPU
+            // turns keep only the current-unit marker below so the AI's
+            // planning does not look like destinations the player can tap.
             if !session.activeArmyIsCPU {
-                for point in session.reachableCells {
-                    drawGlassTile(point, base: movementGlass, context: &context)
+                if session.ruleset == .superFamicomWars {
+                    drawSuperFamicomMovementTiles(session.reachableCells, context: &context)
+                } else {
+                    for point in session.reachableCells {
+                        if session.ruleset.showsMovementAvailabilityBadge {
+                            drawMovementAvailabilityBadge(point, context: &context)
+                        } else {
+                            drawGlassTile(point, base: movementGlass, context: &context)
+                        }
+                    }
                 }
             }
             for point in session.attackableCells {
@@ -63,14 +110,19 @@ struct PlaytestInteractionLayer: View {
             }
 
             drawUnitState(context: &context)
-            drawMovementPath(session.cpuMovementPath, context: &context)
-            drawMovementPath(session.playerMovementPath, context: &context)
+            if session.ruleset.showsMovementArrow {
+                drawMovementPath(session.cpuMovementPath, context: &context)
+                drawMovementPath(session.playerMovementPath, context: &context)
+            }
+            if let animation = session.movementAnimation {
+                drawMovingUnit(animation, context: &context)
+            }
             drawTransportMarkers(context: &context)
 
             if let attackPreviewOrigin = session.attackPreviewOrigin {
                 context.stroke(
                     tilePath(for: attackPreviewOrigin, inset: 0.5),
-                    with: .color(Color.white.opacity(0.85)),
+                    with: .color(highlightColor.opacity(0.85)),
                     style: StrokeStyle(lineWidth: 2)
                 )
                 context.stroke(
@@ -81,21 +133,16 @@ struct PlaytestInteractionLayer: View {
             }
 
             if let selectedPoint = session.selectedPoint, !session.activeArmyIsCPU {
-                context.stroke(tilePath(for: selectedPoint, inset: 0.5), with: .color(.white.opacity(0.95)), style: StrokeStyle(lineWidth: 2))
-                context.stroke(tilePath(for: selectedPoint, inset: 2.5), with: .color(Color.accentColor), style: StrokeStyle(lineWidth: 1))
+                context.stroke(tilePath(for: selectedPoint, inset: 0.5), with: .color(highlightColor.opacity(0.95)), style: StrokeStyle(lineWidth: 2))
+                context.stroke(tilePath(for: selectedPoint, inset: 2.5), with: .color(selectionColor), style: StrokeStyle(lineWidth: 1))
+            }
+
+            if session.ruleset.usesLegacyKeyboardControls,
+               let cursorPoint = session.cursorPoint {
+                drawKeyboardCursor(cursorPoint, context: &context)
             }
         }
-        .contentShape(Rectangle())
-        .gesture(pointerGesture)
-        .background {
-            PlaytestMapInput(session: session, previewModel: previewModel, tileSize: tileSize)
-                .allowsHitTesting(false)
-        }
-        .accessibilityElement()
-        .accessibilityLabel("Playtest map")
-        .accessibilityValue(session.statusMessage)
-        .accessibilityHint("Select a unit, drag across blue movement tiles to plan a route, release to move, choose a highlighted destination or target, or right-click a unit to preview its attacks. Use the inspector for capture, refueling, depth, missile silos, and production actions.")
-        .accessibilityAddTraits(.isButton)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var pointerGesture: some Gesture {
@@ -161,24 +208,34 @@ struct PlaytestInteractionLayer: View {
         context.stroke(path, with: .color(stroke), style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
     }
 
-    private func drawGlassTile(_ point: GridPoint, base: Color, context: inout GraphicsContext) {
+    private func drawGlassTile(
+        _ point: GridPoint,
+        base: Color,
+        context: inout GraphicsContext,
+        fillGradient: Gradient? = nil,
+        gradientStartPoint: CGPoint? = nil,
+        gradientEndPoint: CGPoint? = nil
+    ) {
         let rect = tileRect(for: point, inset: 1)
         let fillOpacity = reduceTransparency ? 0.56 : 0.30
         let edgeOpacity = reduceTransparency ? 0.72 : 0.48
         let innerOpacity = reduceTransparency ? 0.86 : 0.66
         let path = tilePath(for: point, inset: 1)
         let innerPath = tilePath(for: point, inset: 2.5)
+        let gradient = fillGradient ?? Gradient(colors: [
+            interactionHighlightColor.opacity(reduceTransparency ? 0.24 : 0.16),
+            base.opacity(fillOpacity),
+            base.opacity(fillOpacity * 0.58)
+        ])
+        let startPoint = gradientStartPoint ?? CGPoint(x: rect.midX, y: rect.minY)
+        let endPoint = gradientEndPoint ?? CGPoint(x: rect.midX, y: rect.maxY)
 
         context.fill(
             path,
             with: .linearGradient(
-                Gradient(colors: [
-                    Color.white.opacity(reduceTransparency ? 0.24 : 0.16),
-                    base.opacity(fillOpacity),
-                    base.opacity(fillOpacity * 0.58)
-                ]),
-                startPoint: CGPoint(x: rect.midX, y: rect.minY),
-                endPoint: CGPoint(x: rect.midX, y: rect.maxY)
+                gradient,
+                startPoint: startPoint,
+                endPoint: endPoint
             )
         )
         context.stroke(
@@ -191,6 +248,107 @@ struct PlaytestInteractionLayer: View {
             with: .color(base.opacity(innerOpacity)),
             style: StrokeStyle(lineWidth: 1)
         )
+    }
+
+    /// Super Famicom Wars gives its blue movement range a single diagonal
+    /// rainbow wash. The gradient is anchored to the complete reachable-cell
+    /// bounds so adjacent tiles continue the same top-left-to-bottom-right
+    /// sweep instead of restarting the colors at every tile.
+    private func drawSuperFamicomMovementTiles(
+        _ points: Set<GridPoint>,
+        context: inout GraphicsContext
+    ) {
+        guard !points.isEmpty else { return }
+
+        var minX = CGFloat.greatestFiniteMagnitude
+        var minY = CGFloat.greatestFiniteMagnitude
+        var maxX = -CGFloat.greatestFiniteMagnitude
+        var maxY = -CGFloat.greatestFiniteMagnitude
+        for point in points {
+            let rect = tileRect(for: point, inset: 1)
+            minX = min(minX, rect.minX)
+            minY = min(minY, rect.minY)
+            maxX = max(maxX, rect.maxX)
+            maxY = max(maxY, rect.maxY)
+        }
+
+        let opacity = reduceTransparency ? 0.56 : 0.30
+        let gradient = Gradient(colors: [
+            Color(red: 0.10, green: 0.24, blue: 1.00).opacity(opacity),
+            Color(red: 0.05, green: 0.78, blue: 1.00).opacity(opacity),
+            Color(red: 0.20, green: 0.96, blue: 0.55).opacity(opacity),
+            Color(red: 1.00, green: 0.88, blue: 0.18).opacity(opacity),
+            Color(red: 1.00, green: 0.26, blue: 0.64).opacity(opacity * 0.88)
+        ])
+        let startPoint = CGPoint(x: minX, y: minY)
+        let endPoint = CGPoint(x: maxX, y: maxY)
+        let movementBase = Color(red: 0.10, green: 0.52, blue: 1.0)
+
+        for point in points {
+            drawGlassTile(
+                point,
+                base: movementBase,
+                context: &context,
+                fillGradient: gradient,
+                gradientStartPoint: startPoint,
+                gradientEndPoint: endPoint
+            )
+        }
+    }
+
+    /// Game Boy Wars marks each legal destination with a compact `M` badge.
+    /// Keep the marker opaque enough to read over terrain while using the
+    /// same era palette as the status panels instead of the modern blue glass.
+    private func drawMovementAvailabilityBadge(_ point: GridPoint, context: inout GraphicsContext) {
+        let theme = PlaytestStatusTheme(tileset: session.map.tileset)
+        let rect = tileRect(for: point, inset: 0)
+        let badgeRect = CGRect(
+            x: rect.maxX - 12,
+            y: rect.maxY - 12,
+            width: 11,
+            height: 11
+        )
+        context.fill(
+            Path(roundedRect: badgeRect, cornerRadius: 1.5),
+            with: .color(theme.surface.opacity(reduceTransparency ? 0.88 : 0.96))
+        )
+        context.stroke(
+            Path(roundedRect: badgeRect.insetBy(dx: 0.5, dy: 0.5), cornerRadius: 1),
+            with: .color(theme.outerBorder),
+            style: StrokeStyle(lineWidth: 1)
+        )
+
+        let text = context.resolve(
+            Text("M")
+                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .foregroundStyle(theme.outerBorder)
+        )
+        context.draw(text, at: CGPoint(x: badgeRect.midX, y: badgeRect.midY), anchor: .center)
+    }
+
+    private func drawKeyboardCursor(_ point: GridPoint, context: inout GraphicsContext) {
+        let frameScale = tileSize / 16
+        let origin = MapCanvasMetrics.tileOrigin(
+            x: point.x,
+            y: point.y,
+            tileSize: tileSize,
+            staggered: session.isStaggeredGrid
+        )
+        let rect = CGRect(
+            x: origin.x - frameScale,
+            y: origin.y - frameScale,
+            width: 18 * frameScale,
+            height: 18 * frameScale
+        )
+        if let image = CursorAtlas.shared.frameImage(.single, tileset: session.map.tileset) {
+            context.draw(context.resolve(image), in: rect)
+        } else {
+            context.stroke(
+                Path(rect.insetBy(dx: 0.5, dy: 0.5)),
+                with: .color(interactionHighlightColor.opacity(0.85)),
+                style: StrokeStyle(lineWidth: 1)
+            )
+        }
     }
 
     private func drawFogOverlay(context: inout GraphicsContext) {
@@ -214,11 +372,25 @@ struct PlaytestInteractionLayer: View {
     }
 
     private func drawUnitState(context: inout GraphicsContext) {
+        let shadowColor = session.map.tileset == .famicomWars
+            ? FamicomPPUPalette.black
+            : Color.black
+        let damageBadgeTheme = PlaytestStatusTheme(tileset: session.map.tileset).damageBadgeTheme
+
         for x in 0..<session.map.width {
             for y in 0..<session.map.height {
                 let point = GridPoint(x: x, y: y)
                 let unit = session.map.foregroundElement(atX: x, y: y)
                 guard unit.isUnitNonEmpty, session.isVisible(point) else { continue }
+
+                // The moving sprite is rendered separately below so its
+                // health badge does not remain glued to the committed endpoint
+                // while the artwork is travelling between cells.
+                if let animation = session.movementAnimation,
+                   unit == animation.unit,
+                   point == animation.from || point == animation.to {
+                    continue
+                }
 
                 let rect = tileRect(for: point, inset: 0)
                 let isCurrentCPUMovement = session.activeArmyIsCPU
@@ -227,35 +399,146 @@ struct PlaytestInteractionLayer: View {
                 if session.movedCells.contains(point), unit.army == session.activeArmy, !isCurrentCPUMovement {
                     context.fill(
                         tilePath(for: point, inset: 0),
-                        with: .color(Color.black.opacity(reduceTransparency ? 0.18 : 0.30))
+                        with: .color(shadowColor.opacity(reduceTransparency ? 0.18 : 0.30))
                     )
                 }
 
+                let hasMoved = session.movedCells.contains(point)
+                    && unit.army == session.activeArmy
+                if session.ruleset.showsMovedUnitBadge, hasMoved, !isCurrentCPUMovement {
+                    drawMovedUnitBadge(at: rect, context: &context)
+                }
+
                 let health = session.unitHealth[point, default: 100]
-                // Advance Wars renders the unit's health as whole tens. Keep
+                // The playtest rules expose unit health as whole tens. Keep
                 // damaged units at a visible 1 rather than letting a nearly
                 // destroyed unit disappear from the badge entirely.
                 let displayHealth = max(1, min(10, health / 10))
                 guard displayHealth < 10 else { continue }
-                let badgeRect = CGRect(
-                    x: rect.minX + 2,
-                    y: rect.maxY - 13,
-                    width: 14,
-                    height: 11
+                drawDamageBadge(
+                    displayHealth,
+                    at: rect,
+                    theme: damageBadgeTheme,
+                    context: &context
                 )
-                context.fill(
-                    Path(roundedRect: badgeRect, cornerRadius: 2),
-                    with: .color(Color.black.opacity(reduceTransparency ? 0.62 : 0.78))
-                )
-
-                let text = context.resolve(
-                    Text("\(displayHealth)")
-                        .font(.system(size: 8, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                )
-                context.draw(text, at: CGPoint(x: badgeRect.midX, y: badgeRect.midY), anchor: .center)
             }
         }
+    }
+
+    private func drawDamageBadge(
+        _ displayHealth: Int,
+        at tileRect: CGRect,
+        theme: PlaytestDamageBadgeTheme,
+        context: inout GraphicsContext
+    ) {
+        let badgeRect = CGRect(
+            x: tileRect.minX + theme.offset.x,
+            y: tileRect.maxY - theme.offset.y - theme.size.height,
+            width: theme.size.width,
+            height: theme.size.height
+        )
+
+        if theme.shadowOpacity > 0 {
+            let shadowRect = badgeRect.offsetBy(
+                dx: theme.shadowOffset.width,
+                dy: theme.shadowOffset.height
+            )
+            context.fill(
+                Path(roundedRect: shadowRect, cornerRadius: theme.cornerRadius),
+                with: .color(theme.shadow.opacity(theme.shadowOpacity))
+            )
+        }
+
+        context.fill(
+            Path(roundedRect: badgeRect, cornerRadius: theme.cornerRadius),
+            with: .color(theme.background)
+        )
+        if theme.borderWidth > 0 {
+            let borderRect = badgeRect.insetBy(
+                dx: theme.borderWidth / 2,
+                dy: theme.borderWidth / 2
+            )
+            context.stroke(
+                Path(
+                    roundedRect: borderRect,
+                    cornerRadius: max(0, theme.cornerRadius - theme.borderWidth / 2)
+                ),
+                with: .color(theme.border),
+                style: StrokeStyle(lineWidth: theme.borderWidth)
+            )
+        }
+
+        let text = context.resolve(
+            Text("\(displayHealth)")
+                .font(theme.font)
+                .foregroundStyle(theme.text)
+        )
+        context.draw(
+            text,
+            at: CGPoint(x: badgeRect.midX, y: badgeRect.midY),
+            anchor: .center
+        )
+    }
+
+    /// Famicom Wars and GB Wars use a small `E` indicator for a unit that has
+    /// already acted this turn. Its lower-right placement leaves the health
+    /// badge in the lower-left corner when both markers are present.
+    private func drawMovedUnitBadge(at rect: CGRect, context: inout GraphicsContext) {
+        let theme = PlaytestStatusTheme(tileset: session.map.tileset)
+        let isFamicom = session.map.tileset == .famicomWars
+        let background = isFamicom ? FamicomPPUPalette.black : theme.outerBorder
+        let foreground = isFamicom ? FamicomPPUPalette.white : theme.surface
+        let border = isFamicom ? FamicomPPUPalette.white : theme.innerBorder
+        let badgeRect = CGRect(
+            x: rect.maxX - 12,
+            y: rect.maxY - 12,
+            width: 11,
+            height: 11
+        )
+
+        context.fill(
+            Path(roundedRect: badgeRect, cornerRadius: 1.5),
+            with: .color(background.opacity(reduceTransparency ? 0.88 : 0.96))
+        )
+        context.stroke(
+            Path(roundedRect: badgeRect.insetBy(dx: 0.5, dy: 0.5), cornerRadius: 1),
+            with: .color(border),
+            style: StrokeStyle(lineWidth: 1)
+        )
+
+        let text = context.resolve(
+            Text("E")
+                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .foregroundStyle(foreground)
+        )
+        context.draw(text, at: CGPoint(x: badgeRect.midX, y: badgeRect.midY), anchor: .center)
+    }
+
+    /// Draws the currently moving unit at the latest committed cell. Keeping
+    /// this separate from the backdrop makes every intermediate tile visible
+    /// even if SwiftUI coalesces two map redraws; there is deliberately no
+    /// interpolation between `from` and `to`.
+    private func drawMovingUnit(
+        _ animation: PlaytestMovementAnimation,
+        context: inout GraphicsContext
+    ) {
+        guard session.isVisible(animation.from) || session.isVisible(animation.to),
+              let image = atlas.image(for: animation.unit, palette: session.displayPalette) else { return }
+
+        // Movement is intentionally stepped, not interpolated. The map state
+        // and this render-only sprite both switch to `to` for one whole delay,
+        // then advance to the next legal tile.
+        let origin = MapCanvasMetrics.tileOrigin(
+            x: animation.to.x,
+            y: animation.to.y,
+            tileSize: tileSize,
+            staggered: session.isStaggeredGrid
+        )
+        let rect = CGRect(
+            origin: origin,
+            size: CGSize(width: tileSize, height: tileSize)
+        )
+        context.draw(context.resolve(image), in: rect)
     }
 
     /// Draws a planned route as a strict cardinal path through tile centres.
@@ -276,10 +559,16 @@ struct PlaytestInteractionLayer: View {
             shaft.addLine(to: center)
         }
 
-        let orange = Color.orange.opacity(0.88)
+        let pathBase = session.map.tileset == .famicomWars
+            ? FamicomPPUPalette.orange
+            : Color.orange
+        let pathShadow = session.map.tileset == .famicomWars
+            ? FamicomPPUPalette.black
+            : Color.black
+        let orange = pathBase.opacity(0.88)
         context.stroke(
             shaft,
-            with: .color(Color.black.opacity(0.20)),
+            with: .color(pathShadow.opacity(0.20)),
             style: StrokeStyle(
                 lineWidth: max(7, tileSize * 0.28),
                 lineCap: .round,
@@ -328,20 +617,25 @@ struct PlaytestInteractionLayer: View {
     }
 
     private func drawTransportMarkers(context: inout GraphicsContext) {
+        let cyan = session.map.tileset == .famicomWars ? FamicomPPUPalette.cyan : Color.cyan
+        let mint = session.map.tileset == .famicomWars ? FamicomPPUPalette.paleGreen : Color.mint
+        let orange = session.map.tileset == .famicomWars ? FamicomPPUPalette.orange : Color.orange
+        let green = session.map.tileset == .famicomWars ? FamicomPPUPalette.green : Color.green
+
         for point in session.loadableCells {
-            drawMarker("↓", at: point, color: .cyan, context: &context)
+            drawMarker("↓", at: point, color: cyan, context: &context)
         }
         for point in session.joinableCells {
-            drawMarker("+", at: point, color: .mint, context: &context)
+            drawMarker("+", at: point, color: mint, context: &context)
         }
         for point in session.unloadableCells {
-            drawMarker("↑", at: point, color: .orange, context: &context)
+            drawMarker("↑", at: point, color: orange, context: &context)
         }
         for point in session.refuelableCells {
-            drawMarker("+", at: point, color: .green, context: &context)
+            drawMarker("+", at: point, color: green, context: &context)
         }
         if let selectedPoint = session.selectedPoint, session.selectedCargoCount > 0 {
-            drawMarker("↑", at: selectedPoint, color: .orange, context: &context, corner: .topTrailing)
+            drawMarker("↑", at: selectedPoint, color: orange, context: &context, corner: .topTrailing)
         }
     }
 

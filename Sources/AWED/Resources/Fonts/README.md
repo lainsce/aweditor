@@ -17,6 +17,7 @@ game ROM fonts):
 
 - Famicom Wars: Press Start 2P
 - Game Boy Wars: VT323
-- Super Famicom Wars and Game Boy Wars 2/3: Silkscreen
+- Super Famicom Wars: VT323
+- Game Boy Wars 2/3: Silkscreen
 - Advance Wars 1/2: Share Tech Mono
 - Dual Strike and Days of Ruin: Rajdhani

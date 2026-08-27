@@ -51,6 +51,58 @@ enum PlaytestTeam: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+extension PlaytestRuleset {
+    /// The original pre-DS cartridges use a directional map cursor and
+    /// confirm/cancel/select buttons rather than pointer-first playtest input.
+    /// Keep Dual Strike and Days of Ruin on the modern pointer interaction
+    /// path until their richer control surfaces are added.
+    var usesLegacyKeyboardControls: Bool {
+        switch self {
+        case .famicomWars, .superFamicomWars, .gameBoyWars, .gameBoyWars2,
+             .gameBoyWars3, .advanceWars, .advanceWars2:
+            true
+        case .dualStrike, .daysOfRuin:
+            false
+        }
+    }
+
+    /// Cartridge-era games before Dual Strike draw a directional movement
+    /// path without the later Advance Wars arrowhead treatment. AW1 and AW2
+    /// retain the classic orange route arrow; DS and DoR use the modern
+    /// pointer-first renderer and keep their existing path styling.
+    var showsMovementArrow: Bool {
+        switch self {
+        case .famicomWars, .superFamicomWars, .gameBoyWars, .gameBoyWars2, .gameBoyWars3:
+            false
+        case .advanceWars, .advanceWars2, .dualStrike, .daysOfRuin:
+            true
+        }
+    }
+
+    /// Used-unit markers are part of the original Famicom/GB presentation.
+    /// Super Famicom Wars and the later Advance Wars games use the existing
+    /// moved-cell treatment instead.
+    var showsMovedUnitBadge: Bool {
+        switch self {
+        case .famicomWars, .gameBoyWars, .gameBoyWars2, .gameBoyWars3:
+            true
+        case .superFamicomWars, .advanceWars, .advanceWars2, .dualStrike, .daysOfRuin:
+            false
+        }
+    }
+
+    /// Game Boy Wars 1–3 identify legal movement destinations with an `M`
+    /// badge rather than the blue translucent movement-square overlay.
+    var showsMovementAvailabilityBadge: Bool {
+        switch self {
+        case .gameBoyWars, .gameBoyWars2, .gameBoyWars3:
+            true
+        case .famicomWars, .superFamicomWars, .advanceWars, .advanceWars2, .dualStrike, .daysOfRuin:
+            false
+        }
+    }
+}
+
 /// Match-only control settings.  The editor's persisted army values remain
 /// unchanged, which keeps old map files and screenshots compatible.
 struct PlaytestConfiguration: Sendable {
@@ -221,8 +273,10 @@ enum PlaytestRulebook {
             )
         case .famicomWars:
             // The NES game is compact and objective-driven: income, capture,
-            // and a direct march toward the opposing HQ matter more than a
-            // modern two-front threat map.
+            // and a direct march toward a reachable opposing HQ matter more
+            // than a modern two-front threat map. The session adds the
+            // terrain-aware horizon that keeps this profile sane on maps
+            // larger than the original cartridge boards.
             CPUPolicy(
                 attackBias: 245, counterRiskMultiplier: 0.70, targetCostMultiplier: 1.0,
                 captureMultiplier: 1.15, captureProgressWeight: 16, hqCaptureMultiplier: 1.40,
@@ -587,6 +641,16 @@ enum PlaytestRulebook {
     ) -> [PlaytestProductionOption] {
         let elements: [Element]
         switch building.simplified {
+        case .buildingHQ where ruleset == .famicomWars:
+            // Famicom Wars treats the HQ as a local land-unit production
+            // point.  The 5x5 operating-area restriction is enforced by the
+            // session, so this remains a legal option only for an HQ that is
+            // actually connected to the army's production area.
+            elements = PlaytestFamicomWarsRules.landUnits
+        case .buildingCity where ruleset == .famicomWars:
+            // On Bean Island the nearby city is the fifth opening production
+            // point, but it is an infantry point rather than a second factory.
+            elements = [.unitInfantry]
         case .buildingBase:
             elements = landUnits(for: ruleset)
         case .buildingAirport:

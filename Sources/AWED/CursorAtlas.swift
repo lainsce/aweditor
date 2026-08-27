@@ -15,7 +15,7 @@ enum AWCursorFrame: Hashable {
 }
 
 /// The original misc sprite sheet contains both the tile-sized AW cursor
-/// frames and the small allowed/forbidden/delete pointer glyphs.
+/// frames and the small allowed/forbidden/delete pointer slots.
 @MainActor
 final class CursorAtlas {
     static let shared = CursorAtlas()
@@ -65,10 +65,15 @@ final class CursorAtlas {
 
     private func sheetName(for tileset: Tileset) -> String {
         switch tileset {
-        case .normal, .snow, .desert, .wasteland, .famicomWars, .gbWars,
-             .superFamicomWars, .daysOfRuin, .gbWars2, .gbWars3: "misc_0"
+        case .normal, .snow, .desert, .wasteland: "misc_0"
         case .aw1: "misc_4"
         case .aw2: "misc_5"
+        case .famicomWars: "misc_6"
+        case .gbWars: "misc_7"
+        case .superFamicomWars: "misc_8"
+        case .daysOfRuin: "misc_9"
+        case .gbWars2: "misc_10"
+        case .gbWars3: "misc_11"
         }
     }
 

@@ -2,7 +2,7 @@ import SwiftUI
 import AWEDCore
 
 struct PlaytestHeader: View {
-    static let height: CGFloat = 60
+    static let height: CGFloat = 55
 
     let session: PlaytestSession
     let restartAction: () -> Void
@@ -14,6 +14,13 @@ struct PlaytestHeader: View {
     var body: some View {
         @Bindable var session = session
         let frameTheme = PlaytestFrameTheme.playtest(for: session.map.tileset)
+        let secondaryLabelColor = session.map.tileset == .famicomWars
+            ? FamicomPPUPalette.gray
+            : Color.secondary
+        let exitButtonTint = session.map.tileset == .famicomWars
+            ? FamicomPPUPalette.darkBrown
+            : Color.accentColor
+        let headerFillOpacity = reduceTransparency ? 1 : frameTheme.headerOpacity
         HStack(spacing: 12) {
             Label("Playtest", systemImage: "gamecontroller.fill")
                 .font(.headline)
@@ -25,7 +32,7 @@ struct PlaytestHeader: View {
                     ? "Compatibility rules: \(session.ruleset.shortName)"
                     : "Current Ruleset")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryLabelColor)
             }
 
             if PlaytestRulebook.supportsWeatherControl(session.ruleset) {
@@ -55,52 +62,74 @@ struct PlaytestHeader: View {
                         .help(session.isFogForcedByWeather
                             ? "Rain forces Fog of War in this ruleset"
                             : "Hide enemy units outside friendly vision")
-
-                    Text("Fog")
-                        .font(.caption.weight(.semibold))
                 }
             }
 
             Spacer(minLength: 14)
 
-            Button("Exit", systemImage: "xmark.rectangle", action: exitAction)
-                .buttonStyle(.bordered)
-            Button("Restart", systemImage: "arrow.counterclockwise", action: restartAction)
-                .buttonStyle(.bordered)
-            Button("End Turn", systemImage: "forward.fill", action: endTurnAction)
-                .buttonStyle(.borderedProminent)
-                .disabled(session.isGameOver || session.activeArmyIsCPU)
+            if !session.ruleset.usesLegacyKeyboardControls {
+                Button(action: restartAction) {
+                    Image(systemName: "arrow.counterclockwise")
+                        .font(.system(size: 14))
+                        .frame(width: 38, height: 38)
+                        .contentShape(Circle())
+                        .glassEffect(.regular.interactive(), in: Circle())
+                }
+                .buttonStyle(.plain)
+                .help("Restart playtest")
+                .accessibilityLabel("Restart playtest")
+
+                Button(action: endTurnAction) {
+                    Image(systemName: "forward.fill")
+                        .font(.system(size: 14))
+                        .frame(width: 38, height: 38)
+                        .contentShape(Circle())
+                        .glassEffect(.regular.interactive(), in: Circle())
+                }
+                .buttonStyle(.plain)
+                .help("End turn")
+                .accessibilityLabel("End turn")
+                    .disabled(session.isGameOver || session.activeArmyIsCPU)
+            }
+
+            Button(action: exitAction) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14))
+                    .frame(width: 38, height: 38)
+                    .contentShape(Circle())
+                    .glassEffect(.regular.tint(exitButtonTint).interactive(), in: Circle())
+            }
+            .buttonStyle(.plain)
+            .help("Exit playtest")
+            .accessibilityLabel("Exit playtest")
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 8)
+        .padding(.leading, 16)
         .frame(maxWidth: .infinity)
         .frame(height: Self.height)
         .background {
-            ZStack {
-                if reduceTransparency {
-                    Rectangle()
-                        .fill(frameTheme.headerTint.opacity(0.94))
-                } else {
-                    Rectangle()
-                        .fill(.thinMaterial)
-                    Rectangle()
-                        .fill(frameTheme.headerTint.opacity(frameTheme.headerOpacity))
-                }
-            }
+            Rectangle()
+                .fill(frameTheme.headerTint.opacity(headerFillOpacity))
         }
+        .foregroundStyle(frameTheme.headerFGTint)
         .overlay(alignment: .top) {
             Rectangle()
-                .fill(frameTheme.headerTint.opacity(reduceTransparency ? 0.70 : 0.48))
+                .fill(frameTheme.headerTint.opacity(reduceTransparency ? 1 : 0.48))
                 .frame(height: 1)
         }
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(frameTheme.headerBorder.opacity(reduceTransparency ? 0.55 : 0.34))
+                .fill(frameTheme.headerBorder.opacity(reduceTransparency ? 0.5 : 0.34))
                 .frame(height: 1)
         }
         .shadow(
-            color: frameTheme.headerShadow.opacity(reduceTransparency ? 0.08 : 0.16),
-            radius: 7,
-            y: 2
+            color: frameTheme.headerShadow.opacity(reduceTransparency ? 0.16 : 0.08),
+            radius: 4,
+            y: 1
         )
+        // Keep native labels and bordered controls in the frame's light
+        // appearance instead of allowing app-wide dark mode to override the
+        // era-specific header palette.
+        .environment(\.colorScheme, .light)
     }
 }
