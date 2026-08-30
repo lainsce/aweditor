@@ -26,8 +26,7 @@ struct StatusBarView: View {
                 .accessibilityLabel("Map coordinates \(coordinates)")
         }
         .font(.caption)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
-        .frame(minWidth: 285, idealWidth: 310, maxWidth: 360)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 12)
     }
 }

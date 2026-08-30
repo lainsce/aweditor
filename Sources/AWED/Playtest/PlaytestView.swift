@@ -550,6 +550,7 @@ private struct PlaytestArmySetupView: View {
                 Toggle(isOn: cpuOnlyMatchBinding) {
                     Label("No player (CPU vs CPU)", systemImage: "cpu")
                 }
+                .toggleStyle(NativeToggleStyle())
                 .help("Let all playable armies take their turns automatically without a human side.")
             }
 

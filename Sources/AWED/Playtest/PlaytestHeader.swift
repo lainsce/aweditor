@@ -57,7 +57,7 @@ struct PlaytestHeader: View {
             if PlaytestRulebook.supportsFogOfWar(session.ruleset) {
                 HStack(spacing: 6) {
                     Toggle("Fog", isOn: $session.fogOfWarEnabled)
-                        .toggleStyle(.switch)
+                        .toggleStyle(NativeToggleStyle())
                         .disabled(session.isFogForcedByWeather)
                         .help(session.isFogForcedByWeather
                             ? "Rain forces Fog of War in this ruleset"

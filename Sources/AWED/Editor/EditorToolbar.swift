@@ -17,8 +17,10 @@ struct EditorToolbar: ToolbarContent {
                 Button("Status…", systemImage: "chart.bar") { model.dialog = .status }
             }
         }
+        .sharedBackgroundVisibility(.hidden)
 
         ToolbarSpacer(.fixed)
+            .sharedBackgroundVisibility(.hidden)
 
         ToolbarItemGroup(placement: .navigation) {
             NativeToolbarControlGroup {
@@ -43,8 +45,10 @@ struct EditorToolbar: ToolbarContent {
                     .help("Save the current map")
             }
         }
+        .sharedBackgroundVisibility(.hidden)
 
         ToolbarSpacer(.fixed)
+            .sharedBackgroundVisibility(.hidden)
 
         ToolbarItemGroup(placement: .navigation) {
             NativeToolbarControlGroup {
@@ -62,26 +66,32 @@ struct EditorToolbar: ToolbarContent {
                     .disabled(!model.canRedo)
             }
         }
+        .sharedBackgroundVisibility(.hidden)
 
         ToolbarSpacer()
+            .sharedBackgroundVisibility(.hidden)
 
         ToolbarItem(placement: .primaryAction) {
-            NativeSegmentedPicker(
-                selection: Binding(
-                    get: { model.selectedTool },
-                    set: { model.setTool($0) }
-                ),
-                options: EditorTool.allCases
-            ) { tool in
-                NativeToolbarIcon(systemImage: tool.systemImage)
-                    .frame(minWidth: 38, minHeight: 32, maxHeight: 32)
-                    .accessibilityLabel(tool.title)
+            NativeToolbarControlGroup {
+                NativeSegmentedPicker(
+                    selection: Binding(
+                        get: { model.selectedTool },
+                        set: { model.setTool($0) }
+                    ),
+                    options: EditorTool.allCases
+                ) { tool in
+                    NativeToolbarIcon(systemImage: tool.systemImage)
+                        .frame(minWidth: 38, minHeight: 32, maxHeight: 32)
+                        .accessibilityLabel(tool.title)
+                }
+                .frame(minWidth: CGFloat(EditorTool.allCases.count * 38), maxHeight: 38)
+                .help("Drawing tool")
             }
-            .frame(minWidth: CGFloat(EditorTool.allCases.count * 38), maxHeight: 38)
-            .help("Drawing tool")
         }
+        .sharedBackgroundVisibility(.hidden)
 
         ToolbarSpacer(.fixed)
+            .sharedBackgroundVisibility(.hidden)
 
         ToolbarItemGroup(placement: .primaryAction) {
             NativeToolbarMenuButton(title: "More", systemImage: "ellipsis.circle") {
@@ -91,5 +101,6 @@ struct EditorToolbar: ToolbarContent {
                 Button("Preferences…", systemImage: "gearshape", action: { model.dialog = .preferences })
             }
         }
+        .sharedBackgroundVisibility(.hidden)
     }
 }

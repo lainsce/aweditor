@@ -146,14 +146,14 @@ struct PreferencesView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 8) {
             Text("Editor Preferences").font(.title2).bold()
             Form {
                 Section("Background Music") {
                     NativeFormRow("Enable BGM") {
                         Toggle("", isOn: $preferences.volumeEnabled)
                             .labelsHidden()
-                            .toggleStyle(.switch)
+                            .toggleStyle(NativeToggleStyle())
                             .accessibilityLabel("Enable background music")
                     }
                     NativeFormRow("Volume") {
@@ -169,6 +169,7 @@ struct PreferencesView: View {
                             .accessibilityLabel("Volume")
                             Text("\(preferences.volume)%").monospacedDigit().frame(width: 42, alignment: .trailing)
                         }
+                        .frame(maxWidth: .infinity)
                         .disabled(!preferences.volumeEnabled)
                     }
                 }
@@ -197,16 +198,6 @@ struct PreferencesView: View {
                             Text(terrainTitle(terrain))
                         }
                     }
-                    NativeFormRow("Default tileset") {
-                        NativePullDownMenu(
-                            "Default tileset",
-                            selection: $preferences.defaultTileset,
-                            options: Tileset.launchOrdered,
-                            showsTitle: false
-                        ) { tile in
-                            Text(tile.displayName)
-                        }
-                    }
                     NativeFormRow("Undo/redo limit") {
                         NativePullDownMenu(
                             "Undo/redo limit",
@@ -219,17 +210,18 @@ struct PreferencesView: View {
                     }
                     NativeFormRow("Default author") {
                         TextField("", text: $preferences.defaultAuthor)
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(.bordered)
+                            .frame(alignment: .leading)
                             .accessibilityLabel("Default author")
                             .onChange(of: preferences.defaultAuthor) { _, newValue in preferences.defaultAuthor = String(newValue.prefix(AWConstants.authorMaximumLength)) }
                     }
                 }
                 Section("Interaction") {
-                    NativeFormRow("Draw AW-style cursors") {
+                    NativeFormRow("Draw cursors") {
                         Toggle("", isOn: $preferences.drawCursor)
                             .labelsHidden()
-                            .toggleStyle(.switch)
-                            .accessibilityLabel("Draw AW-style cursors")
+                            .toggleStyle(NativeToggleStyle())
+                            .accessibilityLabel("Draw cursors")
                     }
                 }
             }

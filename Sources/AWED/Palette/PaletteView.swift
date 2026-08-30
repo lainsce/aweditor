@@ -14,8 +14,8 @@ struct PaletteView: View {
                 Text(tab.displayName)
             }
             .padding(.vertical, 12)
-            .padding(.horizontal, 12)
-            .padding(.top, 52)
+            .padding(.horizontal, 8)
+            .padding(.top, 50) // Special spacing to the top
 
             if model.selectedTab == .unit {
                 ArmyColorTabs(selection: model.selectedArmy, tileset: model.map.tileset) { army in
@@ -45,7 +45,7 @@ struct PaletteView: View {
                     } else {
                         paletteGrid(
                             items: PaletteCatalog.items(for: model.selectedTab, tileset: model.map.tileset),
-                            columns: [GridItem(.adaptive(minimum: 32, maximum: 54), spacing: 8)]
+                            columns: [GridItem(.adaptive(minimum: 32, maximum: 54), spacing: 4)]
                         )
                     }
                 }
@@ -63,7 +63,6 @@ struct PaletteView: View {
                 .padding(12)
             }
         }
-        .frame(minWidth: 310, idealWidth: 310, maxWidth: 310)
         .ignoresSafeArea(.container)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Tile Palette")
@@ -109,12 +108,12 @@ private struct MapVisualVariantGrid: View {
     let onSelect: (MapVisualVariant) -> Void
 
     var body: some View {
-        LazyVStack(alignment: .leading, spacing: 14) {
+        LazyVStack(alignment: .leading, spacing: 12) {
             ForEach(MapVisualVariant.groups) { group in
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 8) {
                     Text(group.title)
                         .font(.headline)
-                        .padding(.horizontal, 2)
+                        .padding(.horizontal, 4)
 
                     LazyVGrid(
                         columns: [

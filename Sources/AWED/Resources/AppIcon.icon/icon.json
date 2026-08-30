@@ -1,13 +1,19 @@
 {
-  "fill" : {
-    "automatic-gradient" : "display-p3:0.93311,0.88428,0.68604,1.00000"
-  },
+  "fill-specializations" : [
+    {
+      "value" : "system-light"
+    },
+    {
+      "appearance" : "dark",
+      "value" : "system-dark"
+    }
+  ],
   "groups" : [
     {
       "blend-mode-specializations" : [
         {
           "appearance" : "dark",
-          "value" : "hard-light"
+          "value" : "normal"
         }
       ],
       "layers" : [
@@ -16,7 +22,7 @@
           "image-name" : "AppIcon.png",
           "name" : "AppIcon",
           "position" : {
-            "scale" : 15,
+            "scale" : 14,
             "translation-in-points" : [
               0,
               0

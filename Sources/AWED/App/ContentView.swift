@@ -28,12 +28,6 @@ struct ContentView: View {
                         )
                     }
                 } else {
-                    // The playtest sheet owns its own read-only board. Do not
-                    // keep the editor canvas in the hierarchy underneath it:
-                    // that avoids a second Canvas render pass and prevents
-                    // editor pointer/hover work from continuing while the
-                    // playtest is active. Preserve the flexible map column so
-                    // the palette does not jump during sheet presentation.
                     Color.clear
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .accessibilityHidden(true)
@@ -44,8 +38,9 @@ struct ContentView: View {
                     PaletteView(model: model, atlas: atlas)
                     StatusBarView(name: model.map.name, author: model.map.author, coordinates: model.statusMessage, isDirty: model.map.isDirty)
                 }
-                .background(.ultraThinMaterial)
+                .frame(minWidth: 320, idealWidth: 320, maxWidth: 320)
                 .ignoresSafeArea(.all)
+                .background(Color(nsColor: .secondarySystemFill))
             }
         }
         .frame(minWidth: 800, minHeight: 600)
@@ -203,9 +198,9 @@ struct MapWorkspaceView: View {
                 Button(action: playtestAction) {
                     Image(systemName: "play.fill")
                         .font(.title3.weight(.semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.foreground)
                         .frame(width: 56, height: 56)
-                        .background(.green, in: Circle())
+                        .background(.thickMaterial, in: Circle())
                         .contentShape(Circle())
                         .glassEffect(
                             .regular.tint(.accentColor).interactive(),

@@ -15,7 +15,6 @@
 		000000000000000000002010 /* AWEDApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001010 /* AWEDApp.swift */; };
 		000000000000000000002011 /* AWEDCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001011 /* AWEDCommands.swift */; };
 		000000000000000000002012 /* BackgroundMusic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001012 /* BackgroundMusic.swift */; };
-		G10000000000000000000001 /* PlaytestMusic.swift in Sources */ = {isa = PBXBuildFile; fileRef = G20000000000000000000001 /* PlaytestMusic.swift */; };
 		000000000000000000002013 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001013 /* ContentView.swift */; };
 		000000000000000000002014 /* CursorAtlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001014 /* CursorAtlas.swift */; };
 		000000000000000000002015 /* DialogViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001015 /* DialogViews.swift */; };
@@ -48,12 +47,6 @@
 		00000000000000000000205C /* misc_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105C /* misc_0.png */; };
 		00000000000000000000205D /* misc_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105D /* misc_4.png */; };
 		00000000000000000000205E /* misc_5.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105E /* misc_5.png */; };
-		00000000000000000000209C /* misc_6.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AC /* misc_6.png */; };
-		00000000000000000000209D /* misc_7.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AD /* misc_7.png */; };
-		00000000000000000000209E /* misc_8.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AE /* misc_8.png */; };
-		00000000000000000000209F /* misc_9.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AF /* misc_9.png */; };
-		0000000000000000000020A0 /* misc_10.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010B0 /* misc_10.png */; };
-		0000000000000000000020A1 /* misc_11.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010B1 /* misc_11.png */; };
 		00000000000000000000205F /* terrain_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000105F /* terrain_0.png */; };
 		000000000000000000002060 /* terrain_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001060 /* terrain_1.png */; };
 		000000000000000000002061 /* terrain_2.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001061 /* terrain_2.png */; };
@@ -66,27 +59,16 @@
 		000000000000000000002068 /* unit_3.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001068 /* unit_3.png */; };
 		000000000000000000002069 /* unit_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001069 /* unit_4.png */; };
 		00000000000000000000206A /* unit_5.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000106A /* unit_5.png */; };
-		000000000000000000002073 /* PlaytestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001073 /* PlaytestView.swift */; };
-		000000000000000000002074 /* PlaytestDualStrikeRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001074 /* PlaytestDualStrikeRules.swift */; };
-		000000000000000000002075 /* PlaytestRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001075 /* PlaytestRules.swift */; };
-		000000000000000000002076 /* PlaytestAdvanceWars2Rules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001076 /* PlaytestAdvanceWars2Rules.swift */; };
-		000000000000000000002077 /* PlaytestAdvanceWarsRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001077 /* PlaytestAdvanceWarsRules.swift */; };
 		000000000000000000002078 /* terrain_aw1_rain.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001078 /* terrain_aw1_rain.png */; };
 		000000000000000000002079 /* terrain_aw1_snow.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001079 /* terrain_aw1_snow.png */; };
 		00000000000000000000207A /* terrain_aw2_rain.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000107A /* terrain_aw2_rain.png */; };
 		00000000000000000000207B /* terrain_aw2_snow.png in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000107B /* terrain_aw2_snow.png */; };
-		00000000000000000000207C /* PlaytestWeatherOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000107C /* PlaytestWeatherOverlay.swift */; };
 		000000000000000000002080 /* building_6.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001080 /* building_6.png */; };
 		000000000000000000002081 /* building_7.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001081 /* building_7.png */; };
 		000000000000000000002084 /* terrain_6.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001084 /* terrain_6.png */; };
 		000000000000000000002085 /* terrain_7.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001085 /* terrain_7.png */; };
 		000000000000000000002086 /* unit_6.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001086 /* unit_6.png */; };
 		000000000000000000002087 /* unit_7.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001087 /* unit_7.png */; };
-		000000000000000000002088 /* PlaytestSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001092 /* PlaytestSession.swift */; };
-		000000000000000000002089 /* PlaytestHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001093 /* PlaytestHeader.swift */; };
-		00000000000000000000208A /* PlaytestMapViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001094 /* PlaytestMapViews.swift */; };
-		00000000000000000000208B /* PlaytestInteractionLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001095 /* PlaytestInteractionLayer.swift */; };
-		00000000000000000000208C /* PlaytestInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001096 /* PlaytestInspector.swift */; };
 		000000000000000000002090 /* building_8.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A0 /* building_8.png */; };
 		000000000000000000002091 /* building_9.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A1 /* building_9.png */; };
 		000000000000000000002092 /* building_10.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A2 /* building_10.png */; };
@@ -99,21 +81,16 @@
 		000000000000000000002099 /* unit_9.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010A9 /* unit_9.png */; };
 		00000000000000000000209A /* unit_10.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AA /* unit_10.png */; };
 		00000000000000000000209B /* unit_11.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AB /* unit_11.png */; };
-		67803C6230360302005182A2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67803C6130360302005182A2 /* Assets.xcassets */; };
-		67E7C1B6303CE54400966E44 /* PlaytestStatusTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67E7C1B5303CE54400966E44 /* PlaytestStatusTheme.swift */; };
-		A10000000000000000000001 /* PlaytestFamicomWarsRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* PlaytestFamicomWarsRules.swift */; };
-		A10000000000000000000002 /* PlaytestSuperFamicomWarsRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* PlaytestSuperFamicomWarsRules.swift */; };
-		A10000000000000000000003 /* PlaytestGameBoyWarsRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* PlaytestGameBoyWarsRules.swift */; };
-		A10000000000000000000004 /* PlaytestDaysOfRuinRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* PlaytestDaysOfRuinRules.swift */; };
-		C10000000000000000000002 /* PlaytestStatusPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000002 /* PlaytestStatusPanel.swift */; };
-		D10000000000000000000001 /* PlaytestEraButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000001 /* PlaytestEraButtonStyle.swift */; };
-		D10000000000000000000002 /* PlaytestEraMeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000002 /* PlaytestEraMeter.swift */; };
-		E10000000000000000000001 /* NativeUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000001 /* NativeUI.swift */; };
-		F10000000000000000000001 /* PlaytestFrameTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000001 /* PlaytestFrameTheme.swift */; };
-		F30000000000000000000001 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = F40000000000000000000001 /* Fonts */; };
-		G30000000000000000000001 /* PlaytestFontCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = G40000000000000000000001 /* PlaytestFontCatalog.swift */; };
-		H10000000000000000000001 /* PlaytestLegacyControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = H20000000000000000000001 /* PlaytestLegacyControls.swift */; };
+		00000000000000000000209C /* misc_6.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AC /* misc_6.png */; };
+		00000000000000000000209D /* misc_7.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AD /* misc_7.png */; };
+		00000000000000000000209E /* misc_8.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AE /* misc_8.png */; };
+		00000000000000000000209F /* misc_9.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010AF /* misc_9.png */; };
+		0000000000000000000020A0 /* misc_10.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010B0 /* misc_10.png */; };
+		0000000000000000000020A1 /* misc_11.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010B1 /* misc_11.png */; };
 		673ACA33303DE9E6003112C6 /* BGM in Resources */ = {isa = PBXBuildFile; fileRef = 673ACA33303DE9E6003112C5 /* BGM */; };
+		67803C6230360302005182A2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67803C6130360302005182A2 /* Assets.xcassets */; };
+		E10000000000000000000001 /* NativeUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000001 /* NativeUI.swift */; };
+		F30000000000000000000001 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = F40000000000000000000001 /* Fonts */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -142,7 +119,6 @@
 		000000000000000000001010 /* AWEDApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWEDApp.swift; sourceTree = "<group>"; };
 		000000000000000000001011 /* AWEDCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWEDCommands.swift; sourceTree = "<group>"; };
 		000000000000000000001012 /* BackgroundMusic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundMusic.swift; sourceTree = "<group>"; };
-		G20000000000000000000001 /* PlaytestMusic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestMusic.swift; sourceTree = "<group>"; };
 		000000000000000000001013 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		000000000000000000001014 /* CursorAtlas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorAtlas.swift; sourceTree = "<group>"; };
 		000000000000000000001015 /* DialogViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialogViews.swift; sourceTree = "<group>"; };
@@ -175,12 +151,6 @@
 		00000000000000000000105C /* misc_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_0.png; sourceTree = "<group>"; };
 		00000000000000000000105D /* misc_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_4.png; sourceTree = "<group>"; };
 		00000000000000000000105E /* misc_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_5.png; sourceTree = "<group>"; };
-		0000000000000000000010AC /* misc_6.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_6.png; sourceTree = "<group>"; };
-		0000000000000000000010AD /* misc_7.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_7.png; sourceTree = "<group>"; };
-		0000000000000000000010AE /* misc_8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_8.png; sourceTree = "<group>"; };
-		0000000000000000000010AF /* misc_9.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_9.png; sourceTree = "<group>"; };
-		0000000000000000000010B0 /* misc_10.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_10.png; sourceTree = "<group>"; };
-		0000000000000000000010B1 /* misc_11.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_11.png; sourceTree = "<group>"; };
 		00000000000000000000105F /* terrain_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_0.png; sourceTree = "<group>"; };
 		000000000000000000001060 /* terrain_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_1.png; sourceTree = "<group>"; };
 		000000000000000000001061 /* terrain_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_2.png; sourceTree = "<group>"; };
@@ -193,16 +163,10 @@
 		000000000000000000001068 /* unit_3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_3.png; sourceTree = "<group>"; };
 		000000000000000000001069 /* unit_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_4.png; sourceTree = "<group>"; };
 		00000000000000000000106A /* unit_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_5.png; sourceTree = "<group>"; };
-		000000000000000000001073 /* PlaytestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestView.swift; sourceTree = "<group>"; };
-		000000000000000000001074 /* PlaytestDualStrikeRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestDualStrikeRules.swift; sourceTree = "<group>"; };
-		000000000000000000001075 /* PlaytestRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestRules.swift; sourceTree = "<group>"; };
-		000000000000000000001076 /* PlaytestAdvanceWars2Rules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestAdvanceWars2Rules.swift; sourceTree = "<group>"; };
-		000000000000000000001077 /* PlaytestAdvanceWarsRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestAdvanceWarsRules.swift; sourceTree = "<group>"; };
 		000000000000000000001078 /* terrain_aw1_rain.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_aw1_rain.png; sourceTree = "<group>"; };
 		000000000000000000001079 /* terrain_aw1_snow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_aw1_snow.png; sourceTree = "<group>"; };
 		00000000000000000000107A /* terrain_aw2_rain.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_aw2_rain.png; sourceTree = "<group>"; };
 		00000000000000000000107B /* terrain_aw2_snow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_aw2_snow.png; sourceTree = "<group>"; };
-		00000000000000000000107C /* PlaytestWeatherOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestWeatherOverlay.swift; sourceTree = "<group>"; };
 		000000000000000000001080 /* building_6.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_6.png; sourceTree = "<group>"; };
 		000000000000000000001081 /* building_7.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_7.png; sourceTree = "<group>"; };
 		000000000000000000001084 /* terrain_6.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = terrain_6.png; sourceTree = "<group>"; };
@@ -212,11 +176,6 @@
 		000000000000000000001088 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		000000000000000000001090 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		000000000000000000001091 /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
-		000000000000000000001092 /* PlaytestSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestSession.swift; sourceTree = "<group>"; };
-		000000000000000000001093 /* PlaytestHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestHeader.swift; sourceTree = "<group>"; };
-		000000000000000000001094 /* PlaytestMapViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestMapViews.swift; sourceTree = "<group>"; };
-		000000000000000000001095 /* PlaytestInteractionLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestInteractionLayer.swift; sourceTree = "<group>"; };
-		000000000000000000001096 /* PlaytestInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestInspector.swift; sourceTree = "<group>"; };
 		0000000000000000000010A0 /* building_8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_8.png; sourceTree = "<group>"; };
 		0000000000000000000010A1 /* building_9.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_9.png; sourceTree = "<group>"; };
 		0000000000000000000010A2 /* building_10.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_10.png; sourceTree = "<group>"; };
@@ -229,25 +188,28 @@
 		0000000000000000000010A9 /* unit_9.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_9.png; sourceTree = "<group>"; };
 		0000000000000000000010AA /* unit_10.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_10.png; sourceTree = "<group>"; };
 		0000000000000000000010AB /* unit_11.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unit_11.png; sourceTree = "<group>"; };
+		0000000000000000000010AC /* misc_6.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_6.png; sourceTree = "<group>"; };
+		0000000000000000000010AD /* misc_7.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_7.png; sourceTree = "<group>"; };
+		0000000000000000000010AE /* misc_8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_8.png; sourceTree = "<group>"; };
+		0000000000000000000010AF /* misc_9.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_9.png; sourceTree = "<group>"; };
+		0000000000000000000010B0 /* misc_10.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_10.png; sourceTree = "<group>"; };
+		0000000000000000000010B1 /* misc_11.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = misc_11.png; sourceTree = "<group>"; };
 		000000000000000000001101 /* AW Map Editor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AW Map Editor.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000001102 /* libAWEDCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAWEDCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000001103 /* AWEDCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AWEDCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		67803C6130360302005182A2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		67E7C1B5303CE54400966E44 /* PlaytestStatusTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestStatusTheme.swift; sourceTree = "<group>"; };
-		A20000000000000000000001 /* PlaytestFamicomWarsRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestFamicomWarsRules.swift; sourceTree = "<group>"; };
-		A20000000000000000000002 /* PlaytestSuperFamicomWarsRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestSuperFamicomWarsRules.swift; sourceTree = "<group>"; };
-		A20000000000000000000003 /* PlaytestGameBoyWarsRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestGameBoyWarsRules.swift; sourceTree = "<group>"; };
-		A20000000000000000000004 /* PlaytestDaysOfRuinRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestDaysOfRuinRules.swift; sourceTree = "<group>"; };
-		C20000000000000000000002 /* PlaytestStatusPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestStatusPanel.swift; sourceTree = "<group>"; };
-		D20000000000000000000001 /* PlaytestEraButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestEraButtonStyle.swift; sourceTree = "<group>"; };
-		D20000000000000000000002 /* PlaytestEraMeter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestEraMeter.swift; sourceTree = "<group>"; };
-		E20000000000000000000001 /* NativeUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeUI.swift; sourceTree = "<group>"; };
-		F20000000000000000000001 /* PlaytestFrameTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestFrameTheme.swift; sourceTree = "<group>"; };
-		F40000000000000000000001 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fonts; sourceTree = "<group>"; };
-		G40000000000000000000001 /* PlaytestFontCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestFontCatalog.swift; sourceTree = "<group>"; };
-		H20000000000000000000001 /* PlaytestLegacyControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaytestLegacyControls.swift; sourceTree = "<group>"; };
 		673ACA33303DE9E6003112C5 /* BGM */ = {isa = PBXFileReference; lastKnownFileType = folder; path = BGM; sourceTree = "<group>"; };
+		67803C6130360302005182A2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E20000000000000000000001 /* NativeUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeUI.swift; sourceTree = "<group>"; };
+		F40000000000000000000001 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fonts; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		673ACE303040B8B7003112C5 /* Playtest */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Playtest;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXGroup section */
 		000000000000000000000001 = {
@@ -288,48 +250,14 @@
 		000000000000000000000004 /* Sources/AWED */ = {
 			isa = PBXGroup;
 			children = (
-				E20000000000000000000001 /* NativeUI.swift */,
-				000000000000000000001010 /* AWEDApp.swift */,
-				000000000000000000001011 /* AWEDCommands.swift */,
-				00000000000000000000101A /* FilePanelService.swift */,
-				000000000000000000001012 /* BackgroundMusic.swift */,
-				G20000000000000000000001 /* PlaytestMusic.swift */,
-				000000000000000000001013 /* ContentView.swift */,
-				000000000000000000001014 /* CursorAtlas.swift */,
-				00000000000000000000101F /* SpriteAtlas.swift */,
-				000000000000000000001015 /* DialogViews.swift */,
-				000000000000000000001016 /* EditorModel.swift */,
-				000000000000000000001017 /* EditorPreferences.swift */,
-				000000000000000000001018 /* EditorToolbar.swift */,
-				000000000000000000001019 /* EditorTypes.swift */,
-				000000000000000000001025 /* PrivacyPolicyView.swift */,
-				000000000000000000001073 /* PlaytestView.swift */,
-				H20000000000000000000001 /* PlaytestLegacyControls.swift */,
-				000000000000000000001092 /* PlaytestSession.swift */,
-				000000000000000000001093 /* PlaytestHeader.swift */,
-				000000000000000000001094 /* PlaytestMapViews.swift */,
-				000000000000000000001095 /* PlaytestInteractionLayer.swift */,
-				000000000000000000001096 /* PlaytestInspector.swift */,
-				000000000000000000001074 /* PlaytestDualStrikeRules.swift */,
-				000000000000000000001075 /* PlaytestRules.swift */,
-				000000000000000000001076 /* PlaytestAdvanceWars2Rules.swift */,
-				000000000000000000001077 /* PlaytestAdvanceWarsRules.swift */,
-				A20000000000000000000001 /* PlaytestFamicomWarsRules.swift */,
-				A20000000000000000000002 /* PlaytestSuperFamicomWarsRules.swift */,
-				A20000000000000000000003 /* PlaytestGameBoyWarsRules.swift */,
-				A20000000000000000000004 /* PlaytestDaysOfRuinRules.swift */,
-				00000000000000000000107C /* PlaytestWeatherOverlay.swift */,
-				67E7C1B5303CE54400966E44 /* PlaytestStatusTheme.swift */,
-				C20000000000000000000002 /* PlaytestStatusPanel.swift */,
-				D20000000000000000000001 /* PlaytestEraButtonStyle.swift */,
-				D20000000000000000000002 /* PlaytestEraMeter.swift */,
-				F20000000000000000000001 /* PlaytestFrameTheme.swift */,
-				G40000000000000000000001 /* PlaytestFontCatalog.swift */,
-				00000000000000000000101B /* MapCanvasInput.swift */,
-				00000000000000000000101C /* MapCanvasView.swift */,
-				00000000000000000000101D /* PaletteCatalog.swift */,
-				00000000000000000000101E /* PaletteView.swift */,
-				000000000000000000001020 /* StatusBarView.swift */,
+				673ACE303040B8B7003112C5 /* Playtest */,
+				673ACE303040B8B7003112C7 /* App */,
+				673ACE303040B8B7003112C8 /* Editor */,
+				673ACE303040B8B7003112C9 /* Map */,
+				673ACE303040B8B7003112CA /* Palette */,
+				673ACE303040B8B7003112CB /* Dialogs */,
+				673ACE303040B8B7003112CC /* Services */,
+				673ACE303040B8B7003112CD /* UI */,
 				000000000000000000001088 /* Info.plist */,
 				000000000000000000000005 /* Resources */,
 			);
@@ -417,6 +345,74 @@
 			path = Tests;
 			sourceTree = "<group>";
 		};
+		673ACE303040B8B7003112C7 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001010 /* AWEDApp.swift */,
+				000000000000000000001011 /* AWEDCommands.swift */,
+				000000000000000000001013 /* ContentView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		673ACE303040B8B7003112C8 /* Editor */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001016 /* EditorModel.swift */,
+				000000000000000000001017 /* EditorPreferences.swift */,
+				000000000000000000001018 /* EditorToolbar.swift */,
+				000000000000000000001019 /* EditorTypes.swift */,
+			);
+			path = Editor;
+			sourceTree = "<group>";
+		};
+		673ACE303040B8B7003112C9 /* Map */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000101B /* MapCanvasInput.swift */,
+				00000000000000000000101C /* MapCanvasView.swift */,
+				000000000000000000001020 /* StatusBarView.swift */,
+			);
+			path = Map;
+			sourceTree = "<group>";
+		};
+		673ACE303040B8B7003112CA /* Palette */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001014 /* CursorAtlas.swift */,
+				00000000000000000000101D /* PaletteCatalog.swift */,
+				00000000000000000000101E /* PaletteView.swift */,
+				00000000000000000000101F /* SpriteAtlas.swift */,
+			);
+			path = Palette;
+			sourceTree = "<group>";
+		};
+		673ACE303040B8B7003112CB /* Dialogs */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001015 /* DialogViews.swift */,
+				000000000000000000001025 /* PrivacyPolicyView.swift */,
+			);
+			path = Dialogs;
+			sourceTree = "<group>";
+		};
+		673ACE303040B8B7003112CC /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001012 /* BackgroundMusic.swift */,
+				00000000000000000000101A /* FilePanelService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		673ACE303040B8B7003112CD /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				E20000000000000000000001 /* NativeUI.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -444,6 +440,9 @@
 			);
 			dependencies = (
 				000000000000000000000601 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				673ACE303040B8B7003112C5 /* Playtest */,
 			);
 			name = "AW Map Editor";
 			productName = "AW Map Editor";
@@ -592,7 +591,6 @@
 				000000000000000000002010 /* AWEDApp.swift in Sources */,
 				000000000000000000002011 /* AWEDCommands.swift in Sources */,
 				000000000000000000002012 /* BackgroundMusic.swift in Sources */,
-				G10000000000000000000001 /* PlaytestMusic.swift in Sources */,
 				000000000000000000002013 /* ContentView.swift in Sources */,
 				000000000000000000002014 /* CursorAtlas.swift in Sources */,
 				000000000000000000002015 /* DialogViews.swift in Sources */,
@@ -600,12 +598,6 @@
 				000000000000000000002017 /* EditorPreferences.swift in Sources */,
 				000000000000000000002018 /* EditorToolbar.swift in Sources */,
 				E10000000000000000000001 /* NativeUI.swift in Sources */,
-				67E7C1B6303CE54400966E44 /* PlaytestStatusTheme.swift in Sources */,
-				C10000000000000000000002 /* PlaytestStatusPanel.swift in Sources */,
-				D10000000000000000000001 /* PlaytestEraButtonStyle.swift in Sources */,
-				D10000000000000000000002 /* PlaytestEraMeter.swift in Sources */,
-				F10000000000000000000001 /* PlaytestFrameTheme.swift in Sources */,
-				G30000000000000000000001 /* PlaytestFontCatalog.swift in Sources */,
 				000000000000000000002025 /* PrivacyPolicyView.swift in Sources */,
 				000000000000000000002019 /* EditorTypes.swift in Sources */,
 				00000000000000000000201A /* FilePanelService.swift in Sources */,
@@ -615,22 +607,6 @@
 				00000000000000000000201E /* PaletteView.swift in Sources */,
 				00000000000000000000201F /* SpriteAtlas.swift in Sources */,
 				000000000000000000002020 /* StatusBarView.swift in Sources */,
-				000000000000000000002073 /* PlaytestView.swift in Sources */,
-				H10000000000000000000001 /* PlaytestLegacyControls.swift in Sources */,
-				000000000000000000002088 /* PlaytestSession.swift in Sources */,
-				000000000000000000002089 /* PlaytestHeader.swift in Sources */,
-				00000000000000000000208A /* PlaytestMapViews.swift in Sources */,
-				00000000000000000000208B /* PlaytestInteractionLayer.swift in Sources */,
-				00000000000000000000208C /* PlaytestInspector.swift in Sources */,
-				000000000000000000002074 /* PlaytestDualStrikeRules.swift in Sources */,
-				000000000000000000002075 /* PlaytestRules.swift in Sources */,
-				000000000000000000002076 /* PlaytestAdvanceWars2Rules.swift in Sources */,
-				000000000000000000002077 /* PlaytestAdvanceWarsRules.swift in Sources */,
-				A10000000000000000000001 /* PlaytestFamicomWarsRules.swift in Sources */,
-				A10000000000000000000002 /* PlaytestSuperFamicomWarsRules.swift in Sources */,
-				A10000000000000000000003 /* PlaytestGameBoyWarsRules.swift in Sources */,
-				A10000000000000000000004 /* PlaytestDaysOfRuinRules.swift in Sources */,
-				00000000000000000000207C /* PlaytestWeatherOverlay.swift in Sources */,
 			);
 		};
 		000000000000000000000505 /* Sources */ = {
