@@ -20,6 +20,7 @@ struct AWEDApp: App {
     var body: some Scene {
         Window("AW Map Editor", id: "main") {
             ContentView(model: session.model, atlas: session.atlas, music: session.music)
+                .awedWindowActivityAppearance()
         }
         .commands {
             AWEDCommands(model: session.model)
@@ -31,12 +32,14 @@ struct AWEDApp: App {
 
         Window("About AW Map Editor", id: AWEDWindowID.about) {
             AboutView()
+                .awedWindowActivityAppearance()
         }
         .defaultSize(width: 440, height: 440)
         .windowResizability(.contentSize)
 
         Window("Privacy Policy", id: AWEDWindowID.privacyPolicy) {
             PrivacyPolicyView()
+                .awedWindowActivityAppearance()
         }
         .defaultSize(width: 620, height: 520)
     }
@@ -92,7 +95,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         window.title = "AW Map Editor"
         window.minSize = NSSize(width: 800, height: 600)
-        window.contentView = NSHostingView(rootView: ContentView(model: session.model, atlas: session.atlas, music: session.music))
+        window.contentView = NSHostingView(
+            rootView: ContentView(model: session.model, atlas: session.atlas, music: session.music)
+                .awedWindowActivityAppearance()
+        )
         window.center()
         window.makeKeyAndOrderFront(nil)
         fallbackWindow = window

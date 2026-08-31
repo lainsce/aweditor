@@ -25,7 +25,10 @@ struct EditorToolbar: ToolbarContent {
         ToolbarItemGroup(placement: .navigation) {
             NativeToolbarControlGroup {
                 Button(action: newAction) {
-                    NativeToolbarIcon(systemImage: "doc.badge.plus")
+                    NativeToolbarIcon(
+                        systemImage: "doc.badge.plus",
+                        foregroundColor: .accentColor
+                    )
                 }
                     .frame(minWidth: 38, minHeight: 38, maxHeight: 38)
                     .accessibilityLabel("New")

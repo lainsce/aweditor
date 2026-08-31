@@ -53,13 +53,20 @@ struct NativeToggleStyle: ToggleStyle {
 
 struct NativeToolbarIcon: View {
     let systemImage: String
+    let foregroundColor: Color
+
+    init(systemImage: String, foregroundColor: Color = .primary) {
+        self.systemImage = systemImage
+        self.foregroundColor = foregroundColor
+    }
 
     var body: some View {
         Image(systemName: systemImage)
             .font(.system(size: 16, weight: .regular))
-            .foregroundStyle(.primary)
+            .foregroundStyle(foregroundColor)
             .frame(width: 38, height: 38)
             .accessibilityHidden(true)
+            .awedWindowActivityAppearance()
     }
 }
 
@@ -82,6 +89,7 @@ struct NativeToolbarControlGroup<Content: View>: View {
             RoundedRectangle(cornerRadius: 4)
                 .fill(.windowBackground)
         }
+        .awedWindowActivityAppearance()
     }
 }
 
@@ -122,6 +130,7 @@ struct NativeToolbarMenuButton<MenuContent: View>: View {
         }
         .help(Text(title))
         .accessibilityLabel(Text(title))
+        .awedWindowActivityAppearance()
     }
 }
 
@@ -488,5 +497,26 @@ where Value: Strideable & LosslessStringConvertible {
         }
         .frame(height: 38, alignment: .center)
         .offset(x: 8, y: -12)
+    }
+}
+
+/// Removes chroma from a window while it is inactive, preserving its layout and controls.
+struct AWEDWindowActivityAppearance: ViewModifier {
+    @Environment(\.appearsActive) private var appearsActive
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func body(content: Content) -> some View {
+        content
+            .saturation(appearsActive ? 1 : 0)
+            .animation(
+                reduceMotion ? nil : .easeInOut(duration: 0.18),
+                value: appearsActive
+            )
+    }
+}
+
+extension View {
+    func awedWindowActivityAppearance() -> some View {
+        modifier(AWEDWindowActivityAppearance())
     }
 }
