@@ -86,142 +86,80 @@ enum PaletteCatalog {
     }
 
     static func items(for tab: PaletteTab, tileset: Tileset? = nil) -> [PaletteItem] {
-        let items: [PaletteItem]
+        let base = baseItems(for: tab)
+        guard let tileset else { return base }
+        if tileset == .daysOfRuin { return daysOfRuinItems(base, tab: tab, tileset: tileset) }
+        if tileset.isGameBoyWarsFamily { return gameBoyItems(base, tab: tab, tileset: tileset) }
+        if tileset.isFamicomWarsFamily { return famicomItems(base, tab: tab, tileset: tileset) }
+        return base
+    }
+
+    private static func baseItems(for tab: PaletteTab) -> [PaletteItem] {
         switch tab {
-        case .terrain: items = terrainItems
-        case .unit: items = unitItems
-        case .extra: items = extraItems
-        case .mapArt: items = []
+        case .terrain: return terrainItems
+        case .unit: return unitItems
+        case .extra: return extraItems
+        case .mapArt: return []
         }
+    }
 
-        if let tileset, tileset == .daysOfRuin {
-            if tab == .unit {
-                let deleteItem = items.first(where: { $0.element == .unitDelete })
-                let rosterItems = daysOfRuinUnitRoster.compactMap { rosterElement in
-                    items.first(where: { $0.element.simplified == rosterElement.simplified })
-                }
-                return ([deleteItem].compactMap { $0 } + rosterItems).map { item in
-                    guard let label = daysOfRuinUnitLabel(for: item.element) else { return item }
-                    return item.withLabel(label)
-                }
-            }
-            return items
-                .filter { item in
-                    !item.element.isBuilding
-                        || visibleArmies(for: tileset).contains(item.element.army)
-                        || item.element.army == AWConstants.armyNeutral
-                }
-                .map { item in
-                    guard item.element.isBuilding,
-                          item.element.simplified != .buildingSilo else { return item }
-                    return item.withLabel(buildingLabel(for: item.element, tileset: tileset))
-                }
+    private static func daysOfRuinItems(_ items: [PaletteItem], tab: PaletteTab, tileset: Tileset) -> [PaletteItem] {
+        guard tab == .unit else {
+            return items.filter { !$0.element.isBuilding || visibleArmies(for: tileset).contains($0.element.army) || $0.element.army == AWConstants.armyNeutral }
+                .map { $0.element.isBuilding && $0.element.simplified != .buildingSilo ? $0.withLabel(buildingLabel(for: $0.element, tileset: tileset)) : $0 }
         }
-
-        if let tileset, tileset.isGameBoyWarsFamily {
-            if tab == .unit {
-                let deleteItem = items.first(where: { $0.element == .unitDelete })
-                let roster = tileset == .gbWars ? gbWars1UnitRoster : gbWarsSharedUnitRoster
-                let rosterItems = roster.compactMap { rosterElement in
-                    items.first(where: { $0.element.simplified == rosterElement })
-                }
-                return ([deleteItem].compactMap { $0 } + rosterItems).map { item in
-                    guard let label = gbWarsUnitLabel(for: item.element, tileset: tileset) else { return item }
-                    return item.withLabel(label)
-                }
-            }
-            return items
-                .filter { item in
-                    if item.tab == .terrain {
-                        if item.element.isBuilding {
-                            // GB Wars includes faction airports and ports;
-                            // keep them in the authoring palette alongside
-                            // HQs, cities, and bases. The remaining entries
-                            // are not part of the supplied GB property atlas.
-                            let hiddenBuildings: Set<Element> = [
-                                .buildingSilo,
-                                .buildingTower,
-                                .buildingLab
-                            ]
-                            guard !hiddenBuildings.contains(item.element.simplified) else { return false }
-                            // GB Wars has faction HQs/factories/airports/ports.
-                            // Neutral bases are valid map properties and must
-                            // remain placeable even when a particular source
-                            // atlas does not provide a separate neutral art
-                            // frame. Keep the existing atlas untouched here;
-                            // this filter only controls authoring choices.
-                            if item.element.army == AWConstants.armyNeutral,
-                               [.buildingHQ]
-                                .contains(item.element.simplified) {
-                                return false
-                            }
-                            return visibleArmies(for: tileset).contains(item.element.army)
-                                || item.element.army == AWConstants.armyNeutral
-                        }
-
-                        let hiddenTerrain: Set<Element> = [
-                            .terrainPlainD,
-                            .terrainReef,
-                            .terrainPipe,
-                            .terrainSeam
-                        ]
-                        return !hiddenTerrain.contains(item.element.simplified)
-                    }
-                    return true
-                }
-                .map { item in
-                    guard item.element.isBuilding else { return item }
-                    return item.withLabel(buildingLabel(for: item.element, tileset: tileset))
-                }
+        return rosterItems(daysOfRuinUnitRoster, from: items).map { item in
+            daysOfRuinUnitLabel(for: item.element).map { item.withLabel($0) } ?? item
         }
+    }
 
-        // Famicom Wars has its own sixteen-unit roster. The source-derived
-        // map sheet uses the original names (Howitzer, Supply Truck, and
-        // Scout), while the shared Element table supplies compatible slots
-        // for those three units (Rocket, Recon, and B-Copter respectively).
-        // Keep the unsupported later Advance Wars units out of this palette
-        // instead of exposing a misleading fallback sprite.
-        if let tileset, tileset.isFamicomWarsFamily, tab == .unit {
-            let deleteItem = items.first(where: { $0.element == .unitDelete })
-            let rosterItems = famicomWarsUnitRoster.compactMap { rosterElement in
-                items.first(where: { $0.element.simplified == rosterElement.simplified })
-            }
-            return ([deleteItem].compactMap { $0 } + rosterItems).map { item in
-                guard let label = famicomWarsUnitLabel(for: item.element) else { return item }
-                return item.withLabel(label)
+    private static func gameBoyItems(_ items: [PaletteItem], tab: PaletteTab, tileset: Tileset) -> [PaletteItem] {
+        guard tab == .unit else { return gameBoyTerrainItems(items, tileset: tileset) }
+        let roster = tileset == .gbWars ? gbWars1UnitRoster : gbWarsSharedUnitRoster
+        return rosterItems(roster, from: items).map { item in
+            gbWarsUnitLabel(for: item.element, tileset: tileset).map { item.withLabel($0) } ?? item
+        }
+    }
+
+    private static func famicomItems(_ items: [PaletteItem], tab: PaletteTab, tileset: Tileset) -> [PaletteItem] {
+        if tab == .unit {
+            return rosterItems(famicomWarsUnitRoster, from: items).map { item in
+                famicomWarsUnitLabel(for: item.element).map { item.withLabel($0) } ?? item
             }
         }
+        return items.filter { item in
+            guard !item.element.isBuilding || visibleArmies(for: tileset).contains(item.element.army) || item.element.army == AWConstants.armyNeutral else { return false }
+            switch item.element.simplified {
+            case .terrainPlainD, .terrainSeam, .buildingSilo: return false
+            case .terrainPipe, .buildingTower, .buildingLab: return tileset == .superFamicomWars
+            default: return true
+            }
+        }.map { item in
+            if tileset == .superFamicomWars, item.element.simplified == .terrainPipe { return item.withLabel("Railroad") }
+            return item.element.isBuilding ? item.withLabel(buildingLabel(for: item.element, tileset: tileset)) : item
+        }
+    }
 
-        // The NES game predates the later property set. Super Famicom Wars,
-        // however, has genuine Railroad terrain plus Train Station and
-        // Research Lab properties. The shared Pipe, Tower, and Lab element
-        // slots preserve the map-file contract while the palette presents
-        // the source-game names.
-        guard let tileset, tileset.isFamicomWarsFamily else { return items }
-        return items
-            .filter { item in
-                if item.element.isBuilding {
-                    guard visibleArmies(for: tileset).contains(item.element.army)
-                            || item.element.army == AWConstants.armyNeutral else { return false }
-                }
-                switch item.element.simplified {
-                case .terrainPlainD, .terrainSeam, .buildingSilo:
-                    return false
-                case .terrainPipe:
-                    return tileset == .superFamicomWars
-                case .buildingTower, .buildingLab:
-                    return tileset == .superFamicomWars
-                default:
-                    return true
-                }
+    private static func rosterItems(_ roster: [Element], from items: [PaletteItem]) -> [PaletteItem] {
+        let deleteItem = items.first(where: { $0.element == .unitDelete })
+        return [deleteItem].compactMap { $0 } + roster.compactMap { role in
+            items.first(where: { $0.element.simplified == role.simplified })
+        }
+    }
+
+    private static func gameBoyTerrainItems(_ items: [PaletteItem], tileset: Tileset) -> [PaletteItem] {
+        let hiddenBuildings: Set<Element> = [.buildingSilo, .buildingTower, .buildingLab, .buildingHQ]
+        let hiddenTerrain: Set<Element> = [.terrainPlainD, .terrainReef, .terrainPipe, .terrainSeam]
+        return items.filter { item in
+            guard item.tab == .terrain else { return true }
+            if item.element.isBuilding {
+                return !hiddenBuildings.contains(item.element.simplified) &&
+                    (visibleArmies(for: tileset).contains(item.element.army) || item.element.army == AWConstants.armyNeutral)
             }
-            .map { item in
-                if tileset == .superFamicomWars, item.element.simplified == .terrainPipe {
-                    return item.withLabel("Railroad")
-                }
-                guard item.element.isBuilding else { return item }
-                return item.withLabel(buildingLabel(for: item.element, tileset: tileset))
-            }
+            return !hiddenTerrain.contains(item.element.simplified)
+        }.map { item in
+            item.element.isBuilding ? item.withLabel(buildingLabel(for: item.element, tileset: tileset)) : item
+        }
     }
 
     static func label(for element: Element, tileset: Tileset? = nil) -> String {
@@ -362,46 +300,45 @@ enum PaletteCatalog {
     }
 
     private static func gbWarsUnitLabel(for element: Element, tileset: Tileset) -> String? {
-        guard tileset == .gbWars else {
-            return switch element.simplified {
-            case .unitRecon: "Combat Buggy"
-            case .unitRocket: "Rocket Launcher"
-            case .unitAntiAir: "Anti-Air"
-            case .unitTCopter: "Transport Plane"
-            case .unitBCopter: "Copter"
-            case .unitBattleship: "Aegis Warship"
-            default: nil
-            }
-        }
-
-        switch element.simplified {
-        case .unitInfantry: return "Infantry"
-        case .unitMech: return "Combat Engineer"
-        case .unitMDTank: return "Tank A"
-        case .unitTank: return "Tank B"
-        case .unitMegaTank: return "Gun Battery"
-        case .unitRocket: return "Self-Propelled Gun A"
-        case .unitArtillery: return "Self-Propelled Gun B"
-        case .unitMissile: return "Anti-Air Missile"
-        case .unitAntiAir: return "Anti-Air Tank"
-        case .unitPipeRunner: return "Rocket Launcher"
-        case .unitAPC: return "Armored Car"
-        case .unitRecon: return "Supply Transport"
-        case .unitFighter: return "Fighter A"
-        case .unitStealth: return "Fighter B"
-        case .unitBomber: return "Bomber"
-        case .unitBCopter: return "Attack Helicopter"
-        case .unitTCopter: return "Transport Helicopter"
-        case .unitBattleship: return "Battleship"
-        case .unitCruiser: return "Carrier"
-        case .unitLander: return "Transport Ship"
-        case .unitSub: return "Submarine"
-        case .unitNeoTank: return "Tank Z"
-        case .unitBlackBomb: return "Super Missile"
-        case .unitCarrier: return "Radar Transport"
-        default: return nil
-        }
+        let labels = tileset == .gbWars ? gbWars1Labels : gbWarsLaterLabels
+        return labels[element.simplified.value]
     }
+
+    private static let gbWars1Labels: [Int: String] = [
+        Element.unitInfantry.simplified.value: "Infantry",
+        Element.unitMech.simplified.value: "Combat Engineer",
+        Element.unitMDTank.simplified.value: "Tank A",
+        Element.unitTank.simplified.value: "Tank B",
+        Element.unitMegaTank.simplified.value: "Gun Battery",
+        Element.unitRocket.simplified.value: "Self-Propelled Gun A",
+        Element.unitArtillery.simplified.value: "Self-Propelled Gun B",
+        Element.unitMissile.simplified.value: "Anti-Air Missile",
+        Element.unitAntiAir.simplified.value: "Anti-Air Tank",
+        Element.unitPipeRunner.simplified.value: "Rocket Launcher",
+        Element.unitAPC.simplified.value: "Armored Car",
+        Element.unitRecon.simplified.value: "Supply Transport",
+        Element.unitFighter.simplified.value: "Fighter A",
+        Element.unitStealth.simplified.value: "Fighter B",
+        Element.unitBomber.simplified.value: "Bomber",
+        Element.unitBCopter.simplified.value: "Attack Helicopter",
+        Element.unitTCopter.simplified.value: "Transport Helicopter",
+        Element.unitBattleship.simplified.value: "Battleship",
+        Element.unitCruiser.simplified.value: "Carrier",
+        Element.unitLander.simplified.value: "Transport Ship",
+        Element.unitSub.simplified.value: "Submarine",
+        Element.unitNeoTank.simplified.value: "Tank Z",
+        Element.unitBlackBomb.simplified.value: "Super Missile",
+        Element.unitCarrier.simplified.value: "Radar Transport"
+    ]
+
+    private static let gbWarsLaterLabels: [Int: String] = [
+        Element.unitRecon.simplified.value: "Combat Buggy",
+        Element.unitRocket.simplified.value: "Rocket Launcher",
+        Element.unitAntiAir.simplified.value: "Anti-Air",
+        Element.unitTCopter.simplified.value: "Transport Plane",
+        Element.unitBCopter.simplified.value: "Copter",
+        Element.unitBattleship.simplified.value: "Aegis Warship"
+    ]
 
     private static func daysOfRuinUnitLabel(for element: Element) -> String? {
         switch element.simplified {
@@ -434,152 +371,56 @@ enum PaletteCatalog {
         return "\(armyName(element.army, tileset: tileset)) \(buildingName)"
     }
 
-    static let terrainItems: [PaletteItem] = {
-        var items: [PaletteItem] = []
-        func add(_ element: Element, _ label: String, _ position: String) {
-            items.append(PaletteItem(element, label: label, tab: .terrain, position: position))
-        }
-        add(.terrainPlain, "Plains", "0-0")
-        add(.terrainPlainD, "Ruins", "1-0")
-        add(.terrainWood, "Woods", "2-0")
-        add(.terrainMountain, "Mountains", "3-0")
-        add(.terrainRoad, "Roads", "4-0")
-        add(.terrainBridgeH, "Bridge", "5-0")
-        add(.terrainSea, "Sea", "0-1")
-        add(.terrainReef, "Reef", "1-1")
-        add(.terrainShoal, "Shoal", "2-1")
-        add(.terrainRiver, "River", "3-1")
-        add(.terrainPipe, "Pipe", "4-1")
-        add(.terrainSeam, "Pipe Seam", "5-1")
-        let buildings: [(Element, String)] = [
-            (.buildingHQ, "HQ"),
-            (.buildingCity, "City"),
-            (.buildingBase, "Base"),
-            (.buildingAirport, "Airport"),
-            (.buildingPort, "Port"),
-            (.buildingTower, "Tower"),
-            (.buildingLab, "Lab")
-        ]
-        for army in 0...4 {
-            for (column, building) in buildings.enumerated() {
-                add(building.0.changedArmy(army), "\(armyName(army)) \(building.1)", "\(column)-\(army + 3)")
-            }
-        }
-        add(.buildingSilo, "Missile silo", "0-8")
-        for (column, building) in buildings.dropFirst().enumerated() {
-            add(building.0.changedArmy(AWConstants.armyNeutral), "Neutral \(building.1)", "\(column + 1)-8")
-        }
-        return items
-    }()
+    static var terrainItems: [PaletteItem] { PaletteCatalogItems.terrain }
 
-    static let unitItems: [PaletteItem] = {
-        var items: [PaletteItem] = []
-        func add(_ element: Element, _ label: String, _ position: String) {
-            items.append(PaletteItem(element, label: label, tab: .unit, position: position))
-        }
-        add(.unitDelete, "Delete unit", "4-2")
-        let units: [(Element, String)] = [
-            (.unitInfantry, "Infantry"),
-            (.unitMech, "Mech"),
-            (.unitAPC, "APC"),
-            (.unitOozium, "Oozium"),
-            (.unitRecon, "Recon"),
-            (.unitTank, "Tank"),
-            (.unitMDTank, "Medium Tank"),
-            (.unitNeoTank, "Neotank"),
-            (.unitMegaTank, "Megatank"),
-            (.unitArtillery, "Artillery"),
-            (.unitRocket, "Rocket"),
-            (.unitPipeRunner, "Piperunner"),
-            (.unitMissile, "Missile"),
-            (.unitAntiAir, "Anti-air"),
-            (.unitTCopter, "T-copter"),
-            (.unitBCopter, "B-copter"),
-            (.unitFighter, "Fighter"),
-            (.unitBomber, "Bomber"),
-            (.unitStealth, "Stealth"),
-            (.unitBlackBomb, "Black Bomb"),
-            (.unitBlackBoat, "Black Boat"),
-            (.unitLander, "Lander"),
-            (.unitCruiser, "Cruiser"),
-            (.unitSub, "Submarine"),
-            (.unitBattleship, "Battleship"),
-            (.unitCarrier, "Carrier")
-        ]
-        for (index, unit) in units.enumerated() {
-            let row = index < 4 ? 2 : index < 9 ? 3 : index < 14 ? 4 : index < 20 ? 5 : 6
-            let column = index < 4 ? index : index < 9 ? index - 4 : index < 14 ? index - 9 : index < 20 ? index - 14 : index - 20
-            add(unit.0, unit.1, "\(column)-\(row)")
-        }
-        return items
-    }()
+    static var unitItems: [PaletteItem] { PaletteCatalogItems.unit }
 
-    static let extraItems: [PaletteItem] = {
-        let entries: [(Element, String, String)] = [
-            (.extraMCannonW, "Mini Cannon W", "0-0"),
-            (.extraMCannonN, "Mini Cannon N", "1-0"),
-            (.extraMCannonE, "Mini Cannon E", "2-0"),
-            (.extraMCannonS, "Mini Cannon S", "3-0"),
-            (.extraLCannon, "Large Cannon", "4-0"),
-            (.extraBCannonN, "Black Cannon N", "0-1"),
-            (.extraBCannons, "Black Cannon S", "1-1"),
-            (.extraBobelisk, "Black Obelisk", "4-1"),
-            (.extraVolcano, "Volcano", "0-3"),
-            (.extraBlackArc, "Black Ark", "1-3"),
-            (.extraSeaArc, "Sea Black Ark", "2-3"),
-            (.extraFortress, "Fortress", "3-3"),
-            (.extraBCrystal, "Black Crystal", "3-1"),
-            (.extraDeathray, "Deathray", "2-1"),
-            (.extraGSilo, "Grand Silo", "4-3")
-        ]
-        return entries.map { PaletteItem($0.0, label: $0.1, tab: .extra, position: $0.2) }
-    }()
+    static var extraItems: [PaletteItem] { PaletteCatalogItems.extra }
 
     static func armyName(_ army: Int, tileset: Tileset? = nil) -> String {
-        if tileset == .daysOfRuin {
-            switch army {
-            case AWConstants.armyOrangeStar: return "12th Battalion"
-            case AWConstants.armyBlueMoon: return "Lazuria"
-            case AWConstants.armyYellowComet: return "New Rubinelle Army"
-            case AWConstants.armyBlackHole: return "Intelligence Defense Systems"
-            case AWConstants.armyNeutral: return "Neutral"
-            default: return "Unavailable"
-            }
+        if tileset == .daysOfRuin { return daysOfRuinArmyNames[army] ?? "Unavailable" }
+        if tileset == .famicomWars || tileset == .superFamicomWars {
+            let names = tileset == .famicomWars ? famicomArmyNames : superFamicomArmyNames
+            return names[army] ?? "Unavailable"
         }
-        if tileset == .famicomWars {
-            switch army {
-            case AWConstants.armyOrangeStar: return "Red Star"
-            case AWConstants.armyBlueMoon: return "White Moon"
-            case AWConstants.armyNeutral: return "Neutral"
-            default: return "Unavailable"
-            }
-        }
-        if tileset == .superFamicomWars {
-            switch army {
-            case AWConstants.armyOrangeStar: return "Red Star"
-            case AWConstants.armyBlueMoon: return "White Moon"
-            case AWConstants.armyGreenEarth: return "Green Soil"
-            case AWConstants.armyYellowComet: return "Yellow Comet"
-            case AWConstants.armyNeutral: return "Neutral"
-            default: return "Unavailable"
-            }
-        }
-        if tileset?.isGameBoyWarsFamily == true {
-            switch army {
-            case AWConstants.armyOrangeStar: return "Red Star"
-            case AWConstants.armyBlueMoon: return "White Moon"
-            default: break
-            }
-        }
-        switch army {
-        case AWConstants.armyOrangeStar: return "Orange Star"
-        case AWConstants.armyBlueMoon: return "Blue Moon"
-        case AWConstants.armyGreenEarth: return "Green Earth"
-        case AWConstants.armyYellowComet: return "Gold Comet"
-        case AWConstants.armyBlackHole: return "Black Hole"
-        default: return "Neutral"
-        }
+        if tileset?.isGameBoyWarsFamily == true, let name = gameBoyArmyNames[army] { return name }
+        return standardArmyNames[army] ?? "Neutral"
     }
+
+    private static let daysOfRuinArmyNames: [Int: String] = [
+        AWConstants.armyOrangeStar: "12th Battalion",
+        AWConstants.armyBlueMoon: "Lazuria",
+        AWConstants.armyYellowComet: "New Rubinelle Army",
+        AWConstants.armyBlackHole: "Intelligence Defense Systems",
+        AWConstants.armyNeutral: "Neutral"
+    ]
+
+    private static let famicomArmyNames: [Int: String] = [
+        AWConstants.armyOrangeStar: "Red Star",
+        AWConstants.armyBlueMoon: "White Moon",
+        AWConstants.armyNeutral: "Neutral"
+    ]
+
+    private static let superFamicomArmyNames: [Int: String] = [
+        AWConstants.armyOrangeStar: "Red Star",
+        AWConstants.armyBlueMoon: "White Moon",
+        AWConstants.armyGreenEarth: "Green Soil",
+        AWConstants.armyYellowComet: "Yellow Comet",
+        AWConstants.armyNeutral: "Neutral"
+    ]
+
+    private static let gameBoyArmyNames: [Int: String] = [
+        AWConstants.armyOrangeStar: "Red Star",
+        AWConstants.armyBlueMoon: "White Moon"
+    ]
+
+    private static let standardArmyNames: [Int: String] = [
+        AWConstants.armyOrangeStar: "Orange Star",
+        AWConstants.armyBlueMoon: "Blue Moon",
+        AWConstants.armyGreenEarth: "Green Earth",
+        AWConstants.armyYellowComet: "Gold Comet",
+        AWConstants.armyBlackHole: "Black Hole"
+    ]
 
     static func armyAbbreviation(_ army: Int, tileset: Tileset? = nil) -> String {
         if tileset == .daysOfRuin {

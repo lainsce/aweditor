@@ -258,7 +258,7 @@ public struct Element: Hashable, Codable, Sendable {
     public var base: Element { isSea ? .terrainSea : .terrainPlain }
 
     public func nextSprite() -> Element {
-        guard isTerrain else { return self }
+        guard isTerrain, value != AWConstants.terrainBlank else { return self }
         let simple = simplified
         var next = self
         repeat {
@@ -294,84 +294,120 @@ public struct Element: Hashable, Codable, Sendable {
 
     public func isCompatible(with format: MapFormat) -> Bool {
         guard format != .aws else { return true }
-        if isTerrain {
-            if simplified == .terrainPlain || simplified == .terrainWood || simplified == .terrainMountain || simplified == .terrainRoad || simplified == .terrainBridgeH || simplified == .terrainRiver || simplified == .terrainSea || simplified == .terrainShoal || simplified == .terrainReef { return true }
-            if simplified == .terrainPlainD && format == .awd { return true }
-            if simplified == .terrainPipe || simplified == .terrainSeam { return format != .awm }
-            return false
-        }
-        if isBuilding {
-            guard (0...AWConstants.armyNeutral).contains(army), !(army == AWConstants.armyBlackHole && format == .awm) else { return false }
-            if [.buildingHQ, .buildingCity, .buildingBase, .buildingAirport, .buildingPort].contains(simplified) { return true }
-            if simplified == .buildingTower || simplified == .buildingLab { return format == .awd }
-            if simplified == .buildingSilo { return format != .awm }
-            return false
-        }
-        if isExtra {
-            return format == .awd
-        }
-        if isUnit {
-            guard isUnitNonEmpty else { return true }
-            guard (0..<AWConstants.playableArmies).contains(army), !(army == AWConstants.armyBlackHole && format == .awm) else { return false }
-            switch simplified.value {
-            case Self.unitNeoTank.value: return format != .awm
-            case Self.unitMegaTank.value, Self.unitPipeRunner.value, Self.unitOozium.value, Self.unitBlackBoat.value, Self.unitCarrier.value, Self.unitStealth.value, Self.unitBlackBomb.value: return format == .awd
-            default: return true
-            }
-        }
+        if isTerrain { return terrainIsCompatible(with: format) }
+        if isBuilding { return buildingIsCompatible(with: format) }
+        if isExtra { return format == .awd }
+        if isUnit { return unitIsCompatible(with: format) }
         return false
+    }
+
+    private func terrainIsCompatible(with format: MapFormat) -> Bool {
+        return switch simplified {
+        case .terrainPlain, .terrainWood, .terrainMountain, .terrainRoad,
+             .terrainBridgeH, .terrainRiver, .terrainSea, .terrainShoal, .terrainReef:
+            true
+        case .terrainPlainD:
+            format == .awd
+        case .terrainPipe, .terrainSeam:
+            format != .awm
+        default:
+            false
+        }
+    }
+
+    private func buildingIsCompatible(with format: MapFormat) -> Bool {
+        guard (0...AWConstants.armyNeutral).contains(army),
+              !(army == AWConstants.armyBlackHole && format == .awm) else { return false }
+        return switch simplified {
+        case .buildingHQ, .buildingCity, .buildingBase, .buildingAirport, .buildingPort:
+            true
+        case .buildingTower, .buildingLab:
+            format == .awd
+        case .buildingSilo:
+            format != .awm
+        default:
+            false
+        }
+    }
+
+    private func unitIsCompatible(with format: MapFormat) -> Bool {
+        guard isUnitNonEmpty else { return true }
+        guard (0..<AWConstants.playableArmies).contains(army),
+              !(army == AWConstants.armyBlackHole && format == .awm) else { return false }
+        switch simplified {
+        case .unitNeoTank:
+            return format != .awm
+        case .unitMegaTank, .unitPipeRunner, .unitOozium, .unitBlackBoat,
+             .unitCarrier, .unitStealth, .unitBlackBomb:
+            return format == .awd
+        default:
+            return true
+        }
     }
 
     public func converted(to format: MapFormat) -> Int {
         guard format != .aws else { return value }
-        let oldTerrainStart = 0
-        let oldBuildingStart = 300
-        let oldUnitStart = 500
-        let oldExtraStart = 900
-        if isTerrain {
-            let simple = simplified
-            if simple.isCompatible(with: format) { return oldTerrainStart + simple.x + simple.y * AWConstants.terrainColumns }
-            if simple.isSea { return oldTerrainStart + Element.terrainSea.x + Element.terrainSea.y * AWConstants.terrainColumns }
-            if simple.isPipe && format != .awm { return oldTerrainStart + Element.terrainPipe.x + Element.terrainPipe.y * AWConstants.terrainColumns }
-            if simple.isRiver { return oldTerrainStart + Element.terrainRiver.x + Element.terrainRiver.y * AWConstants.terrainColumns }
-            if simple.isRoad { return oldTerrainStart + Element.terrainRoad.x + Element.terrainRoad.y * AWConstants.terrainColumns }
-            return oldTerrainStart + Element.terrainPlain.x + Element.terrainPlain.y * AWConstants.terrainColumns
-        }
-        if isBuilding {
-            var armyValue = army
-            if armyValue < 0 || armyValue > AWConstants.armyNeutral || (armyValue == AWConstants.armyBlackHole && format == .awm) { armyValue = AWConstants.armyNeutral }
-            let simple = simplified
-            if isCompatible(with: format) {
-                let neutralRow = format == .awm ? 4 : 5
-                let row = armyValue == AWConstants.armyNeutral ? neutralRow : armyValue
-                return oldBuildingStart + x + row * AWConstants.buildingColumns
-            }
-            // An otherwise-supported building with an unsupported army keeps
-            // its type where possible. HQs cannot be represented for that
-            // army in old formats, so the legacy editor saved plain terrain.
-            if simple.isCompatible(with: format) {
-                if simple == .buildingHQ {
-                    return oldTerrainStart + Element.terrainPlain.x + Element.terrainPlain.y * AWConstants.terrainColumns
-                }
-                let neutralRow = format == .awm ? 4 : 5
-                let row = armyValue == AWConstants.armyNeutral ? neutralRow : simple.y
-                return oldBuildingStart + simple.x + row * AWConstants.buildingColumns
-            }
-            let fallback = Element.buildingCity.changedArmy(armyValue)
-            let neutralRow = format == .awm ? 4 : 5
-            let row = armyValue == AWConstants.armyNeutral ? neutralRow : fallback.y
-            return oldBuildingStart + fallback.x + row * AWConstants.buildingColumns
-        }
-        if isExtra {
-            if isCompatible(with: format) { return oldExtraStart + x + y * AWConstants.extraColumns }
-            let fallback = format == .awm ? Element.terrainPlain : Element.terrainPipe
-            return fallback.x + fallback.y * AWConstants.terrainColumns
-        }
-        if isUnit {
-            if value == AWConstants.unitEmpty { return AWConstants.unitEmpty }
-            return isCompatible(with: format) ? oldUnitStart + x + y * AWConstants.unitColumns : AWConstants.unitEmpty
-        }
+        if isTerrain { return convertedTerrain(to: format) }
+        if isBuilding { return convertedBuilding(to: format) }
+        if isExtra { return convertedExtra(to: format) }
+        if isUnit { return convertedUnit(to: format) }
         return value
+    }
+
+    private func convertedTerrain(to format: MapFormat) -> Int {
+        let simple = simplified
+        if simple.isCompatible(with: format) { return terrainIndex(simple) }
+        if simple.isSea { return terrainIndex(.terrainSea) }
+        if simple.isPipe && format != .awm { return terrainIndex(.terrainPipe) }
+        if simple.isRiver { return terrainIndex(.terrainRiver) }
+        if simple.isRoad { return terrainIndex(.terrainRoad) }
+        return terrainIndex(.terrainPlain)
+    }
+
+    private func terrainIndex(_ element: Element) -> Int {
+        element.x + element.y * AWConstants.terrainColumns
+    }
+
+    private func convertedBuilding(to format: MapFormat) -> Int {
+        var armyValue = army
+        if armyValue < 0 || armyValue > AWConstants.armyNeutral ||
+            (armyValue == AWConstants.armyBlackHole && format == .awm) {
+            armyValue = AWConstants.armyNeutral
+        }
+        if isCompatible(with: format) { return buildingIndex(army: armyValue, format: format) }
+        let simple = simplified
+        // Preserve a supported building's type when only its army is not
+        // representable. Legacy formats cannot encode an unsupported HQ.
+        if simple.isCompatible(with: format) {
+            if simple == .buildingHQ { return terrainIndex(.terrainPlain) }
+            let row = armyValue == AWConstants.armyNeutral ? neutralBuildingRow(for: format) : simple.y
+            return 300 + simple.x + row * AWConstants.buildingColumns
+        }
+        let fallback = Element.buildingCity.changedArmy(armyValue)
+        let row = armyValue == AWConstants.armyNeutral ? neutralBuildingRow(for: format) : fallback.y
+        return 300 + fallback.x + row * AWConstants.buildingColumns
+    }
+
+    private func buildingIndex(army: Int, format: MapFormat) -> Int {
+        let row = army == AWConstants.armyNeutral ? neutralBuildingRow(for: format) : army
+        return 300 + x + row * AWConstants.buildingColumns
+    }
+
+    private func neutralBuildingRow(for format: MapFormat) -> Int { format == .awm ? 4 : 5 }
+
+    private func convertedExtra(to format: MapFormat) -> Int {
+        guard isCompatible(with: format) else {
+            let fallback = format == .awm ? Element.terrainPlain : Element.terrainPipe
+            return terrainIndex(fallback)
+        }
+        return 900 + x + y * AWConstants.extraColumns
+    }
+
+    private func convertedUnit(to format: MapFormat) -> Int {
+        guard value != AWConstants.unitEmpty else { return AWConstants.unitEmpty }
+        return isCompatible(with: format)
+            ? 500 + x + y * AWConstants.unitColumns
+            : AWConstants.unitEmpty
     }
 
     public static func convertFrom(_ value: Int, mapType: MapFormat) -> Int {

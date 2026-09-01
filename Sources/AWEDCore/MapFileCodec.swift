@@ -48,63 +48,15 @@ public enum MapFileCodec {
         let data: Data
         do { data = try Data(contentsOf: url) } catch { throw MapFileError.truncatedFile }
         var reader = ByteReader(data: data)
-        let headerBytes = try reader.read(count: 10)
-        guard let header = String(bytes: headerBytes.prefix(9), encoding: .ascii), let format = Element.mapType(for: header) else {
-            throw MapFileError.unsupportedHeader
-        }
-
-        var width = 30
-        var height = 20
-        if format == .aws {
-            width = Int(try reader.readUInt8())
-            height = Int(try reader.readUInt8())
-            guard width > 0, height > 0 else { throw MapFileError.invalidDimensions }
-        }
-
+        let format = try readFormat(from: &reader)
+        let dimensions = try readDimensions(from: &reader, format: format)
+        let width = dimensions.width
+        let height = dimensions.height
         var map = MapState(width: width, height: height, tileset: .normal, defaultTerrain: .terrainSea, defaultAuthor: defaultAuthor)
-        if format == .awd {
-            let rawTileset = try reader.readUInt8()
-            map.tileset = Tileset(rawValue: max(0, Int(rawTileset) - 1)) ?? .normal
-        } else if format == .aws {
-            map.tileset = Tileset(rawValue: Int(try reader.readUInt8())) ?? .normal
-        } else {
-            map.tileset = format == .awm ? .aw1 : .aw2
-        }
-
-        let backgroundValues = try (0..<(width * height)).map { _ in
-            Int(try reader.readUInt16())
-        }
-        let usesCompactTerrainIDs = usesCompactRegressionTerrainIDs(
-            backgroundValues,
-            format: format
-        )
-        for x in 0..<width {
-            for y in 0..<height {
-                let value = backgroundValues[x * height + y]
-                let element = decodedBackgroundElement(
-                    value,
-                    format: format,
-                    usesCompactTerrainIDs: usesCompactTerrainIDs
-                )
-                _ = map.setBackground(element, atX: x, y: y, check: false)
-            }
-        }
-        for x in 0..<width {
-            for y in 0..<height {
-                let value = Int(try reader.readUInt16())
-                _ = map.setForeground(Element(value, mapType: format), atX: x, y: y)
-            }
-        }
-
-        if reader.remaining >= 4 {
-            map.setName(try reader.readStringField(maximum: AWConstants.nameMaximumLength))
-        }
-        if reader.remaining >= 4 {
-            map.setAuthor(try reader.readStringField(maximum: AWConstants.authorMaximumLength))
-        }
-        if reader.remaining >= 4 {
-            map.setDescription(try reader.readStringField(maximum: AWConstants.descriptionMaximumLength))
-        }
+        map.tileset = try readTileset(from: &reader, format: format)
+        try readBackground(into: &map, from: &reader, format: format)
+        try readForeground(into: &map, from: &reader, format: format)
+        try readMetadata(into: &map, from: &reader)
         map.setDirty(false)
         map.updateDraw()
         return map
@@ -118,7 +70,88 @@ public enum MapFileCodec {
         if format == .aws && (map.width > 255 || map.height > 255) { throw MapFileError.invalidAWSDimensions }
 
         let warnings = Self.warnings(for: map, format: format)
+        var data = headerData(for: map, format: format)
+        appendTiles(map, format: format, to: &data)
+        appendMetadata(map, to: &data)
+        do { try data.write(to: url, options: .atomic) } catch { throw MapFileError.cannotWrite }
+        return MapWriteReport(format: format, warnings: warnings)
+    }
 
+    private static func readFormat(from reader: inout ByteReader) throws -> MapFormat {
+        let headerBytes = try reader.read(count: 10)
+        guard let header = String(bytes: headerBytes.prefix(9), encoding: .ascii),
+              let format = Element.mapType(for: header) else {
+            throw MapFileError.unsupportedHeader
+        }
+        return format
+    }
+
+    private static func readDimensions(
+        from reader: inout ByteReader,
+        format: MapFormat
+    ) throws -> (width: Int, height: Int) {
+        guard format == .aws else { return (30, 20) }
+        let width = Int(try reader.readUInt8())
+        let height = Int(try reader.readUInt8())
+        guard width > 0, height > 0 else { throw MapFileError.invalidDimensions }
+        return (width, height)
+    }
+
+    private static func readTileset(from reader: inout ByteReader, format: MapFormat) throws -> Tileset {
+        if format == .awd {
+            let rawTileset = try reader.readUInt8()
+            return Tileset(rawValue: max(0, Int(rawTileset) - 1)) ?? .normal
+        }
+        if format == .aws {
+            return Tileset(rawValue: Int(try reader.readUInt8())) ?? .normal
+        }
+        return format == .awm ? .aw1 : .aw2
+    }
+
+    private static func readBackground(
+        into map: inout MapState,
+        from reader: inout ByteReader,
+        format: MapFormat
+    ) throws {
+        let values = try (0..<(map.width * map.height)).map { _ in
+            Int(try reader.readUInt16())
+        }
+        let compact = usesCompactRegressionTerrainIDs(values, format: format)
+        for x in 0..<map.width {
+            for y in 0..<map.height {
+                let value = values[x * map.height + y]
+                let element = decodedBackgroundElement(value, format: format, usesCompactTerrainIDs: compact)
+                _ = map.setBackground(element, atX: x, y: y, check: false)
+            }
+        }
+    }
+
+    private static func readForeground(
+        into map: inout MapState,
+        from reader: inout ByteReader,
+        format: MapFormat
+    ) throws {
+        for x in 0..<map.width {
+            for y in 0..<map.height {
+                let value = Int(try reader.readUInt16())
+                _ = map.setForeground(Element(value, mapType: format), atX: x, y: y)
+            }
+        }
+    }
+
+    private static func readMetadata(into map: inout MapState, from reader: inout ByteReader) throws {
+        if reader.remaining >= 4 {
+            map.setName(try reader.readStringField(maximum: AWConstants.nameMaximumLength))
+        }
+        if reader.remaining >= 4 {
+            map.setAuthor(try reader.readStringField(maximum: AWConstants.authorMaximumLength))
+        }
+        if reader.remaining >= 4 {
+            map.setDescription(try reader.readStringField(maximum: AWConstants.descriptionMaximumLength))
+        }
+    }
+
+    private static func headerData(for map: MapState, format: MapFormat) -> Data {
         var data = Data()
         data.append(contentsOf: format.header.utf8)
         data.append(0)
@@ -129,27 +162,32 @@ public enum MapFileCodec {
         } else if format == .awd {
             data.append(UInt8(min(255, map.tileset.rawValue + 1)))
         }
+        return data
+    }
 
-        let outputWidth = format.supportsVariableSize ? map.width : 30
-        let outputHeight = format.supportsVariableSize ? map.height : 20
-        for x in 0..<outputWidth {
-            for y in 0..<outputHeight {
-                let element = map.backgroundElement(atX: x, y: y)
-                data.append(contentsOf: UInt16(clamping: element.converted(to: format)).littleEndianBytes)
+    private static func appendTiles(_ map: MapState, format: MapFormat, to data: inout Data) {
+        let width = format.supportsVariableSize ? map.width : 30
+        let height = format.supportsVariableSize ? map.height : 20
+        for x in 0..<width {
+            for y in 0..<height {
+                append(map.backgroundElement(atX: x, y: y), format: format, to: &data)
             }
         }
-        for x in 0..<outputWidth {
-            for y in 0..<outputHeight {
-                let element = map.foregroundElement(atX: x, y: y)
-                data.append(contentsOf: UInt16(clamping: element.converted(to: format)).littleEndianBytes)
+        for x in 0..<width {
+            for y in 0..<height {
+                append(map.foregroundElement(atX: x, y: y), format: format, to: &data)
             }
         }
+    }
 
+    private static func append(_ element: Element, format: MapFormat, to data: inout Data) {
+        data.append(contentsOf: UInt16(clamping: element.converted(to: format)).littleEndianBytes)
+    }
+
+    private static func appendMetadata(_ map: MapState, to data: inout Data) {
         appendStringField(map.name, to: &data)
         appendStringField(map.author, to: &data)
         appendStringField(map.description, to: &data)
-        do { try data.write(to: url, options: .atomic) } catch { throw MapFileError.cannotWrite }
-        return MapWriteReport(format: format, warnings: warnings)
     }
 
     private static func appendStringField(_ string: String, to data: inout Data) {

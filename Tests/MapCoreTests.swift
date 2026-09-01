@@ -32,7 +32,7 @@ func terrainIDCompatibility() throws {
     #expect(stable.backgroundElement(atX: 1, y: 0) == .terrainWood)
     #expect(stable.backgroundElement(atX: 2, y: 0) == .terrainMountain)
 
-    let compactURL = try makeTerrainFixture(values: [40, 60, 100])
+    let compactURL = try makeTerrainFixture(values: [40, 60, 100, 299])
     defer { try? FileManager.default.removeItem(at: compactURL) }
     let compact = try MapFileCodec.read(from: compactURL)
     #expect(compact.backgroundElement(atX: 0, y: 0) == .terrainSea)
@@ -177,26 +177,41 @@ func superFamicomRailroadPlacement() {
 
 @Test("enclosed sea cells use the legacy draw variant")
 func enclosedSeaDrawing() {
+    enclosedSeaCellDrawing()
+    enclosedSeaChannelDrawing()
+    enclosedSeaMouthDrawing()
+    enclosedSeaUpperRiverEdgeDrawing()
+}
+
+private func enclosedSeaCellDrawing() {
     var map = MapState(width: 3, height: 3, defaultTerrain: .terrainPlain)
     _ = map.setBackground(.terrainSea, atX: 1, y: 1, check: false)
     map.updateDraw()
 
     #expect(map.backgroundElement(atX: 1, y: 1) == .terrainSea)
     #expect(map.backgroundDrawElement(atX: 1, y: 1) == Element(AWConstants.makeTerrain(7, 0)))
-
+}
+private func enclosedSeaChannelDrawing() {
     var channel = MapState(width: 3, height: 4, defaultTerrain: .terrainPlain)
     _ = channel.setBackground(.terrainSea, atX: 1, y: 1, check: false)
     _ = channel.setBackground(.terrainSea, atX: 1, y: 2, check: false)
     channel.updateDraw()
     #expect(channel.backgroundDrawElement(atX: 1, y: 1) == Element(AWConstants.makeTerrain(7, 3)))
     #expect(channel.backgroundDrawElement(atX: 1, y: 2) == Element(AWConstants.makeTerrain(7, 4)))
-
+}
+private func enclosedSeaMouthDrawing() {
     var mouth = MapState(width: 4, height: 3, defaultTerrain: .terrainSea)
     _ = mouth.setBackground(.terrainRiver, atX: 2, y: 1, check: false)
     mouth.updateDraw()
     #expect(mouth.backgroundDrawElement(atX: 1, y: 1) == Element(AWConstants.makeTerrain(4, 0)))
 }
-
+private func enclosedSeaUpperRiverEdgeDrawing() {
+    var upperRiverEdge = MapState(width: 3, height: 4, defaultTerrain: .terrainSea)
+    _ = upperRiverEdge.setBackground(.terrainRiver, atX: 1, y: 0, check: false)
+    _ = upperRiverEdge.setBackground(.terrainRiver, atX: 1, y: 1, check: false)
+    upperRiverEdge.updateDraw()
+    #expect(upperRiverEdge.backgroundDrawElement(atX: 1, y: 2) == Element(AWConstants.makeTerrain(4, 3)))
+}
 @Test("Famicom Wars keeps shoal as its flat cyan tile")
 func famicomShoalDrawing() {
     var map = MapState(width: 3, height: 3, tileset: .famicomWars, defaultTerrain: .terrainSea)
@@ -215,6 +230,7 @@ func gbWarsFlatTerrainDrawing() {
     _ = map.setBackground(.terrainBridgeH, atX: 3, y: 1, check: false)
     _ = map.setBackground(.terrainBridgeV, atX: 4, y: 1, check: false)
     _ = map.setBackground(.terrainShoal, atX: 1, y: 2, check: false)
+    _ = map.setBackground(.terrainPlainD, atX: 2, y: 2, check: false)
     map.updateDraw()
 
     #expect(map.backgroundDrawElement(atX: 1, y: 1) == .terrainPlain)
@@ -222,6 +238,7 @@ func gbWarsFlatTerrainDrawing() {
     #expect(map.backgroundDrawElement(atX: 3, y: 1) == .terrainBridgeH)
     #expect(map.backgroundDrawElement(atX: 4, y: 1) == .terrainBridgeV)
     #expect(map.backgroundDrawElement(atX: 1, y: 2) == .terrainShoal)
+    #expect(map.backgroundDrawElement(atX: 2, y: 2).simplified == .terrainPlainD)
 }
 
 @Test("bridges reconstruct a matching water underlay")
@@ -269,11 +286,18 @@ func neutralHQNormalization() {
 
 @Test("mountain ranges sprinkle taller draw-only variants")
 func mountainRangeDrawing() {
+    isolatedMountainDrawing()
+    clusteredMountainDrawing()
+    ridgeMountainDrawing()
+}
+
+private func isolatedMountainDrawing() {
     var isolated = MapState(width: 1, height: 1, defaultTerrain: .terrainSea)
     _ = isolated.setBackground(.terrainMountain, atX: 0, y: 0, check: false)
     #expect(isolated.backgroundElement(atX: 0, y: 0) == .terrainMountain)
     #expect(isolated.backgroundDrawElement(atX: 0, y: 0) == .terrainMountain)
-
+}
+private func clusteredMountainDrawing() {
     var rangeWithMountains = MapState(width: 7, height: 7, defaultTerrain: .terrainSea)
     for x in 1..<6 {
         for y in 1..<6 {
@@ -294,14 +318,15 @@ func mountainRangeDrawing() {
     #expect(tallCount > 0)
     #expect(rangeWithMountains.backgroundElement(atX: 3, y: 3) == .terrainMountain)
     #expect(rangeWithMountains.backgroundDrawElement(atX: 3, y: 3).simplified == .terrainMountain)
-
+}
+private func ridgeMountainDrawing() {
+    let tallMountain = Element(AWConstants.makeTerrain(0, 7))
     var ridge = MapState(width: 3, height: 1, defaultTerrain: .terrainSea)
     _ = ridge.setBackground(.terrainMountain, atX: 0, y: 0, check: false)
     _ = ridge.setBackground(.terrainMountain, atX: 1, y: 0, check: false)
     _ = ridge.setBackground(.terrainMountain, atX: 2, y: 0, check: false)
     #expect(ridge.backgroundDrawElement(atX: 1, y: 0) == tallMountain)
 }
-
 @Test("sea arc placement checks the complete legacy footprint")
 func seaArcPlacement() {
     var map = MapState(width: 10, height: 10, defaultTerrain: .terrainSea)
@@ -316,6 +341,12 @@ func seaArcPlacement() {
 
 @Test("AWS and legacy map files round-trip metadata and tiles")
 func fileRoundTrip() throws {
+    try awsFileRoundTrip()
+    try legacyFileRoundTrip()
+    try awdFileRoundTrip()
+}
+
+private func awsFileRoundTrip() throws {
     var map = MapState(width: 3, height: 2, tileset: .desert, defaultTerrain: .terrainSea, defaultAuthor: "Tester")
     map.setName("Round trip")
     map.setAuthor("Map author")
@@ -337,7 +368,10 @@ func fileRoundTrip() throws {
     #expect(loaded.author == "Map author")
     #expect(loaded.backgroundElement(atX: 1, y: 0) == .terrainPlain)
     #expect(loaded.foregroundElement(atX: 1, y: 0).army == AWConstants.armyBlueMoon)
+}
 
+private func legacyFileRoundTrip() throws {
+    let directory = FileManager.default.temporaryDirectory
     let oldURL = directory.appending(path: "awed-roundtrip-\(UUID().uuidString).awm")
     defer { try? FileManager.default.removeItem(at: oldURL) }
     var legacy = MapState(width: 30, height: 20, defaultTerrain: .terrainPlain)
@@ -351,10 +385,115 @@ func fileRoundTrip() throws {
     #expect(oldLoaded.foregroundElement(atX: 2, y: 2) == .unitInfantry)
 }
 
+private func awdFileRoundTrip() throws {
+    let directory = FileManager.default.temporaryDirectory
+    let awdURL = directory.appending(path: "awed-roundtrip-\(UUID().uuidString).awd")
+    defer { try? FileManager.default.removeItem(at: awdURL) }
+    var awdMap = MapState(width: 30, height: 20, tileset: .aw2, defaultTerrain: .terrainSea)
+    _ = awdMap.setBackground(.terrainPlain, atX: 4, y: 4)
+    let awdReport = try MapFileCodec.write(awdMap, to: awdURL)
+    #expect(awdReport.format == .awd)
+    let awdLoaded = try MapFileCodec.read(from: awdURL)
+    #expect(awdLoaded.width == 30)
+    #expect(awdLoaded.height == 20)
+    #expect(awdLoaded.tileset == .aw2)
+    #expect(awdLoaded.backgroundElement(atX: 4, y: 4) == .terrainPlain)
+}
+
 @Test("legacy output reports lossy conversions before writing")
 func compatibilityWarnings() {
     let map = MapState(width: 40, height: 20, defaultTerrain: .terrainSea)
     let warnings = MapFileCodec.warnings(for: map, format: .aw2)
     #expect(warnings.count == 1)
     #expect(warnings[0].contains("cropped"))
+
+    var unsupported = MapState(width: 30, height: 20, defaultTerrain: .terrainSea)
+    _ = unsupported.setBackground(.terrainPipe, atX: 1, y: 1, check: false)
+    let unsupportedWarnings = MapFileCodec.warnings(for: unsupported, format: .awm)
+    #expect(unsupportedWarnings.count == 1)
+    #expect(unsupportedWarnings[0].contains("not available"))
+}
+
+@Test("map placement and drawing dispatch cover connected terrain families")
+func mapPlacementAndDrawingFamilies() {
+    roadMaskFamilies()
+    riverMaskFamilies()
+    var surfaces = surfaceDrawingFixture()
+    surfacePlacementCoverage(surfaces)
+    surfaceResizeCoverage(&surfaces)
+}
+
+private func roadMaskFamilies() {
+    var map = MapState(width: 5, height: 5, defaultTerrain: .terrainSea)
+    for mask in 0..<16 {
+        let center = (x: 2, y: 2)
+        _ = map.setBackground(.terrainRoad, atX: center.x, y: center.y, check: false)
+        let neighbours = [
+            (x: 2, y: 1), (x: 2, y: 3),
+            (x: 1, y: 2), (x: 3, y: 2)
+        ]
+        for (offset, point) in neighbours.enumerated() where mask & (1 << offset) != 0 {
+            _ = map.setBackground(.terrainRoad, atX: point.x, y: point.y, check: false)
+        }
+        map.updateDraw()
+        _ = map.backgroundDrawElement(atX: center.x, y: center.y)
+    }
+}
+
+private func riverMaskFamilies() {
+    for mask in 0..<16 {
+        var river = MapState(width: 5, height: 5, defaultTerrain: .terrainPlain)
+        _ = river.setBackground(.terrainRiver, atX: 2, y: 2, check: false)
+        let neighbours = [
+            (x: 2, y: 1), (x: 2, y: 3),
+            (x: 1, y: 2), (x: 3, y: 2)
+        ]
+        for (offset, point) in neighbours.enumerated() where mask & (1 << offset) != 0 {
+            _ = river.setBackground(.terrainRiver, atX: point.x, y: point.y, check: false)
+        }
+        river.updateDraw()
+        _ = river.backgroundDrawElement(atX: 2, y: 2)
+    }
+}
+
+private func surfaceDrawingFixture() -> MapState {
+    var surfaces = MapState(width: 7, height: 7, defaultTerrain: .terrainSea)
+    for x in 1...5 {
+        for y in 1...5 {
+            _ = surfaces.setBackground(.terrainPlain, atX: x, y: y, check: false)
+        }
+    }
+    _ = surfaces.setBackground(.terrainShoal, atX: 1, y: 1, check: false)
+    _ = surfaces.setBackground(.terrainPipe, atX: 3, y: 3, check: false)
+    _ = surfaces.setBackground(.terrainSeam, atX: 3, y: 4, check: false)
+    _ = surfaces.setBackground(.terrainPlainD, atX: 4, y: 3, check: false)
+    _ = surfaces.setBackground(.terrainBridgeH, atX: 1, y: 3, check: false)
+    _ = surfaces.setBackground(.terrainBridgeV, atX: 5, y: 3, check: false)
+    _ = surfaces.setBackground(.terrainReef, atX: 0, y: 0, check: false)
+    surfaces.updateDraw()
+    return surfaces
+}
+
+private func surfacePlacementCoverage(_ surfaces: MapState) {
+    for element in [Element.unitInfantry, .unitMech, .unitTank, .unitAPC, .unitLander, .unitBattleship, .unitTCopter, .unitPipeRunner, .unitEmpty] {
+        _ = surfaces.allowPlacement(element, atX: 3, y: 3, recheck: true)
+    }
+    for element in [Element.extraMCannonN, .extraBCannons, .extraBCannonN, .extraDeathray, .extraBobelisk, .extraVolcano, .extraFortress, .extraGSilo, .extraBlackArc, .extraSeaArc] {
+        _ = surfaces.allowPlacement(element, atX: 2, y: 2)
+    }
+    _ = surfaces.allowPlacement(.terrainRiver, atX: 2, y: 2)
+    _ = surfaces.allowPlacement(.terrainBridgeH, atX: 2, y: 2)
+    _ = surfaces.allowPlacement(.terrainShoal, atX: 2, y: 2)
+    _ = surfaces.allowPlacement(.terrainSeam, atX: 3, y: 3)
+    _ = surfaces.allowPlacement(.buildingHQ.changedArmy(AWConstants.armyNeutral), atX: 2, y: 2)
+}
+
+private func surfaceResizeCoverage(_ surfaces: inout MapState) {
+    _ = surfaces.setSize(width: 6, height: 6)
+    let invalidResize = surfaces.setSize(width: 0, height: 0)
+    #expect(!invalidResize)
+    surfaces.fill(with: .terrainSea)
+    #expect(surfaces.countBuildingsAndSeams() == 0)
+    _ = surfaces.compatibleSize(with: .awm)
+    _ = surfaces.compatibleElements(with: .awm)
 }

@@ -82,49 +82,49 @@ enum PlaytestAdvanceWars2Rules {
         [nil, nil, nil, nil, 55, 25, 95, 55]
     ]
 
+    private static let statsByValue: [Int: PlaytestUnitStats] = makeStats()
+
+    private static func makeStats() -> [Int: PlaytestUnitStats] {
+        statsPart1().merging(statsPart2(), uniquingKeysWith: { _, new in new })
+            .merging(statsPart3(), uniquingKeysWith: { _, new in new })
+    }
+
+    private static func statsPart1() -> [Int: PlaytestUnitStats] {
+        [
+        Element.unitInfantry.simplified.value: .init(cost: 1_000, move: 3, minRange: 1, maxRange: 1, domain: .land, canCapture: true, attackPower: 55, movementType: .foot, maxFuel: 99, vision: 2, primaryAmmo: nil),
+        Element.unitMech.simplified.value: .init(cost: 3_000, move: 2, minRange: 1, maxRange: 1, domain: .land, canCapture: true, attackPower: 65, movementType: .mech, maxFuel: 70, vision: 2, primaryAmmo: 3, secondaryAttackPower: 12),
+        Element.unitRecon.simplified.value: .init(cost: 4_000, move: 8, minRange: 1, maxRange: 1, domain: .land, canCapture: false, attackPower: 70, movementType: .tire, maxFuel: 80, vision: 5),
+        Element.unitTank.simplified.value: .init(cost: 7_000, move: 6, minRange: 1, maxRange: 1, domain: .land, canCapture: false, attackPower: 75, movementType: .tread, maxFuel: 70, primaryAmmo: 9, secondaryAttackPower: 6),
+        Element.unitMDTank.simplified.value: .init(cost: 16_000, move: 5, minRange: 1, maxRange: 1, domain: .land, canCapture: false, attackPower: 105, movementType: .tread, maxFuel: 50, primaryAmmo: 8, secondaryAttackPower: 8),
+        Element.unitNeoTank.simplified.value: .init(cost: 22_000, move: 6, minRange: 1, maxRange: 1, domain: .land, canCapture: false, attackPower: 125, movementType: .tread, maxFuel: 99, primaryAmmo: 9, secondaryAttackPower: 10),
+        Element.unitAPC.simplified.value: .init(cost: 5_000, move: 6, minRange: 0, maxRange: 0, domain: .land, canCapture: false, attackPower: 0, movementType: .tread, maxFuel: 70)
+        ]
+    }
+
+    private static func statsPart2() -> [Int: PlaytestUnitStats] {
+        [
+        Element.unitArtillery.simplified.value: .init(cost: 6_000, move: 5, minRange: 2, maxRange: 3, domain: .land, canCapture: false, attackPower: 90, movementType: .tire, maxFuel: 50, primaryAmmo: 9, canMoveAndFire: false, canCounterattack: false),
+        Element.unitRocket.simplified.value: .init(cost: 15_000, move: 5, minRange: 3, maxRange: 5, domain: .land, canCapture: false, attackPower: 95, movementType: .tire, maxFuel: 50, primaryAmmo: 6, canMoveAndFire: false, canCounterattack: false),
+        Element.unitAntiAir.simplified.value: .init(cost: 8_000, move: 6, minRange: 1, maxRange: 1, domain: .land, canCapture: false, attackPower: 105, movementType: .tread, maxFuel: 60, vision: 2, primaryAmmo: 9),
+        Element.unitMissile.simplified.value: .init(cost: 12_000, move: 4, minRange: 3, maxRange: 5, domain: .land, canCapture: false, attackPower: 100, movementType: .tire, maxFuel: 50, vision: 5, primaryAmmo: 6, canMoveAndFire: false, canCounterattack: false),
+        Element.unitTCopter.simplified.value: .init(cost: 5_000, move: 6, minRange: 0, maxRange: 0, domain: .air, canCapture: false, attackPower: 0, movementType: .air, maxFuel: 99, dailyFuelUse: 2, vision: 2, canCounterattack: false),
+        Element.unitBCopter.simplified.value: .init(cost: 9_000, move: 6, minRange: 1, maxRange: 1, domain: .air, canCapture: false, attackPower: 75, movementType: .air, maxFuel: 99, dailyFuelUse: 2, vision: 3, primaryAmmo: 6, secondaryAttackPower: 6)
+        ]
+    }
+
+    private static func statsPart3() -> [Int: PlaytestUnitStats] {
+        [
+        Element.unitFighter.simplified.value: .init(cost: 20_000, move: 9, minRange: 1, maxRange: 1, domain: .air, canCapture: false, attackPower: 55, movementType: .air, maxFuel: 99, dailyFuelUse: 5, vision: 2, primaryAmmo: 9),
+        Element.unitBomber.simplified.value: .init(cost: 22_000, move: 7, minRange: 1, maxRange: 1, domain: .air, canCapture: false, attackPower: 110, movementType: .air, maxFuel: 99, dailyFuelUse: 5, vision: 2, primaryAmmo: 9),
+        Element.unitBattleship.simplified.value: .init(cost: 28_000, move: 5, minRange: 2, maxRange: 6, domain: .sea, canCapture: false, attackPower: 95, movementType: .ship, maxFuel: 99, dailyFuelUse: 1, vision: 2, primaryAmmo: 9, canMoveAndFire: false, canCounterattack: false),
+        Element.unitCruiser.simplified.value: .init(cost: 18_000, move: 6, minRange: 1, maxRange: 1, domain: .sea, canCapture: false, attackPower: 115, movementType: .ship, maxFuel: 99, dailyFuelUse: 1, vision: 3, primaryAmmo: 9),
+        Element.unitLander.simplified.value: .init(cost: 12_000, move: 6, minRange: 0, maxRange: 0, domain: .sea, canCapture: false, attackPower: 0, movementType: .lander, maxFuel: 99, dailyFuelUse: 1, vision: 1, canCounterattack: false),
+        Element.unitSub.simplified.value: .init(cost: 20_000, move: 5, minRange: 1, maxRange: 1, domain: .sea, canCapture: false, attackPower: 95, movementType: .ship, maxFuel: 60, dailyFuelUse: 1, vision: 5, primaryAmmo: 6)
+        ]
+    }
+
     static func stats(for element: Element) -> PlaytestUnitStats? {
-        switch element.simplified.value {
-        case Element.unitInfantry.value:
-            return .init(cost: 1_000, move: 3, minRange: 1, maxRange: 1, domain: .land, canCapture: true, attackPower: 55, movementType: .foot, maxFuel: 99, vision: 2, primaryAmmo: nil)
-        case Element.unitMech.value:
-            return .init(cost: 3_000, move: 2, minRange: 1, maxRange: 1, domain: .land, canCapture: true, attackPower: 65, movementType: .mech, maxFuel: 70, vision: 2, primaryAmmo: 3, secondaryAttackPower: 12)
-        case Element.unitRecon.value:
-            return .init(cost: 4_000, move: 8, minRange: 1, maxRange: 1, domain: .land, canCapture: false, attackPower: 70, movementType: .tire, maxFuel: 80, vision: 5)
-        case Element.unitTank.value:
-            return .init(cost: 7_000, move: 6, minRange: 1, maxRange: 1, domain: .land, canCapture: false, attackPower: 75, movementType: .tread, maxFuel: 70, primaryAmmo: 9, secondaryAttackPower: 6)
-        case Element.unitMDTank.value:
-            return .init(cost: 16_000, move: 5, minRange: 1, maxRange: 1, domain: .land, canCapture: false, attackPower: 105, movementType: .tread, maxFuel: 50, primaryAmmo: 8, secondaryAttackPower: 8)
-        case Element.unitNeoTank.value:
-            return .init(cost: 22_000, move: 6, minRange: 1, maxRange: 1, domain: .land, canCapture: false, attackPower: 125, movementType: .tread, maxFuel: 99, primaryAmmo: 9, secondaryAttackPower: 10)
-        case Element.unitAPC.value:
-            return .init(cost: 5_000, move: 6, minRange: 0, maxRange: 0, domain: .land, canCapture: false, attackPower: 0, movementType: .tread, maxFuel: 70)
-        case Element.unitArtillery.value:
-            return .init(cost: 6_000, move: 5, minRange: 2, maxRange: 3, domain: .land, canCapture: false, attackPower: 90, movementType: .tire, maxFuel: 50, primaryAmmo: 9, canMoveAndFire: false, canCounterattack: false)
-        case Element.unitRocket.value:
-            return .init(cost: 15_000, move: 5, minRange: 3, maxRange: 5, domain: .land, canCapture: false, attackPower: 95, movementType: .tire, maxFuel: 50, primaryAmmo: 6, canMoveAndFire: false, canCounterattack: false)
-        case Element.unitAntiAir.value:
-            return .init(cost: 8_000, move: 6, minRange: 1, maxRange: 1, domain: .land, canCapture: false, attackPower: 105, movementType: .tread, maxFuel: 60, vision: 2, primaryAmmo: 9)
-        case Element.unitMissile.value:
-            return .init(cost: 12_000, move: 4, minRange: 3, maxRange: 5, domain: .land, canCapture: false, attackPower: 100, movementType: .tire, maxFuel: 50, vision: 5, primaryAmmo: 6, canMoveAndFire: false, canCounterattack: false)
-        case Element.unitTCopter.value:
-            return .init(cost: 5_000, move: 6, minRange: 0, maxRange: 0, domain: .air, canCapture: false, attackPower: 0, movementType: .air, maxFuel: 99, dailyFuelUse: 2, vision: 2, canCounterattack: false)
-        case Element.unitBCopter.value:
-            return .init(cost: 9_000, move: 6, minRange: 1, maxRange: 1, domain: .air, canCapture: false, attackPower: 75, movementType: .air, maxFuel: 99, dailyFuelUse: 2, vision: 3, primaryAmmo: 6, secondaryAttackPower: 6)
-        case Element.unitFighter.value:
-            return .init(cost: 20_000, move: 9, minRange: 1, maxRange: 1, domain: .air, canCapture: false, attackPower: 55, movementType: .air, maxFuel: 99, dailyFuelUse: 5, vision: 2, primaryAmmo: 9)
-        case Element.unitBomber.value:
-            return .init(cost: 22_000, move: 7, minRange: 1, maxRange: 1, domain: .air, canCapture: false, attackPower: 110, movementType: .air, maxFuel: 99, dailyFuelUse: 5, vision: 2, primaryAmmo: 9)
-        case Element.unitBattleship.value:
-            return .init(cost: 28_000, move: 5, minRange: 2, maxRange: 6, domain: .sea, canCapture: false, attackPower: 95, movementType: .ship, maxFuel: 99, dailyFuelUse: 1, vision: 2, primaryAmmo: 9, canMoveAndFire: false, canCounterattack: false)
-        case Element.unitCruiser.value:
-            return .init(cost: 18_000, move: 6, minRange: 1, maxRange: 1, domain: .sea, canCapture: false, attackPower: 115, movementType: .ship, maxFuel: 99, dailyFuelUse: 1, vision: 3, primaryAmmo: 9)
-        case Element.unitLander.value:
-            return .init(cost: 12_000, move: 6, minRange: 0, maxRange: 0, domain: .sea, canCapture: false, attackPower: 0, movementType: .lander, maxFuel: 99, dailyFuelUse: 1, vision: 1, canCounterattack: false)
-        case Element.unitSub.value:
-            return .init(cost: 20_000, move: 5, minRange: 1, maxRange: 1, domain: .sea, canCapture: false, attackPower: 95, movementType: .ship, maxFuel: 60, dailyFuelUse: 1, vision: 5, primaryAmmo: 6)
-        default:
-            return nil
-        }
+        statsByValue[element.simplified.value]
     }
 
     static func canAttack(_ attacker: Element, _ defender: Element, primaryAmmo: Int? = nil) -> Bool {
@@ -185,71 +185,45 @@ enum PlaytestAdvanceWars2Rules {
         randomize: Bool = true
     ) -> Int? {
         guard canAttack(attacker, defender, primaryAmmo: primaryAmmo) else { return nil }
+        guard let base = damageBase(attacker: attacker, defender: defender, primaryAmmo: primaryAmmo), base > 0 else { return nil }
+        return scaledDamage(base: base, attacker: attacker, defender: defender, defenderHealth: defenderHealth,
+                            attackerHealth: attackerHealth, terrain: terrain, randomize: randomize)
+    }
+
+    private static func damageBase(attacker: Element, defender: Element, primaryAmmo: Int?) -> Int? {
         guard let attackerStats = stats(for: attacker) else { return nil }
-
-        let useSecondary = attackerStats.primaryAmmo != nil && !usesPrimaryWeapon(attacker, defender, primaryAmmo: primaryAmmo)
+        let secondary = attackerStats.primaryAmmo != nil && !usesPrimaryWeapon(attacker, defender, primaryAmmo: primaryAmmo)
         let cruiserAntiAir = attacker.simplified == .unitCruiser && stats(for: defender)?.domain == .air
-        guard !useSecondary || attackerStats.secondaryAttackPower != nil || cruiserAntiAir else { return nil }
-        let base = useSecondary
-            ? (cruiserAntiAir ? (baseDamage(attacker: attacker, defender: defender) ?? 0) : (attackerStats.secondaryAttackPower ?? 0))
-            : (baseDamage(attacker: attacker, defender: defender) ?? 0)
-        guard base > 0 else { return nil }
+        guard !secondary || attackerStats.secondaryAttackPower != nil || cruiserAntiAir else { return nil }
+        if !secondary { return baseDamage(attacker: attacker, defender: defender) }
+        if cruiserAntiAir { return baseDamage(attacker: attacker, defender: defender) }
+        return attackerStats.secondaryAttackPower
+    }
 
-        let displayedDefenderHealth = max(1, min(10, defenderHealth / 10))
-        let stars = stats(for: defender)?.domain == .air
-            ? 0
-            : terrainStars(for: terrain)
-        let terrainDefense = max(0, 100 - stars * displayedDefenderHealth)
+    private static func scaledDamage(
+        base: Int,
+        attacker: Element,
+        defender: Element,
+        defenderHealth: Int,
+        attackerHealth: Int,
+        terrain: Element,
+        randomize: Bool
+    ) -> Int {
+        let displayedHealth = max(1, min(10, defenderHealth / 10))
+        let stars = stats(for: defender)?.domain == .air ? 0 : terrainStars(for: terrain)
+        let defense = max(0, 100 - stars * displayedHealth)
         let luck = randomize ? Int.random(in: 0...9) : 4
-        let raw = Double(base + luck)
-            * (Double(max(1, min(100, attackerHealth))) / 100)
-            * (Double(terrainDefense) / 100)
+        let raw = Double(base + luck) * (Double(max(1, min(100, attackerHealth))) / 100) * (Double(defense) / 100)
         return max(1, min(100, Int(raw.rounded(.down))))
     }
 
     static func movementCost(for unit: Element, terrain: Element, weather: PlaytestWeather) -> Int? {
         let tile = terrain.simplified
         guard !terrain.isExtra, tile != .terrainPipe, tile != .terrainSeam else { return nil }
-
-        let row: [Int?]
-        switch tile {
-        case .terrainRoad, .terrainBridgeH, .terrainBridgeV:
-            row = movementRow(inf: 1, mech: 1, tread: 1, tire: 1, air: weather == .snow ? 2 : 1, ship: nil, lander: nil)
-        case .terrainPlain, .terrainPlainD:
-            row = movementRow(inf: weather == .snow ? 2 : 1, mech: 1, tread: weather == .rain || weather == .snow ? 2 : 1, tire: weather == .rain || weather == .snow ? 3 : 2, air: weather == .snow ? 2 : 1, ship: nil, lander: nil)
-        case .terrainWood:
-            row = movementRow(inf: weather == .snow ? 2 : 1, mech: 1, tread: weather == .rain || weather == .snow ? 3 : 2, tire: weather == .rain || weather == .snow ? 4 : 3, air: weather == .snow ? 2 : 1, ship: nil, lander: nil)
-        case .terrainMountain:
-            row = movementRow(inf: weather == .snow ? 4 : 2, mech: weather == .snow ? 2 : 1, tread: nil, tire: nil, air: weather == .snow ? 2 : 1, ship: nil, lander: nil)
-        case .terrainRiver:
-            row = movementRow(inf: 2, mech: 1, tread: nil, tire: nil, air: weather == .snow ? 2 : 1, ship: nil, lander: nil)
-        case .terrainShoal:
-            row = movementRow(inf: 1, mech: 1, tread: 1, tire: 1, air: weather == .snow ? 2 : 1, ship: nil, lander: 1)
-        case .terrainSea:
-            row = movementRow(inf: nil, mech: nil, tread: nil, tire: nil, air: weather == .snow ? 2 : 1, ship: weather == .snow ? 2 : 1, lander: weather == .snow ? 2 : 1)
-        case .terrainReef:
-            row = movementRow(inf: nil, mech: nil, tread: nil, tire: nil, air: weather == .snow ? 2 : 1, ship: weather == .snow ? 2 : 2, lander: weather == .snow ? 2 : 2)
-        case .buildingPort:
-            row = movementRow(inf: 1, mech: 1, tread: 1, tire: 1, air: weather == .snow ? 2 : 1, ship: weather == .snow ? 2 : 1, lander: weather == .snow ? 2 : 1)
-        default:
-            guard terrain.isBuilding else { return nil }
-            // Snow increases the cost of entering normal terrain, but AW1/AW2
-            // properties remain a one-point air landing square. Ports are
-            // handled above because naval and transport movement there is
-            // also weather-sensitive.
-            row = movementRow(inf: 1, mech: 1, tread: 1, tire: 1, air: 1, ship: nil, lander: nil)
-        }
+        guard let row = movementRow(for: tile, terrain: terrain, weather: weather) else { return nil }
 
         let movementType = stats(for: unit)?.movementType ?? .tread
-        switch movementType {
-        case .foot: return row[0]
-        case .mech: return row[1]
-        case .tread: return row[2]
-        case .tire: return row[3]
-        case .air: return row[4]
-        case .ship: return row[5]
-        case .lander: return row[6]
-        }
+        return row[movementIndex(for: movementType)]
     }
 
     static func terrainStars(for terrain: Element) -> Int {
@@ -287,5 +261,72 @@ enum PlaytestAdvanceWars2Rules {
 
     private static func movementRow(inf: Int?, mech: Int?, tread: Int?, tire: Int?, air: Int?, ship: Int?, lander: Int?) -> [Int?] {
         [inf, mech, tread, tire, air, ship, lander]
+    }
+
+    private static func movementRow(for tile: Element, terrain: Element, weather: PlaytestWeather) -> [Int?]? {
+        let snow = weather == .snow
+        let wet = weather == .rain || snow
+        switch tile {
+        case .terrainRoad, .terrainBridgeH, .terrainBridgeV: return roadRow(snow: snow)
+        case .terrainPlain, .terrainPlainD: return plainRow(snow: snow, wet: wet)
+        case .terrainWood: return woodRow(snow: snow, wet: wet)
+        case .terrainMountain: return mountainRow(snow: snow)
+        case .terrainRiver: return riverRow(snow: snow)
+        case .terrainShoal: return shoalRow(snow: snow)
+        case .terrainSea: return seaRow(snow: snow)
+        case .terrainReef: return reefRow(snow: snow)
+        case .buildingPort: return portRow(snow: snow)
+        default:
+            guard terrain.isBuilding else { return nil }
+            return movementRow(inf: 1, mech: 1, tread: 1, tire: 1, air: 1, ship: nil, lander: nil)
+        }
+    }
+
+    private static func roadRow(snow: Bool) -> [Int?] {
+        movementRow(inf: 1, mech: 1, tread: 1, tire: 1, air: snow ? 2 : 1, ship: nil, lander: nil)
+    }
+
+    private static func plainRow(snow: Bool, wet: Bool) -> [Int?] {
+        movementRow(inf: snow ? 2 : 1, mech: 1, tread: wet ? 2 : 1, tire: wet ? 3 : 2, air: snow ? 2 : 1, ship: nil, lander: nil)
+    }
+
+    private static func woodRow(snow: Bool, wet: Bool) -> [Int?] {
+        movementRow(inf: snow ? 2 : 1, mech: 1, tread: wet ? 3 : 2, tire: wet ? 4 : 3, air: snow ? 2 : 1, ship: nil, lander: nil)
+    }
+
+    private static func mountainRow(snow: Bool) -> [Int?] {
+        movementRow(inf: snow ? 4 : 2, mech: snow ? 2 : 1, tread: nil, tire: nil, air: snow ? 2 : 1, ship: nil, lander: nil)
+    }
+
+    private static func riverRow(snow: Bool) -> [Int?] {
+        movementRow(inf: 2, mech: 1, tread: nil, tire: nil, air: snow ? 2 : 1, ship: nil, lander: nil)
+    }
+
+    private static func shoalRow(snow: Bool) -> [Int?] {
+        movementRow(inf: 1, mech: 1, tread: 1, tire: 1, air: snow ? 2 : 1, ship: nil, lander: 1)
+    }
+
+    private static func seaRow(snow: Bool) -> [Int?] {
+        movementRow(inf: nil, mech: nil, tread: nil, tire: nil, air: snow ? 2 : 1, ship: snow ? 2 : 1, lander: snow ? 2 : 1)
+    }
+
+    private static func reefRow(snow: Bool) -> [Int?] {
+        movementRow(inf: nil, mech: nil, tread: nil, tire: nil, air: snow ? 2 : 1, ship: 2, lander: 2)
+    }
+
+    private static func portRow(snow: Bool) -> [Int?] {
+        movementRow(inf: 1, mech: 1, tread: 1, tire: 1, air: snow ? 2 : 1, ship: snow ? 2 : 1, lander: snow ? 2 : 1)
+    }
+
+    private static func movementIndex(for movementType: PlaytestMovementType) -> Int {
+        switch movementType {
+        case .foot: return 0
+        case .mech: return 1
+        case .tread: return 2
+        case .tire: return 3
+        case .air: return 4
+        case .ship: return 5
+        case .lander: return 6
+        }
     }
 }

@@ -161,48 +161,55 @@ final class BackgroundMusicController {
     /// files untouched, but remove that silence from playtest buffers before
     /// scheduling them so army music starts immediately and loops cleanly.
     private func trimLeadingSilence(from buffer: AVAudioPCMBuffer) -> AVAudioPCMBuffer {
-        guard buffer.frameLength > 0,
-              let sourceChannels = buffer.floatChannelData else { return buffer }
-
+        guard buffer.frameLength > 0, let sourceChannels = buffer.floatChannelData else { return buffer }
         let channelCount = Int(buffer.format.channelCount)
-        let sampleRate = buffer.format.sampleRate
-        let analysisFrames = max(1, Int(sampleRate * 0.01))
+        let leadingFrames = leadingSilentFrames(in: buffer, channels: sourceChannels, channelCount: channelCount)
+        return trimmedBuffer(buffer, channels: sourceChannels, channelCount: channelCount, leadingFrames: leadingFrames) ?? buffer
+    }
+
+    private func leadingSilentFrames(
+        in buffer: AVAudioPCMBuffer,
+        channels: UnsafePointer<UnsafeMutablePointer<Float>>,
+        channelCount: Int
+    ) -> AVAudioFrameCount {
+        let analysisFrames = max(1, Int(buffer.format.sampleRate * 0.01))
         let silenceThreshold: Float = 0.001
         var leadingFrames: AVAudioFrameCount = 0
-
         while leadingFrames < buffer.frameLength {
-            let remaining = Int(buffer.frameLength - leadingFrames)
-            let frameCount = min(analysisFrames, remaining)
-            var peak: Float = 0
-
-            for channel in 0..<channelCount {
-                let samples = sourceChannels[channel].advanced(by: Int(leadingFrames))
-                for frame in 0..<frameCount {
-                    peak = max(peak, abs(samples[frame]))
-                }
-            }
-
-            guard peak < silenceThreshold else { break }
+            let frameCount = min(analysisFrames, Int(buffer.frameLength - leadingFrames))
+            guard audioPeak(channels: channels, channelCount: channelCount, start: leadingFrames, count: frameCount) < silenceThreshold else { break }
             leadingFrames += AVAudioFrameCount(frameCount)
         }
+        return leadingFrames
+    }
 
-        guard leadingFrames > 0,
-              leadingFrames < buffer.frameLength,
-              let trimmed = AVAudioPCMBuffer(
-                  pcmFormat: buffer.format,
-                  frameCapacity: buffer.frameLength - leadingFrames
-              ),
-              let destinationChannels = trimmed.floatChannelData else {
-            return buffer
+    private func audioPeak(
+        channels: UnsafePointer<UnsafeMutablePointer<Float>>,
+        channelCount: Int,
+        start: AVAudioFrameCount,
+        count: Int
+    ) -> Float {
+        var peak: Float = 0
+        for channel in 0..<channelCount {
+            let samples = channels[channel].advanced(by: Int(start))
+            for frame in 0..<count { peak = max(peak, abs(samples[frame])) }
         }
+        return peak
+    }
 
+    private func trimmedBuffer(
+        _ buffer: AVAudioPCMBuffer,
+        channels: UnsafePointer<UnsafeMutablePointer<Float>>,
+        channelCount: Int,
+        leadingFrames: AVAudioFrameCount
+    ) -> AVAudioPCMBuffer? {
+        guard leadingFrames > 0, leadingFrames < buffer.frameLength,
+              let trimmed = AVAudioPCMBuffer(pcmFormat: buffer.format, frameCapacity: buffer.frameLength - leadingFrames),
+              let destinationChannels = trimmed.floatChannelData else { return nil }
         let remainingFrames = buffer.frameLength - leadingFrames
         trimmed.frameLength = remainingFrames
         for channel in 0..<channelCount {
-            destinationChannels[channel].update(
-                from: sourceChannels[channel].advanced(by: Int(leadingFrames)),
-                count: Int(remainingFrames)
-            )
+            destinationChannels[channel].update(from: channels[channel].advanced(by: Int(leadingFrames)), count: Int(remainingFrames))
         }
         return trimmed
     }

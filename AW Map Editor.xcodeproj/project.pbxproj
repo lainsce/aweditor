@@ -12,6 +12,8 @@
 		000000000000000000002003 /* MapFileCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001003 /* MapFileCodec.swift */; };
 		000000000000000000002004 /* MapFragment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001004 /* MapFragment.swift */; };
 		000000000000000000002005 /* MapState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001005 /* MapState.swift */; };
+		000000000000000000002006 /* MapState+Placement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001006 /* MapState+Placement.swift */; };
+		000000000000000000002007 /* MapState+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001007 /* MapState+Drawing.swift */; };
 		000000000000000000002010 /* AWEDApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001010 /* AWEDApp.swift */; };
 		000000000000000000002011 /* AWEDCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001011 /* AWEDCommands.swift */; };
 		000000000000000000002012 /* BackgroundMusic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001012 /* BackgroundMusic.swift */; };
@@ -31,6 +33,8 @@
 		000000000000000000002020 /* StatusBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001020 /* StatusBarView.swift */; };
 		000000000000000000002025 /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001025 /* PrivacyPolicyView.swift */; };
 		000000000000000000002030 /* MapCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001030 /* MapCoreTests.swift */; };
+		000000000000000000002031 /* ElementCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001031 /* ElementCoreTests.swift */; };
+		000000000000000000002032 /* CoreCoverageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001032 /* CoreCoverageTests.swift */; };
 		000000000000000000002040 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001040 /* AppIcon.icon */; };
 		000000000000000000002050 /* building_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001050 /* building_0.png */; };
 		000000000000000000002051 /* building_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001051 /* building_1.png */; };
@@ -89,6 +93,12 @@
 		0000000000000000000020A1 /* misc_11.png in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000010B1 /* misc_11.png */; };
 		673ACA33303DE9E6003112C6 /* BGM in Resources */ = {isa = PBXBuildFile; fileRef = 673ACA33303DE9E6003112C5 /* BGM */; };
 		67803C6230360302005182A2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67803C6130360302005182A2 /* Assets.xcassets */; };
+		A20000000000000000000001 /* MapCanvasDecorations.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000001 /* MapCanvasDecorations.swift */; };
+		A20000000000000000000002 /* MapCanvasViewContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* MapCanvasViewContent.swift */; };
+		A20000000000000000000003 /* EditorModel+Selection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000003 /* EditorModel+Selection.swift */; };
+		A20000000000000000000004 /* EditorModel+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000004 /* EditorModel+Drawing.swift */; };
+		A20000000000000000000005 /* MapStatusCounts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000005 /* MapStatusCounts.swift */; };
+		A20000000000000000000006 /* PaletteCatalogItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000006 /* PaletteCatalogItems.swift */; };
 		E10000000000000000000001 /* NativeUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000001 /* NativeUI.swift */; };
 		F30000000000000000000001 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = F40000000000000000000001 /* Fonts */; };
 /* End PBXBuildFile section */
@@ -116,6 +126,8 @@
 		000000000000000000001003 /* MapFileCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFileCodec.swift; sourceTree = "<group>"; };
 		000000000000000000001004 /* MapFragment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFragment.swift; sourceTree = "<group>"; };
 		000000000000000000001005 /* MapState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapState.swift; sourceTree = "<group>"; };
+		000000000000000000001006 /* MapState+Placement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MapState+Placement.swift"; sourceTree = "<group>"; };
+		000000000000000000001007 /* MapState+Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MapState+Drawing.swift"; sourceTree = "<group>"; };
 		000000000000000000001010 /* AWEDApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWEDApp.swift; sourceTree = "<group>"; };
 		000000000000000000001011 /* AWEDCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWEDCommands.swift; sourceTree = "<group>"; };
 		000000000000000000001012 /* BackgroundMusic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundMusic.swift; sourceTree = "<group>"; };
@@ -135,6 +147,8 @@
 		000000000000000000001020 /* StatusBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarView.swift; sourceTree = "<group>"; };
 		000000000000000000001025 /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyView.swift; sourceTree = "<group>"; };
 		000000000000000000001030 /* MapCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCoreTests.swift; sourceTree = "<group>"; };
+		000000000000000000001031 /* ElementCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementCoreTests.swift; sourceTree = "<group>"; };
+		000000000000000000001032 /* CoreCoverageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreCoverageTests.swift; sourceTree = "<group>"; };
 		000000000000000000001040 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		000000000000000000001050 /* building_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_0.png; sourceTree = "<group>"; };
 		000000000000000000001051 /* building_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = building_1.png; sourceTree = "<group>"; };
@@ -199,6 +213,12 @@
 		000000000000000000001103 /* AWEDCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AWEDCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		673ACA33303DE9E6003112C5 /* BGM */ = {isa = PBXFileReference; lastKnownFileType = folder; path = BGM; sourceTree = "<group>"; };
 		67803C6130360302005182A2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A10000000000000000000001 /* MapCanvasDecorations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCanvasDecorations.swift; sourceTree = "<group>"; };
+		A10000000000000000000002 /* MapCanvasViewContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCanvasViewContent.swift; sourceTree = "<group>"; };
+		A10000000000000000000003 /* EditorModel+Selection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorModel+Selection.swift"; sourceTree = "<group>"; };
+		A10000000000000000000004 /* EditorModel+Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorModel+Drawing.swift"; sourceTree = "<group>"; };
+		A10000000000000000000005 /* MapStatusCounts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapStatusCounts.swift; sourceTree = "<group>"; };
+		A10000000000000000000006 /* PaletteCatalogItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteCatalogItems.swift; sourceTree = "<group>"; };
 		E20000000000000000000001 /* NativeUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeUI.swift; sourceTree = "<group>"; };
 		F40000000000000000000001 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fonts; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -243,6 +263,8 @@
 				000000000000000000001003 /* MapFileCodec.swift */,
 				000000000000000000001004 /* MapFragment.swift */,
 				000000000000000000001005 /* MapState.swift */,
+				000000000000000000001006 /* MapState+Placement.swift */,
+				000000000000000000001007 /* MapState+Drawing.swift */,
 			);
 			path = Sources/AWEDCore;
 			sourceTree = "<group>";
@@ -340,6 +362,8 @@
 		000000000000000000000007 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				000000000000000000001032 /* CoreCoverageTests.swift */,
+				000000000000000000001031 /* ElementCoreTests.swift */,
 				000000000000000000001030 /* MapCoreTests.swift */,
 			);
 			path = Tests;
@@ -359,6 +383,9 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000001016 /* EditorModel.swift */,
+				A10000000000000000000003 /* EditorModel+Selection.swift */,
+				A10000000000000000000004 /* EditorModel+Drawing.swift */,
+				A10000000000000000000005 /* MapStatusCounts.swift */,
 				000000000000000000001017 /* EditorPreferences.swift */,
 				000000000000000000001018 /* EditorToolbar.swift */,
 				000000000000000000001019 /* EditorTypes.swift */,
@@ -372,6 +399,8 @@
 				00000000000000000000101B /* MapCanvasInput.swift */,
 				00000000000000000000101C /* MapCanvasView.swift */,
 				000000000000000000001020 /* StatusBarView.swift */,
+				A10000000000000000000001 /* MapCanvasDecorations.swift */,
+				A10000000000000000000002 /* MapCanvasViewContent.swift */,
 			);
 			path = Map;
 			sourceTree = "<group>";
@@ -381,6 +410,7 @@
 			children = (
 				000000000000000000001014 /* CursorAtlas.swift */,
 				00000000000000000000101D /* PaletteCatalog.swift */,
+				A10000000000000000000006 /* PaletteCatalogItems.swift */,
 				00000000000000000000101E /* PaletteView.swift */,
 				00000000000000000000101F /* SpriteAtlas.swift */,
 			);
@@ -583,6 +613,8 @@
 				000000000000000000002003 /* MapFileCodec.swift in Sources */,
 				000000000000000000002004 /* MapFragment.swift in Sources */,
 				000000000000000000002005 /* MapState.swift in Sources */,
+				000000000000000000002006 /* MapState+Placement.swift in Sources */,
+				000000000000000000002007 /* MapState+Drawing.swift in Sources */,
 			);
 		};
 		000000000000000000000502 /* Sources */ = {
@@ -595,6 +627,9 @@
 				000000000000000000002014 /* CursorAtlas.swift in Sources */,
 				000000000000000000002015 /* DialogViews.swift in Sources */,
 				000000000000000000002016 /* EditorModel.swift in Sources */,
+				A20000000000000000000003 /* EditorModel+Selection.swift in Sources */,
+				A20000000000000000000004 /* EditorModel+Drawing.swift in Sources */,
+				A20000000000000000000005 /* MapStatusCounts.swift in Sources */,
 				000000000000000000002017 /* EditorPreferences.swift in Sources */,
 				000000000000000000002018 /* EditorToolbar.swift in Sources */,
 				E10000000000000000000001 /* NativeUI.swift in Sources */,
@@ -604,14 +639,19 @@
 				00000000000000000000201B /* MapCanvasInput.swift in Sources */,
 				00000000000000000000201C /* MapCanvasView.swift in Sources */,
 				00000000000000000000201D /* PaletteCatalog.swift in Sources */,
+				A20000000000000000000006 /* PaletteCatalogItems.swift in Sources */,
 				00000000000000000000201E /* PaletteView.swift in Sources */,
 				00000000000000000000201F /* SpriteAtlas.swift in Sources */,
 				000000000000000000002020 /* StatusBarView.swift in Sources */,
+				A20000000000000000000001 /* MapCanvasDecorations.swift in Sources */,
+				A20000000000000000000002 /* MapCanvasViewContent.swift in Sources */,
 			);
 		};
 		000000000000000000000505 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				000000000000000000002032 /* CoreCoverageTests.swift in Sources */,
+				000000000000000000002031 /* ElementCoreTests.swift in Sources */,
 				000000000000000000002030 /* MapCoreTests.swift in Sources */,
 			);
 		};

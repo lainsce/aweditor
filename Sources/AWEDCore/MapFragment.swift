@@ -16,22 +16,35 @@ public struct MapFragment: Codable, Equatable, Sendable {
     }
 
     public init(map: MapState, x: Int, y: Int, width: Int, height: Int) {
-        self.width = max(0, width)
-        self.height = max(0, height)
-        var background = Array(repeating: Element.terrainSea, count: self.width * self.height)
+        let safeWidth = max(0, width)
+        let safeHeight = max(0, height)
+        let arrays = Self.arrays(from: map, x: x, y: y, width: safeWidth, height: safeHeight)
+        self.width = safeWidth
+        self.height = safeHeight
+        self.background = arrays.background
+        self.backgroundDraw = arrays.backgroundDraw
+        self.foreground = arrays.foreground
+    }
+
+    private static func arrays(
+        from map: MapState,
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int
+    ) -> (background: [Element], backgroundDraw: [Element], foreground: [Element]) {
+        var background = Array(repeating: Element.terrainSea, count: width * height)
         var backgroundDraw = background
-        var foreground = Array(repeating: Element.unitEmpty, count: self.width * self.height)
-        for localX in 0..<self.width {
-            for localY in 0..<self.height {
-                let index = localX * self.height + localY
+        var foreground = Array(repeating: Element.unitEmpty, count: width * height)
+        for localX in 0..<width {
+            for localY in 0..<height {
+                let index = localX * height + localY
                 background[index] = map.backgroundElement(atX: x + localX, y: y + localY)
                 backgroundDraw[index] = map.backgroundDrawElement(atX: x + localX, y: y + localY)
                 foreground[index] = map.foregroundElement(atX: x + localX, y: y + localY)
             }
         }
-        self.background = background
-        self.backgroundDraw = backgroundDraw
-        self.foreground = foreground
+        return (background, backgroundDraw, foreground)
     }
 
     public func backgroundElement(atX x: Int, y: Int) -> Element {
