@@ -274,14 +274,15 @@ private struct NativeSliderStepLine: View {
         let horizontalInset: CGFloat = 8
         let usableWidth = max(width - (horizontalInset * 2), 1)
         let ticks = displayedTicks
+        let indicatorInk = colorScheme == .dark ? Color.white : Color.black
         ZStack(alignment: .topLeading) {
             Capsule(style: .continuous)
-                .fill(Color.primary.opacity(colorScheme == .dark ? 0.26 : 0.18))
+                .fill(indicatorInk.opacity(colorScheme == .dark ? 0.26 : 0.18))
                 .frame(width: usableWidth, height: 1)
                 .offset(x: horizontalInset, y: lineY)
             ForEach(Array(ticks.enumerated()), id: \.offset) { index, tick in
                 Capsule(style: .continuous)
-                    .fill(Color.primary.opacity(colorScheme == .dark ? 0.38 : 0.28))
+                    .fill(indicatorInk.opacity(colorScheme == .dark ? 0.38 : 0.28))
                     .frame(
                         width: 1,
                         height: isMajorTick(index: index, count: ticks.count) ? 8 : 4
